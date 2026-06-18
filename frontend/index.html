@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iniciar sesión | PlantAI</title>
+</head>
+<body>
+  <div data-include="components/header-login.html"></div>
+
+  <main>
+    <section aria-labelledby="login-heading">
+      <h2 id="login-heading">Iniciar sesión</h2>
+
+      <form action="pages/dashboard.html" method="get">
+        <p>
+          <label for="usuario">Usuario</label>
+          <input type="text" id="usuario" name="usuario" autocomplete="username" required>
+        </p>
+
+        <p>
+          <label for="contrasena">Contraseña</label>
+          <input type="password" id="contrasena" name="contrasena" autocomplete="current-password" required>
+        </p>
+
+        <p>
+          <button type="submit">Ingresar</button>
+        </p>
+      </form>
+    </section>
+  </main>
+
+  <div data-include="components/footer.html"></div>
+
+  <script src="functions/include.js"></script>
+</body>
+</html>
