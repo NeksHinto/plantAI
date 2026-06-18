@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resultados del escaneo | PlantAI</title>
+</head>
+<body>
+  <div data-include="../components/header-app.html"></div>
+
+  <main>
+    <section aria-labelledby="results-heading">
+      <header>
+        <h2 id="results-heading">Resultados del escaneo</h2>
+        <p>Escaneo realizado el <time datetime="2026-06-17T14:30:00">17 de junio de 2026, 14:30</time></p>
+      </header>
+
+      <article aria-labelledby="identification-heading">
+        <h3 id="identification-heading">Identificación de especie</h3>
+        <dl>
+          <dt>Nombre común</dt>
+          <dd>Monstera deliciosa</dd>
+
+          <dt>Nombre científico</dt>
+          <dd>Monstera deliciosa</dd>
+
+          <dt>Clase</dt>
+          <dd>Liliopsida</dd>
+
+          <dt>Confianza</dt>
+          <dd>94%</dd>
+        </dl>
+      </article>
+
+      <article aria-labelledby="diagnosis-heading">
+        <h3 id="diagnosis-heading">Diagnóstico de enfermedad</h3>
+        <dl>
+          <dt>Estado</dt>
+          <dd>Sin enfermedades detectadas</dd>
+
+          <dt>Confianza</dt>
+          <dd>88%</dd>
+
+          <dt>Recomendación</dt>
+          <dd>La planta se encuentra en buen estado. Continuar con el cuidado habitual.</dd>
+        </dl>
+      </article>
+
+      <nav aria-label="Acciones posteriores al escaneo">
+        <ul>
+          <li><a href="room.html">Guardar en el ambiente</a></li>
+          <li><a href="plant.html">Ver historial de la planta</a></li>
+          <li><a href="scanner.html">Escanear otra vez</a></li>
+        </ul>
+      </nav>
+    </section>
+  </main>
+
+  <div data-include="../components/footer.html"></div>
+
+  <script src="../functions/include.js"></script>
+</body>
+</html>
