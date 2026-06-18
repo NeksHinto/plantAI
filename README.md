@@ -11,3 +11,4 @@ TBD
 * *Jesus Meza Caya* - *113014*
 * *Agustin Ezequiel Mazurkiewich* - *112809*
 * *Nicole Renée Hinojo Toré* - *114011*
+* *Dylan Laureano Rivas* - *112702*
