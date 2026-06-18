@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Escanear | PlantAI</title>
+</head>
+<body>
+  <div data-include="../components/header-app.html"></div>
+
+  <main>
+    <section aria-labelledby="scanner-heading">
+      <header>
+        <h2 id="scanner-heading">Escanear planta</h2>
+        <p>Apuntá la cámara a la planta para identificar su especie o detectar enfermedades.</p>
+      </header>
+
+      <figure>
+        <figcaption>Vista previa de la cámara</figcaption>
+        <!-- La cámara se integrará con JavaScript en una fase posterior -->
+        <p>Área de vista previa de cámara (pendiente de implementación)</p>
+      </figure>
+
+      <form action="scanner-results.html" method="get">
+        <p>
+          <label for="foto">O seleccionar una imagen</label>
+          <input type="file" id="foto" name="foto" accept="image/*">
+        </p>
+
+        <p>
+          <button type="submit">Escanear</button>
+        </p>
+      </form>
+
+      <p><a href="room.html">Volver al ambiente</a></p>
+    </section>
+  </main>
+
+  <div data-include="../components/footer.html"></div>
+
+  <script src="../functions/include.js"></script>
+</body>
+</html>
