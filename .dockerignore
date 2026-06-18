@@ -1,0 +1,2 @@
+# plantAI/backend/.dockerignore
+app/node_modules/
