@@ -1,3 +1,4 @@
+// app.js
 import express from "express";
 import { endpointsPlantas } from "./api/plantas.js";
 
@@ -10,5 +11,5 @@ app.use("/api/v1/plantas", endpointsPlantas);
 app.get("/health", (req, res) => res.send("OK"));
 
 app.listen(port, () => {
-  console.log(`Servidor escuchando en puerto ${port}`);
+  console.log(`Server running at http://localhost:${port}/`);
 });
