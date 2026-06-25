@@ -1,28 +1,31 @@
+// serviciosExternos.js
 const PLANTNET_API_KEY = process.env.PLANTNET_API_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
-export async function identificarEspecie(imageUrl) {
+export async function identifySpecies(imageUrl) {
   try {
     const url = `https://my-api.plantnet.org/v2/identify/all?api-key=${PLANTNET_API_KEY}&images=${encodeURIComponent(imageUrl)}`;
     const response = await fetch(url);
-    if (!response.ok) throw new Error("Error en Pl@ntNet Especies");
-    
+    if (!response.ok) throw new Error("Error with Pl@ntNet Species");
+
     const data = await response.json();
-    const mejorResultado = data.results?.[0];
-  
+    const bestResult = data.results?.[0];
+
     return {
-      especie: mejorResultado?.species?.scientificNameWithoutAuthor || "Especie desconocida",
-      certeza: mejorResultado?.score ? (mejorResultado.score * 100) : 0
+      commonName: bestResult?.species?.commonNames?.[0] || "Unknown common name",
+      species: bestResult?.species?.scientificNameWithoutAuthor || "Unknown species",
+      family: bestResult?.species?.family?.scientificNameWithoutAuthor || "Unknown family",
+      accuracy: bestResult?.score ? (bestResult.score * 100) : 0
     };
   } catch (error) {
     console.error(error);
   }
 }
 
-export async function identificarEnfermedad(imageUrl) {
+export async function identifyDisease(imageUrl) {
   try {
     const imageResponse = await fetch(imageUrl);
-    if (!imageResponse.ok) throw new Error("No se pudo descargar la imagen de prueba para reenviar");
+    if (!imageResponse.ok) throw new Error("Could not download the test image to resend");
     const imageBlob = await imageResponse.blob();
 
     const url = `https://my-api.plantnet.org/v2/diseases/identify?include-related-images=true&no-reject=false&nb-results=10&lang=es&api-key=${PLANTNET_API_KEY}`;
@@ -35,14 +38,14 @@ export async function identificarEnfermedad(imageUrl) {
       method: "POST",
       body: formData
     });
-    if (!response.ok) throw new Error("Error en Pl@ntNet Diseases");
-    
+    if (!response.ok) throw new Error("Error with Pl@ntNet Diseases");
+
     const data = await response.json();
-    const mejorPatologia = data.results?.[0];
- 
+    const bestDiagnosis = data.results?.[0];
+
     return {
-      diagnostico: mejorPatologia?.description,
-      certeza: mejorPatologia?.score ? (mejorPatologia.score * 100) : 0
+      diagnosis: bestDiagnosis?.description,
+      accuracy: bestDiagnosis?.score ? (bestDiagnosis.score * 100) : 0
     };
   } catch (error) {
     console.error(error);
