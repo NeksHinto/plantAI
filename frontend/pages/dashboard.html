@@ -4,45 +4,52 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mis ambientes | PlantAI</title>
+  <link rel="stylesheet" href="../styles/main.css">
 </head>
-<body>
+<body class="app-shell">
   <div data-include="../components/header-app.html"></div>
 
-  <main>
-    <section aria-labelledby="ambientes-heading">
-      <header>
-        <h2 id="ambientes-heading">Mis ambientes</h2>
-        <p>Bienvenido, <strong>(username)</strong>. Seleccioná un ambiente para ver sus plantas.</p>
-      </header>
+  <main class="page-main container">
+    <nav class="tab-nav" aria-label="Secciones del dashboard">
+      <button class="tab-nav__btn is-active" type="button" data-tab="ambientes" aria-selected="true">
+        <span aria-hidden="true">🏠</span> Ambientes
+      </button>
+      <button class="tab-nav__btn" type="button" data-tab="plantas" aria-selected="false">
+        <span aria-hidden="true">🌱</span> Plantas
+      </button>
+    </nav>
 
-      <ul>
-        <li>
-          <article>
-            <h3><a href="room.html">Living</a></h3>
-            <p>Interior</p>
-            <p>3 plantas</p>
-          </article>
-        </li>
-        <li>
-          <article>
-            <h3><a href="room.html">Balcón</a></h3>
-            <p>Exterior</p>
-            <p>5 plantas</p>
-          </article>
-        </li>
-        <li>
-          <article>
-            <h3><a href="room.html">Dormitorio</a></h3>
-            <p>Interior</p>
-            <p>2 plantas</p>
-          </article>
-        </li>
-      </ul>
+    <section class="tab-panel is-active" data-tab="ambientes" aria-labelledby="ambientes-heading">
+      <h2 id="ambientes-heading" class="sr-only">Ambientes</h2>
+
+      <div class="tab-panel__toolbar">
+        <div id="rooms-search"></div>
+        <div id="rooms-page-size"></div>
+        <div id="rooms-pagination"></div>
+      </div>
+
+      <div id="rooms-grid" class="card-grid card-grid--rooms"></div>
+    </section>
+
+    <section class="tab-panel" data-tab="plantas" aria-labelledby="plantas-heading">
+      <h2 id="plantas-heading" class="sr-only">Plantas</h2>
+
+      <div class="tab-panel__toolbar">
+        <div class="search-bar">
+          <span class="search-bar__icon" aria-hidden="true">🔍</span>
+          <input class="search-bar__input" id="plants-search" type="search" placeholder="Buscar plantas...">
+        </div>
+        <div id="plants-page-size"></div>
+        <div id="plants-pagination"></div>
+      </div>
+
+      <div id="plants-grid" class="card-grid card-grid--plants"></div>
     </section>
   </main>
 
   <div data-include="../components/footer.html"></div>
 
   <script src="../functions/include.js"></script>
+  <script type="module" src="../functions/dashboard.js"></script>
 </body>
 </html>
