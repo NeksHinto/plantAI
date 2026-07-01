@@ -3,41 +3,51 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Escanear | PlantAI</title>
+  <title>Escanear planta | PlantAI</title>
+  <link rel="stylesheet" href="../styles/main.css">
 </head>
-<body>
-  <div data-include="../components/header-app.html"></div>
+<body class="app-shell">
+  <div data-include="../components/header-plant.html"></div>
 
-  <main>
-    <section aria-labelledby="scanner-heading">
-      <header>
-        <h2 id="scanner-heading">Escanear planta</h2>
-        <p>Apuntá la cámara a la planta para identificar su especie o detectar enfermedades.</p>
-      </header>
+  <main class="page-main page-main--narrow">
+    <header class="page-title">
+      <h2>Paso 1: Escanear planta</h2>
+      <p>Elegí una opción para agregar una imagen</p>
+    </header>
 
-      <figure>
-        <figcaption>Vista previa de la cámara</figcaption>
-        <!-- La cámara se integrará con JavaScript en una fase posterior -->
-        <p>Área de vista previa de cámara (pendiente de implementación)</p>
-      </figure>
+    <section class="scanner-zone" aria-labelledby="scanner-heading">
+      <h3 id="scanner-heading" class="sr-only">Opciones de escaneo</h3>
+      <div class="scanner-zone__icon" aria-hidden="true">🍃</div>
+      <p class="scanner-zone__title">Escanear o adjuntar foto</p>
+      <p class="scanner-zone__subtitle">Para analizar el estado de tu planta</p>
 
-      <form action="scanner-results.html" method="get">
-        <p>
-          <label for="foto">O seleccionar una imagen</label>
-          <input type="file" id="foto" name="foto" accept="image/*">
-        </p>
+      <a class="scanner-option" href="scanner-results.html">
+        <span class="scanner-option__icon" aria-hidden="true">📷</span>
+        <span>
+          <span class="scanner-option__label">Escanear con cámara</span>
+          <span class="scanner-option__hint">Usá la cámara de tu dispositivo para tomar una foto</span>
+        </span>
+      </a>
 
-        <p>
-          <button type="submit">Escanear</button>
-        </p>
-      </form>
+      <label class="scanner-option">
+        <span class="scanner-option__icon" aria-hidden="true">📎</span>
+        <span>
+          <span class="scanner-option__label">Adjuntar foto</span>
+          <span class="scanner-option__hint">Seleccioná una imagen desde tu galería o archivos</span>
+        </span>
+        <input class="sr-only" type="file" accept="image/*">
+      </label>
 
-      <p><a href="room.html">Volver al ambiente</a></p>
+      <p class="scanner-zone__privacy">
+        <span aria-hidden="true">🔒</span>
+        Tus imágenes están protegidas y solo se usan para análisis de la planta
+      </p>
     </section>
   </main>
 
   <div data-include="../components/footer.html"></div>
 
   <script src="../functions/include.js"></script>
+  <script type="module" src="../functions/plant.js"></script>
 </body>
 </html>
