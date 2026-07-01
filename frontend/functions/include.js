@@ -12,6 +12,8 @@ async function loadComponents() {
       component.outerHTML = await response.text();
     })
   );
+
+  document.dispatchEvent(new CustomEvent("components:loaded"));
 }
 
 document.addEventListener("DOMContentLoaded", loadComponents);
