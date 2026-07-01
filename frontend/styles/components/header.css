@@ -1,0 +1,120 @@
+.app-header {
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  padding-block: var(--space-md);
+}
+
+.app-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.app-header__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  text-decoration: none;
+  color: var(--color-primary);
+}
+
+.app-header__brand-icon {
+  font-size: 1.5rem;
+}
+
+.app-header__brand-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.app-header__user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.app-header__greeting {
+  color: var(--color-text-muted);
+}
+
+.app-header__logout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  text-decoration: none;
+}
+
+.app-header__logout:hover {
+  background: var(--color-bg);
+}
+
+.app-header--login {
+  text-align: center;
+  padding-block: var(--space-xl);
+}
+
+.app-header--login .app-header__brand {
+  justify-content: center;
+}
+
+.app-header--login .app-header__tagline {
+  color: var(--color-text-muted);
+  margin-top: var(--space-xs);
+}
+
+.plant-header {
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  padding-block: var(--space-md);
+}
+
+.plant-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.plant-header__back {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  text-decoration: none;
+  color: inherit;
+  min-width: 0;
+}
+
+.plant-header__avatar {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.plant-header__name {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.plant-header__species {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.app-footer {
+  padding: var(--space-md);
+  text-align: center;
+  color: var(--color-text-muted);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
