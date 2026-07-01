@@ -1,0 +1,220 @@
+.card-grid {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.card-grid--rooms {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.card-grid--plants {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media (max-width: 900px) {
+  .card-grid--rooms {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .card-grid--rooms,
+  .card-grid--plants {
+    grid-template-columns: 1fr;
+  }
+}
+
+.room-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow 0.15s;
+}
+
+.room-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.room-card__image {
+  width: 5rem;
+  height: 4rem;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.room-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.room-card__title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: var(--space-xs);
+}
+
+.room-card__meta {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-xs);
+}
+
+.room-card__status-text {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin-bottom: var(--space-xs);
+}
+
+.room-card__status-text--atencion {
+  color: var(--color-warning);
+}
+
+.room-card__status-text--critico {
+  color: var(--color-danger);
+}
+
+.room-card__status-text--saludable {
+  color: var(--color-success);
+}
+
+.room-card__chevron {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.plant-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: inherit;
+}
+
+.plant-card:hover {
+  border-color: var(--color-primary);
+}
+
+.plant-card__image {
+  width: 4rem;
+  height: 4rem;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.plant-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.plant-card__name {
+  font-weight: 700;
+  margin-bottom: var(--space-xs);
+}
+
+.plant-card__room {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-sm);
+}
+
+.plant-card--compact {
+  flex-direction: column;
+  align-items: stretch;
+  text-align: center;
+}
+
+.plant-card--compact .plant-card__image {
+  width: 100%;
+  height: 6rem;
+}
+
+.room-expanded {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-md);
+  overflow: hidden;
+}
+
+.room-expanded__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.room-expanded__image {
+  width: 5rem;
+  height: 4rem;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+}
+
+.room-expanded__title {
+  flex: 1;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.room-expanded__plants {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: var(--space-md);
+  padding: var(--space-md);
+}
+
+.room-collapsed-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-md);
+}
+
+@media (max-width: 600px) {
+  .room-collapsed-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.room-collapsed {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: inherit;
+}
+
+.room-collapsed__image {
+  width: 4rem;
+  height: 3rem;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+}
+
+.room-collapsed__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.room-collapsed__title {
+  font-weight: 700;
+  margin-bottom: var(--space-xs);
+}
