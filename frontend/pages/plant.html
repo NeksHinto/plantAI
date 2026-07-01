@@ -3,78 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Monstera del sillón | PlantAI</title>
+  <title>Detalle de planta | PlantAI</title>
+  <link rel="stylesheet" href="../styles/main.css">
 </head>
-<body>
-  <div data-include="../components/header-app.html"></div>
+<body class="app-shell">
+  <div data-include="../components/header-plant.html"></div>
 
-  <main>
-    <nav aria-label="Navegación">
-      <ol>
-        <li><a href="dashboard.html">Mis ambientes</a></li>
-        <li><a href="room.html">Living</a></li>
-        <li aria-current="page">Monstera del sillón</li>
-      </ol>
-    </nav>
+  <main class="page-main container">
+    <a class="btn btn--primary btn--block section-spacing" href="scanner.html">📷 Escanear planta</a>
 
-    <article aria-labelledby="plant-heading">
-      <header>
-        <h2 id="plant-heading">Monstera del sillón</h2>
-        <p>
-          <a href="scanner.html">Escanear enfermedad</a>
-        </p>
-      </header>
+    <section aria-labelledby="history-heading" class="section-spacing">
+      <h2 id="history-heading">Historial clínico</h2>
+      <div id="timeline" class="timeline"></div>
+    </section>
 
-      <section aria-labelledby="plant-info-heading">
-        <h3 id="plant-info-heading">Información de la planta</h3>
-        <dl>
-          <dt>Nombre</dt>
-          <dd>Monstera del sillón</dd>
-
-          <dt>Especie</dt>
-          <dd>Monstera deliciosa</dd>
-
-          <dt>Clase</dt>
-          <dd>Liliopsida</dd>
-
-          <dt>Ambiente</dt>
-          <dd><a href="room.html">Living</a></dd>
-        </dl>
-      </section>
-
-      <section aria-labelledby="health-history-heading">
-        <h3 id="health-history-heading">Historial clínico</h3>
-
-        <ol>
-          <li>
-            <article>
-              <header>
-                <h4>Escaneo del 10 de junio de 2026</h4>
-                <time datetime="2026-06-10">10/06/2026</time>
-              </header>
-              <p><strong>Diagnóstico:</strong> Sin enfermedades detectadas</p>
-              <p><strong>Confianza:</strong> 92%</p>
-              <p><strong>Recomendación:</strong> Mantener riego moderado y buena iluminación indirecta.</p>
-            </article>
-          </li>
-          <li>
-            <article>
-              <header>
-                <h4>Escaneo del 28 de mayo de 2026</h4>
-                <time datetime="2026-05-28">28/05/2026</time>
-              </header>
-              <p><strong>Diagnóstico:</strong> Exceso de riego</p>
-              <p><strong>Confianza:</strong> 78%</p>
-              <p><strong>Recomendación:</strong> Reducir frecuencia de riego y verificar drenaje de la maceta.</p>
-            </article>
-          </li>
-        </ol>
-      </section>
-    </article>
+    <section class="scan-album" aria-labelledby="album-heading">
+      <h2 id="album-heading" class="scan-album__title">Álbum de escaneos</h2>
+      <div id="scan-album"></div>
+    </section>
   </main>
 
   <div data-include="../components/footer.html"></div>
 
   <script src="../functions/include.js"></script>
+  <script type="module" src="../functions/plant.js"></script>
 </body>
 </html>
