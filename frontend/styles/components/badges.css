@@ -1,0 +1,40 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 0.2rem 0.65rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge--saludable {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.badge--atencion {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.badge--critico {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.badge--mejorando {
+  background: var(--color-primary-light);
+  color: var(--color-improving);
+}
+
+.badge--alerta {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.badge--salud-optima {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}

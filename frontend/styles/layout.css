@@ -1,0 +1,57 @@
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  width: min(100% - var(--space-xl), var(--container-max));
+  margin-inline: auto;
+}
+
+.page-main {
+  flex: 1;
+  padding-block: var(--space-lg);
+}
+
+.page-main--narrow {
+  max-width: 40rem;
+  margin-inline: auto;
+}
+
+.section-spacing {
+  margin-top: var(--space-lg);
+}
+
+.page-title {
+  text-align: center;
+  margin-bottom: var(--space-lg);
+}
+
+.page-title h2 {
+  font-size: 1.5rem;
+  margin-bottom: var(--space-xs);
+}
+
+.page-title p {
+  color: var(--color-text-muted);
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-md);
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+}
+
+@media (max-width: 768px) {
+  .grid-2,
+  .grid-3 {
+    grid-template-columns: 1fr;
+  }
+}

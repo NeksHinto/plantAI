@@ -4,28 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Iniciar sesión | PlantAI</title>
+  <link rel="stylesheet" href="styles/main.css">
 </head>
-<body>
+<body class="app-shell">
   <div data-include="components/header-login.html"></div>
 
-  <main>
-    <section aria-labelledby="login-heading">
+  <main class="page-main container">
+    <section class="login-form" aria-labelledby="login-heading">
       <h2 id="login-heading">Iniciar sesión</h2>
 
       <form action="pages/dashboard.html" method="get">
-        <p>
+        <div class="form-field">
           <label for="usuario">Usuario</label>
           <input type="text" id="usuario" name="usuario" autocomplete="username" required>
-        </p>
+        </div>
 
-        <p>
+        <div class="form-field">
           <label for="contrasena">Contraseña</label>
           <input type="password" id="contrasena" name="contrasena" autocomplete="current-password" required>
-        </p>
+        </div>
 
-        <p>
-          <button type="submit">Ingresar</button>
-        </p>
+        <button class="btn btn--primary btn--block" type="submit">Ingresar</button>
       </form>
     </section>
   </main>
