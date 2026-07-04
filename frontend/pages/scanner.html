@@ -15,39 +15,43 @@
       <p>Elegí una opción para agregar una imagen</p>
     </header>
 
-    <section class="scanner-zone" aria-labelledby="scanner-heading">
-      <h3 id="scanner-heading" class="sr-only">Opciones de escaneo</h3>
-      <div class="scanner-zone__icon" aria-hidden="true">🍃</div>
-      <p class="scanner-zone__title">Escanear o adjuntar foto</p>
-      <p class="scanner-zone__subtitle">Para analizar el estado de tu planta</p>
+    <form id="scanner-form">
+      <section class="scanner-zone" aria-labelledby="scanner-heading">
+        <h3 id="scanner-heading" class="sr-only">Opciones de escaneo</h3>
+        <div class="scanner-zone__icon" aria-hidden="true">🍃</div>
+        <p class="scanner-zone__title">Escanear o adjuntar foto</p>
+        <p class="scanner-zone__subtitle">Para analizar el estado de tu planta</p>
 
-      <a class="scanner-option" href="scanner-results.html">
-        <span class="scanner-option__icon" aria-hidden="true">📷</span>
-        <span>
-          <span class="scanner-option__label">Escanear con cámara</span>
-          <span class="scanner-option__hint">Usá la cámara de tu dispositivo para tomar una foto</span>
-        </span>
-      </a>
+        <button class="scanner-option" type="button" id="scan-camera-btn">
+          <span class="scanner-option__icon" aria-hidden="true">📷</span>
+          <span>
+            <span class="scanner-option__label">Escanear con cámara</span>
+            <span class="scanner-option__hint">Usá la cámara de tu dispositivo para tomar una foto</span>
+          </span>
+        </button>
 
-      <label class="scanner-option">
-        <span class="scanner-option__icon" aria-hidden="true">📎</span>
-        <span>
-          <span class="scanner-option__label">Adjuntar foto</span>
-          <span class="scanner-option__hint">Seleccioná una imagen desde tu galería o archivos</span>
-        </span>
-        <input class="sr-only" type="file" accept="image/*">
-      </label>
+        <label class="scanner-option">
+          <span class="scanner-option__icon" aria-hidden="true">📎</span>
+          <span>
+            <span class="scanner-option__label">Adjuntar foto</span>
+            <span class="scanner-option__hint">Seleccioná una imagen desde tu galería o archivos</span>
+          </span>
+          <input class="sr-only" id="scan-file-input" type="file" accept="image/*">
+        </label>
 
-      <p class="scanner-zone__privacy">
-        <span aria-hidden="true">🔒</span>
-        Tus imágenes están protegidas y solo se usan para análisis de la planta
-      </p>
-    </section>
+        <button class="btn btn--primary btn--block" type="submit">Analizar imagen</button>
+
+        <p class="scanner-zone__privacy">
+          <span aria-hidden="true">🔒</span>
+          Tus imágenes están protegidas y solo se usan para análisis de la planta
+        </p>
+      </section>
+    </form>
   </main>
 
   <div data-include="../components/footer.html"></div>
 
-  <script src="../functions/include.js"></script>
-  <script type="module" src="../functions/plant.js"></script>
+  <script src="../utils/include.js"></script>
+  <script type="module" src="../utils/scanner.js"></script>
 </body>
 </html>
