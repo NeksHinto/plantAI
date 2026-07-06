@@ -6,15 +6,25 @@ services:
       - "8000:8000"
     environment:
       PLANTNET_API_KEY: "${PLANTNET_API_KEY}"
-#      DB_HOST: "db"
-#      DB_PORT: 5432
-#      DB_USER: "${DB_USER}"
-#      DB_PASS: "${DB_PASS}"
-#      DB_NAME: "${DB_NAME}"
-#  db:
-#    image: postgres:18
-#    environment:
-#      POSTGRES_USER: "${DB_USER}"
-#      POSTGRES_PASSWORD: "${DB_PASS}"
-#      POSTGRES_DB: "${DB_NAME}"
-#    volumes:
+      DB_HOST: "db"
+      DB_PORT: 5432
+      DB_USER: "${DB_USER}"
+      DB_PASS: "${DB_PASS}"
+      DB_NAME: "${DB_NAME}"
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: "${DB_USER}"
+      POSTGRES_PASSWORD: "${DB_PASS}"
+      POSTGRES_DB: "${DB_NAME}"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db-init:/docker-entrypoint-initdb.d
+
+volumes:
+  postgres_data:
