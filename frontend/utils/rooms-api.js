@@ -9,7 +9,7 @@ export function fetchPlantsByRoom(roomId) {
 }
 
 // TODO: conectar UI de edición de ambiente cuando exista el formulario
-export function (roomId, fields) {
+export function updateRoom(roomId, fields) {
   return apiRequest(`/rooms/${roomId}`, {
     method: "PUT",
     body: JSON.stringify(fields),
