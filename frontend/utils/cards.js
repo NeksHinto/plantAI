@@ -1,33 +1,80 @@
 import { createBadge, getStatusLabel } from "./ui.js";
 
-export function createRoomCard(room) {
-  const link = document.createElement("a");
-  link.className = "room-card";
-  link.href = `room.html?id=${room.id}`;
+export function createRoomCard(room, expanded, onClick) {
+  const card = document.createElement("article");
 
-  const statusClass = room.badStatePercent === 0
-    ? "saludable"
-    : room.badStatePercent >= 40
-      ? "critico"
-      : "atencion";
+  if (expanded) {
+    card.className = "room-card room-card--expanded";
+  } else {
+    card.className = "room-card";
+  }
 
-  link.innerHTML = `
-    <img class="room-card__image" src="${room.image}" alt="${room.name}">
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "room-card__header";
+  button.setAttribute("aria-expanded", String(expanded));
+
+  let statusClass = "atencion";
+
+  if (room.badStatePercent === 0) {
+    statusClass = "saludable";
+  } else if (room.badStatePercent >= 40) {
+    statusClass = "critico";
+  }
+
+  button.innerHTML = `
+    <img
+      class="room-card__image"
+      src="${room.image}"
+      alt="${room.name}"
+    >
+
     <div class="room-card__body">
       <h3 class="room-card__title">${room.name}</h3>
       <p class="room-card__meta">${room.plantCount} plantas</p>
-      <p class="room-card__status-text room-card__status-text--${statusClass}">
-        ${room.badStatePercent}% en mal estado
-      </p>
     </div>
-    <span class="room-card__chevron" aria-hidden="true">›</span>
+
+    <p
+      class="room-card__status-text
+      room-card__status-text--${statusClass}"
+    >
+      ${room.badStatePercent}% en mal estado
+    </p>
+
+    <span class="room-card__chevron">
+      ${expanded ? "⌃" : "⌄"}
+    </span>
   `;
 
-  link.querySelector(".room-card__body").append(
-    createBadge(room.status, getStatusLabel(room.status))
-  );
+  button.addEventListener("click", onClick);
+  card.append(button);
 
-  return link;
+  if (expanded) {
+    const content = document.createElement("div");
+    content.className = "room-card__expanded-content";
+
+    const title = document.createElement("h4");
+    title.className = "room-card__plants-title";
+    title.textContent = "Plantas en este ambiente";
+
+    const plants = document.createElement("div");
+    plants.className = "room-card__plants";
+
+    if (room.plants.length === 0) {
+      const message = document.createElement("p");
+      message.textContent = "No hay plantas en este ambiente.";
+      plants.append(message);
+    } else {
+      room.plants.forEach((plant) => {
+        plants.append(createCompactPlantCard(plant));
+      });
+    }
+
+    content.append(title, plants);
+    card.append(content);
+  }
+
+  return card;
 }
 
 export function createPlantCard(plant) {

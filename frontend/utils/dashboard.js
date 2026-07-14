@@ -70,6 +70,97 @@ function renderPagedGrid(container, items, renderCard, paginationSlot, pageSizeS
   }
 }
 
+function renderRoomsGrid(
+  container,
+  rooms,
+  paginationSlot,
+  pageSizeSlot,
+  state
+) {
+  const select = pageSizeSlot.querySelector("select");
+  const pageSize = Number(select.value);
+
+  const page = paginateItems(
+    rooms,
+    state.page,
+    pageSize
+  );
+
+  function renderAgain() {
+    renderRoomsGrid(
+      container,
+      state.filtered,
+      paginationSlot,
+      pageSizeSlot,
+      state
+    );
+  }
+
+  function changePage(pageNumber) {
+    state.page = pageNumber;
+    state.expandedRoomId = null;
+    renderAgain();
+  }
+
+  container.replaceChildren();
+
+  page.items.forEach((room) => {
+    const expanded =
+      String(state.expandedRoomId) === String(room.id);
+
+    const card = createRoomCard(
+      room,
+      expanded,
+      () => {
+        if (expanded) {
+          state.expandedRoomId = null;
+        } else {
+          state.expandedRoomId = room.id;
+        }
+
+        renderAgain();
+      }
+    );
+
+    container.append(card);
+  });
+
+  paginationSlot.replaceChildren();
+
+  const pagination = createPagination(
+    page.totalPages,
+    state.page
+  );
+
+  const buttons = pagination.querySelectorAll(
+    ".pagination__btn"
+  );
+
+  buttons.forEach((button, index) => {
+    const isPrevious = index === 0;
+    const isNext = index === buttons.length - 1;
+
+    if (isPrevious) {
+      button.addEventListener("click", () => {
+        changePage(Math.max(1, state.page - 1));
+      });
+    } else if (isNext) {
+      button.addEventListener("click", () => {
+        changePage(
+          Math.min(page.totalPages, state.page + 1)
+        );
+      });
+    } else {
+      button.addEventListener("click", () => {
+        changePage(Number(button.textContent));
+      });
+    }
+  });
+
+  paginationSlot.append(pagination);
+}
+
+
 function setupTabs() {
   const tabButtons = document.querySelectorAll(".tab-nav__btn");
   const panels = document.querySelectorAll(".tab-panel");
@@ -128,7 +219,7 @@ async function initDashboard() {
   try {
     const { rooms, plants } = await loadDashboardData(session.userId);
 
-    const roomsState = { all: rooms, filtered: rooms, page: 1 };
+    const roomsState = { all: rooms, filtered: rooms, page: 1, expandedRoomId: null };
     const plantsState = { all: plants, filtered: plants, page: 1 };
 
     if (roomsSearchSlot) {
@@ -137,6 +228,7 @@ async function initDashboard() {
       search.querySelector("input").addEventListener("input", (event) => {
         roomsState.filtered = filterByQuery(roomsState.all, event.target.value, ["name"]);
         roomsState.page = 1;
+        roomsState.expandedRoomId = null;
         renderRooms();
       });
     }
@@ -145,6 +237,7 @@ async function initDashboard() {
       roomsPageSizeSlot.append(createPageSizeControl());
       roomsPageSizeSlot.querySelector("select").addEventListener("change", () => {
         roomsState.page = 1;
+        roomsState.expandedRoomId = null;
         renderRooms();
       });
     }
@@ -158,10 +251,9 @@ async function initDashboard() {
     }
 
     const renderRooms = () =>
-      renderPagedGrid(
+      renderRoomsGrid(
         roomsGrid,
         roomsState.filtered,
-        createRoomCard,
         roomsPaginationSlot,
         roomsPageSizeSlot,
         roomsState
