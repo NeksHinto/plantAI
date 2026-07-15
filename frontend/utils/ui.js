@@ -1,4 +1,4 @@
-import { HEALTH_STATUS } from "./mock-data.js";
+import { HEALTH_STATUS } from "./constants.js";
 
 const STATUS_LABELS = {
   [HEALTH_STATUS.SALUDABLE]: "Saludable",
@@ -95,4 +95,18 @@ export function setPlantHeaderAction(label, href) {
     action.textContent = label;
     action.href = href;
   }
+}
+
+export function showError(container, message) {
+  if (!container) return;
+  container.innerHTML = `<p class="form-error" role="alert">${message}</p>`;
+}
+
+export function showLoading(container, message = "Cargando...") {
+  if (!container) return;
+  container.innerHTML = `<p class="loading-message">${message}</p>`;
+}
+
+export function clearContainer(container) {
+  if (container) container.replaceChildren();
 }
