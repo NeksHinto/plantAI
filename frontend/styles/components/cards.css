@@ -4,7 +4,7 @@
 }
 
 .card-grid--rooms {
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .card-grid--plants {
@@ -25,21 +25,67 @@
 }
 
 .room-card {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  padding: var(--space-md);
+  min-width: 0;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
-  text-decoration: none;
   color: inherit;
-  transition: box-shadow 0.15s;
+  overflow: hidden;
+  transition:
+    box-shadow 0.15s,
+    border-color 0.15s;
 }
 
 .room-card:hover {
   box-shadow: var(--shadow-md);
+}
+
+.room-card--expanded {
+  grid-column: 1 / -1;
+  border-color: var(--color-primary);
+}
+
+.room-card__header {
+  width: 100%;
+  min-height: 5rem;
+  display: grid;
+  grid-template-columns: 5rem minmax(0, 1fr) auto 2rem;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border: 0;
+  background: var(--color-surface);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.room-card__header:hover {
+  background: var(--color-primary-light);
+}
+
+.room-card__header[aria-expanded="true"] {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.room-card__expanded-content {
+  padding: var(--space-md);
+}
+
+.room-card__plants-title {
+  margin-bottom: var(--space-md);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.room-card__plants {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(10rem, 1fr)
+  );
+  gap: var(--space-md);
 }
 
 .room-card__image {
@@ -47,7 +93,6 @@
   height: 4rem;
   border-radius: var(--radius-sm);
   object-fit: cover;
-  flex-shrink: 0;
 }
 
 .room-card__body {
@@ -70,19 +115,25 @@
 .room-card__status-text {
   font-size: 0.8125rem;
   font-weight: 600;
-  margin-bottom: var(--space-xs);
+  margin: 0;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
 }
 
 .room-card__status-text--atencion {
   color: var(--color-warning);
+  background: var(--color-warning-bg);
 }
 
 .room-card__status-text--critico {
   color: var(--color-danger);
+  background: var(--color-danger-bg);
 }
 
 .room-card__status-text--saludable {
   color: var(--color-success);
+  background: var(--color-success-bg);
 }
 
 .room-card__chevron {
@@ -131,14 +182,24 @@
 }
 
 .plant-card--compact {
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
   align-items: stretch;
-  text-align: center;
+  gap: 0;
+  padding: 0;
+  text-align: left;
+  overflow: hidden;
 }
 
 .plant-card--compact .plant-card__image {
-  width: 100%;
-  height: 6rem;
+  width: 4.5rem;
+  height: 100%;
+  min-height: 6rem;
+  border-radius: 0;
+}
+
+.plant-card--compact .plant-card__body {
+  padding: var(--space-sm);
 }
 
 .room-expanded {
@@ -184,9 +245,9 @@
   gap: var(--space-md);
 }
 
-@media (max-width: 600px) {
-  .room-collapsed-grid {
-    grid-template-columns: 1fr;
+@media (max-width: 900px) {
+  .room-card__plants {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
