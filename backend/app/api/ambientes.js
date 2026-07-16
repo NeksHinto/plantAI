@@ -1,6 +1,8 @@
 // ambientes.js
 import { Router } from "express";
 import { getRoomsByUserId, updateRoom } from "../db/rooms.js";
+import { getPlantsByRoomId } from "../db/plants.js";
+import { mapPlantRow } from "../services/mappers.js";
 
 export const endpointsAmbientes = Router();
 
@@ -67,22 +69,9 @@ endpointsAmbientes.get("/:roomId/plants", async (req, res) => {
   const { roomId } = req.params;
 
   try {
-    // TODO: BD, Obtener listado de plantas asociadas al ambiente desde la tabla "Plants":
-
-    // Respuesta simulada
-    res.json([
-      {
-        id: 101,
-        userId: 1,
-        roomId: Number(roomId),
-        name: "Mi Helecho",
-        species: "Monstera deliciosa",
-        species_class: "Unknown family",
-        imageUrl: "dummy image",
-        confidence_score: 80.1,
-        commonName: "Monstera"
-      }
-    ]);
+    const rows = await getPlantsByRoomId(roomId);
+    const plants = rows.map(mapPlantRow);
+    res.json(plants);
 
   } catch (error) {
     console.error("Error en get-plants-by-room-id:", error);
