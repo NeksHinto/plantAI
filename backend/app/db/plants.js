@@ -17,3 +17,35 @@ export async function getPlantsByRoomId(roomId) {
   );
   return res.rows;
 }
+
+export async function getPlantById(plantId) {
+  const res = await db.query(
+    "SELECT id, user_id, room_id, name, species, image_url FROM plants WHERE id = $1",
+    [plantId]
+  );
+  return res.rows[0];
+}
+
+export async function getHealthRecordsByPlantId(plantId) {
+  const res = await db.query(
+    "SELECT id, plant_id, diagnosis, accuracy, created_at AS date FROM plant_health_records WHERE plant_id = $1 ORDER BY created_at DESC",
+    [plantId]
+  );
+  return res.rows;
+}
+
+export async function updatePlant(plantId, name, roomId) {
+  const res = await db.query(
+    `UPDATE plants 
+     SET name = COALESCE($1, name),
+         room_id = COALESCE($2, room_id)
+     WHERE id = $3
+     RETURNING id, user_id, room_id, name, species, image_url`,
+    [
+      name !== undefined ? name : null,
+      roomId !== undefined ? Number(roomId) : null,
+      plantId
+    ]
+  );
+  return res.rows[0];
+}

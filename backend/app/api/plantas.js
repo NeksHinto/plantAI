@@ -1,6 +1,7 @@
 // plantas.js
 import { Router } from "express";
 import { identifySpecies, identifyDisease } from "../services/serviciosExternos.js";
+import { getPlantById, getHealthRecordsByPlantId, updatePlant } from "../db/plants.js";
 
 export const endpointsPlantas = Router();
 
@@ -86,36 +87,30 @@ endpointsPlantas.get("/:plantId", async (req, res) => {
   const { plantId } = req.params;
 
   try {
-    //TODO: BD, Obtener los detalles de la planta desde la tabla "Plants"
-    //TODO: BD, Obtener el historial clínico de salud de la planta desde "PlantHealthRecord":
+    const plantRow = await getPlantById(plantId);
 
-    // Respuesta simulada
+    if (!plantRow) {
+      return res.status(404).json({ error: "Plant not found" });
+    }
+
+    const recordsRows = await getHealthRecordsByPlantId(plantId);
+
+    const healthRecords = recordsRows.map(row => ({
+      id: row.id,
+      plantId: row.plant_id,
+      diagnosis: row.diagnosis,
+      accuracy: row.accuracy ? Number(row.accuracy) : 0,
+      date: row.date
+    }));
+
     res.json({
-      id: Number(plantId),
-      userId: 1,
-      roomId: 2,
-      name: "Helecho",
-      species: "Monstera deliciosa",
-      species_class: "Unknown family",
-      imageUrl: "dummy image",
-      confidence_score: 80.1,
-      common_name: "Monstera",
-      healthRecords: [
-        {
-          id: 101,
-          plantId: Number(plantId),
-          diagnosis: "No disease detected",
-          accuracy: 100,
-          date: new Date("2026-06-25T10:00:00.000Z")
-        },
-        {
-          id: 102,
-          plantId: Number(plantId),
-          diagnosis: "Rhizoctonia solani - Viruela de la patata",
-          accuracy: 7.27,
-          date: new Date()
-        }
-      ]
+      id: plantRow.id,
+      userId: plantRow.user_id,
+      roomId: plantRow.room_id,
+      name: plantRow.name,
+      species: plantRow.species || "Especie desconocida",
+      imageUrl: plantRow.image_url,
+      healthRecords
     });
 
   } catch (error) {
@@ -130,21 +125,21 @@ endpointsPlantas.put("/:plantId", async (req, res) => {
   const { name, roomId } = req.body;
 
   try {
-    // TODO: BD, Actualizar la planta en la tabla "Plants":
+    const updatedPlant = await updatePlant(plantId, name, roomId);
 
-    // Respuesta simulada
+    if (!updatedPlant) {
+      return res.status(404).json({ error: "Plant not found" });
+    }
+
     res.json({
-      message: "Plant updated successfully ",
+      message: "Plant updated successfully",
       plant: {
-        id: Number(plantId),
-        userId: 1,
-        roomId: roomId ? Number(roomId) : 2,
-        name: name || "Helecho",
-        species: "Monstera deliciosa",
-        species_class: "Unknown family",
-        imageUrl: "dummy image",
-        confidence_score: 80.1,
-        common_name: "Monstera"
+        id: updatedPlant.id,
+        userId: updatedPlant.user_id,
+        roomId: updatedPlant.room_id,
+        name: updatedPlant.name,
+        species: updatedPlant.species || "Especie desconocida",
+        imageUrl: updatedPlant.image_url
       }
     });
 
