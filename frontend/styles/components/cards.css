@@ -88,6 +88,11 @@
   gap: var(--space-md);
 }
 
+.room-card__room-link {
+  display: inline-flex;
+  margin-top: var(--space-md);
+}
+
 .room-card__image {
   width: 5rem;
   height: 4rem;
