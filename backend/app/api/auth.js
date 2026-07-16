@@ -1,9 +1,9 @@
 // auth.js
 import { Router } from "express";
-import { db } from "../db/pool.js";
+import { getUserByUsername } from "../db/users.js";
 export const endpointsAuth = Router();
 
-// login(user + passw)
+// login(user + password)
 endpointsAuth.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -12,16 +12,11 @@ endpointsAuth.post("/login", async (req, res) => {
   }
 
   try {
-    const result = await db.query(
-      "SELECT id, name, password FROM users WHERE username = $1",
-      [email]
-    );
+    const user = await getUserByUsername(email);
 
-    if (result.rows.length === 0) {
+    if (!user) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
-
-    const user = result.rows[0];
 
     if (user.password !== password) {
       return res.status(401).json({ error: "Invalid credentials" });
