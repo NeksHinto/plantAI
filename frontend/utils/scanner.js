@@ -90,6 +90,10 @@ function renderScanResult(container, result, context) {
 function setupScannerForm() {
   const fileInput = document.querySelector("#scan-file-input");
   const cameraBtn = document.querySelector("#scan-camera-btn");
+  const preview = document.querySelector("#scanner-preview");
+  const previewImage = document.querySelector("#scanner-preview-image");
+  const previewName = document.querySelector("#scanner-preview-name");
+  const submitBtn = document.querySelector("#scan-submit-btn");
   const context = getScanContext();
 
   if (fileInput) {
@@ -97,8 +101,33 @@ function setupScannerForm() {
       const file = fileInput.files?.[0];
       if (!file) return;
 
-      if (selectedPreviewUrl) revokePreviewUrl(selectedPreviewUrl);
+      if (!file.type.startsWith("image/")) {
+        alert("El archivo seleccionado no es una imagen valida");
+        fileInput.value = "";
+        return;
+      }
+
+      if (selectedPreviewUrl) {
+        revokePreviewUrl(selectedPreviewUrl);
+      }
+
       selectedPreviewUrl = createPreviewUrl(file);
+
+      if (previewImage) {
+        previewImage.src = selectedPreviewUrl;
+      }
+
+      if (previewName) {
+        previewName.textContent = file.name;
+      }
+
+      if (preview) {
+        preview.hidden = false;
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = false;
+      }
     });
   }
 
@@ -122,6 +151,11 @@ function setupScannerForm() {
 async function runScan(context) {
   const session = requireAuth();
   if (!session) return;
+
+  if (!selectedPreviewUrl) {
+    alert("Selecciona una imagen antes de analizar");
+    return;
+  }
 
   const imageUrl = resolveImageUrlForApi(
     selectedPreviewUrl,

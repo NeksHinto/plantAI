@@ -70,9 +70,14 @@ export function createRoomCard(room, expanded, onClick) {
       });
     }
 
-    content.append(title, plants);
+    const roomLink = document.createElement("a");
+    roomLink.className = "btn btn--secondary room-card__room-link";
+    roomLink.href = `room.html?id=${room.id}`;
+    roomLink.textContent = "Ver ambiente";
+
+    content.append(title, plants, roomLink);
     card.append(content);
-  }
+    }
 
   return card;
 }

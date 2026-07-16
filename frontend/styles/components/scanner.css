@@ -66,6 +66,35 @@
   color: var(--color-text-muted);
 }
 
+.scanner-preview {
+  margin-bottom: var(--space-md);
+  padding: var(--space-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-primary-light);
+}
+
+.scanner-preview__image {
+  display: block;
+  width: 100%;
+  max-height: 14rem;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+}
+
+.scanner-preview__name {
+  margin-top: var(--space-sm);
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  overflow-wrap: anywhere;
+}
+
+#scan-submit-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .scanner-zone__privacy {
   display: flex;
   align-items: center;
