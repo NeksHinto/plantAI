@@ -1,7 +1,7 @@
 // plantas.js
 import { Router } from "express";
 import { identifySpecies, identifyDisease } from "../services/serviciosExternos.js";
-import { getPlantById, getHealthRecordsByPlantId, updatePlant } from "../db/plants.js";
+import { getPlantById, getHealthRecordsByPlantId, updatePlant, insertPlant, insertHealthRecord } from "../db/plants.js";
 
 export const endpointsPlantas = Router();
 
@@ -18,29 +18,32 @@ endpointsPlantas.post("/add-plant", async (req, res) => {
       identifySpecies(imageUrl),
       identifyDisease(imageUrl)
     ]);
-    // TODO: BD, Insertar la planta en la tabla "Plants"
-    // TODO: BD, Si la identificación o el diagnóstico de salud devuelve datos,
-    // TODO: BD, guardar el primer registro clínico en la tabla "PlantHealthRecord"
 
-    // Respuesta simulada
-    const plantIdSimulado = Math.floor(Math.random() * 1000) + 100;
+    const plantName = name || (identification?.commonName !== "Unknown common name" ? identification.commonName : "New Plant");
+    const plantSpecies = identification?.species || "Unknown species";
+
+    const newPlant = await insertPlant(Number(userId), Number(roomId), plantName, plantSpecies, imageUrl);
+
+    const diagnosisText = diagnosis?.diagnosis || "no disease";
+    const diagnosisAccuracy = diagnosis?.accuracy !== undefined ? diagnosis.accuracy : 100.00;
+
+    const newRecord = await insertHealthRecord(newPlant.id, diagnosisText, diagnosisAccuracy);
 
     res.status(201).json({
       message: "Plant identified and scanned successfully",
       plant: {
-        id: plantIdSimulado,
-        userId: Number(userId),
-        roomId: Number(roomId),
-        name: name || "New Plant",
-        species: identification?.species || "Unknown species",
-        species_class: identification?.family || "Unknown family",
-        imageUrl: imageUrl,
-        confidence_score: identification?.accuracy || 0,
-        common_name: identification?.commonName || "Unknown common name"
+        id: newPlant.id,
+        userId: newPlant.user_id,
+        roomId: newPlant.room_id,
+        name: newPlant.name,
+        species: newPlant.species,
+        imageUrl: newPlant.image_url,
+        confidence_score: identification?.accuracy || 100.0, // Campo no persistido en BD original (fallback)
+        common_name: identification?.commonName || newPlant.species // Campo no persistido en BD original (fallback)
       },
       initialDiagnosis: {
-        diagnosis: diagnosis?.diagnosis || "No disease detected or invalid image",
-        accuracy: diagnosis?.accuracy || 100
+        diagnosis: newRecord.diagnosis,
+        accuracy: newRecord.accuracy ? Number(newRecord.accuracy) : 100
       }
     });
 
@@ -60,19 +63,20 @@ endpointsPlantas.post("/identify-disease", async (req, res) => {
 
   try {
     const diagnosis = await identifyDisease(imageUrl);
-    // TODO: BD, Insertar el registro clínico en la tabla "PlantHealthRecord"
 
-    // Respuesta simulada
-    const recordIdSimulado = Math.floor(Math.random() * 1000) + 100;
+    const diagnosisText = diagnosis?.diagnosis || "no disease";
+    const diagnosisAccuracy = diagnosis?.accuracy !== undefined ? diagnosis.accuracy : 100.00;
+
+    const newRecord = await insertHealthRecord(Number(plantId), diagnosisText, diagnosisAccuracy);
 
     res.status(201).json({
       message: "Disease diagnosis completed",
       healthRecord: {
-        id: recordIdSimulado,
-        plantId: Number(plantId),
-        diagnosis: diagnosis?.diagnosis || "No disease detected or invalid image",
-        accuracy: diagnosis?.accuracy || 100,
-        date: new Date()
+        id: newRecord.id,
+        plantId: newRecord.plant_id,
+        diagnosis: newRecord.diagnosis,
+        accuracy: newRecord.accuracy ? Number(newRecord.accuracy) : 100,
+        date: newRecord.date
       }
     });
 

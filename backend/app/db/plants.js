@@ -49,3 +49,19 @@ export async function updatePlant(plantId, name, roomId) {
   );
   return res.rows[0];
 }
+
+export async function insertPlant(userId, roomId, name, species, imageUrl) {
+  const res = await db.query(
+    "INSERT INTO plants (user_id, room_id, name, species, image_url) VALUES ($1, $2, $3, $4, $5) RETURNING id, user_id, room_id, name, species, image_url",
+    [userId, roomId, name, species, imageUrl]
+  );
+  return res.rows[0];
+}
+
+export async function insertHealthRecord(plantId, diagnosis, accuracy) {
+  const res = await db.query(
+    "INSERT INTO plant_health_records (plant_id, diagnosis, accuracy) VALUES ($1, $2, $3) RETURNING id, plant_id, diagnosis, accuracy, created_at AS date",
+    [plantId, diagnosis, accuracy]
+  );
+  return res.rows[0];
+}
