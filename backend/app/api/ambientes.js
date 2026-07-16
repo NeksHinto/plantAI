@@ -1,5 +1,8 @@
 // ambientes.js
 import { Router } from "express";
+import { getRoomsByUserId, updateRoom } from "../db/rooms.js";
+import { getPlantsByRoomId } from "../db/plants.js";
+import { mapPlantRow } from "../services/mappers.js";
 
 export const endpointsAmbientes = Router();
 
@@ -12,25 +15,18 @@ endpointsAmbientes.get("/", async (req, res) => {
   }
 
   try {
-    // TODO: BD, Obtener los ambientes del usuario desde la tabla "Rooms":
+    const rows = await getRoomsByUserId(userId);
 
-    // Respuesta simulada
-    res.json([
-      {
-        id: 1,
-        userId: Number(userId),
-        name: "Living",
-        isIndoors: true,
-        lightExposure: "media"
-      },
-      {
-        id: 2,
-        userId: Number(userId),
-        name: "Balcón",
-        isIndoors: false,
-        lightExposure: "alta"
-      }
-    ]);
+    const rooms = rows.map(row => ({
+      id: row.id,
+      userId: row.user_id,
+      name: row.name,
+      imageUrl: row.image_url,
+      temperatureLevel: row.temperature_level,
+      isIndoors: row.is_indoors
+    }));
+
+    res.json(rooms);
 
   } catch (error) {
     console.error("Error en get-rooms:", error);
@@ -41,20 +37,24 @@ endpointsAmbientes.get("/", async (req, res) => {
 // edit-room(roomId, {campos modificados})
 endpointsAmbientes.put("/:roomId", async (req, res) => {
   const { roomId } = req.params;
-  const { name, isIndoors, lightExposure, humidityLevel } = req.body;
+  const { name, isIndoors } = req.body;
 
   try {
-    // TODO: BD, Actualizar el ambiente en la tabla "Rooms":
+    const updatedRoom = await updateRoom(roomId, name, isIndoors);
 
-    // Respuesta simulada
+    if (!updatedRoom) {
+      return res.status(404).json({ error: "Room not found" });
+    }
+
     res.json({
       message: "Room updated successfully",
       room: {
-        id: Number(roomId),
-        userId: 1,
-        name: name || "Living",
-        isIndoors: isIndoors !== undefined ? isIndoors : true,
-        lightExposure: lightExposure || "media"
+        id: updatedRoom.id,
+        userId: updatedRoom.user_id,
+        name: updatedRoom.name,
+        imageUrl: updatedRoom.image_url,
+        temperatureLevel: updatedRoom.temperature_level,
+        isIndoors: updatedRoom.is_indoors
       }
     });
 
@@ -69,22 +69,9 @@ endpointsAmbientes.get("/:roomId/plants", async (req, res) => {
   const { roomId } = req.params;
 
   try {
-    // TODO: BD, Obtener listado de plantas asociadas al ambiente desde la tabla "Plants":
-
-    // Respuesta simulada
-    res.json([
-      {
-        id: 101,
-        userId: 1,
-        roomId: Number(roomId),
-        name: "Mi Helecho",
-        species: "Monstera deliciosa",
-        species_class: "Unknown family",
-        imageUrl: "dummy image",
-        confidence_score: 80.1,
-        commonName: "Monstera"
-      }
-    ]);
+    const rows = await getPlantsByRoomId(roomId);
+    const plants = rows.map(mapPlantRow);
+    res.json(plants);
 
   } catch (error) {
     console.error("Error en get-plants-by-room-id:", error);
