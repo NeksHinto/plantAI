@@ -39,7 +39,24 @@
           <input class="sr-only" id="scan-file-input" type="file" accept="image/*">
         </label>
 
-        <button class="btn btn--primary btn--block" type="submit">Analizar imagen</button>
+        <div class="scanner-preview" id="scanner-preview" hidden>
+          <img
+            class="scanner-preview__image"
+            id="scanner-preview-image"
+            alt="Vista previa de la imagen seleccionada"
+          >
+
+          <p class="scanner-preview__name" id="scanner-preview-name"></p>
+        </div>
+
+        <button
+          class="btn btn--primary btn--block"
+          id="scan-submit-btn"
+          type="submit"
+          disabled
+        >
+          Analizar imagen
+        </button>
 
         <p class="scanner-zone__privacy">
           <span aria-hidden="true">🔒</span>
