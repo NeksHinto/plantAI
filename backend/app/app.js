@@ -1,9 +1,9 @@
 // app.js
 import express from "express";
 import cors from "cors";
-import { endpointsPlantas } from "./api/plantas.js";
+import { endpointsPlantas } from "./api/plants.js";
 import { endpointsAuth } from "./api/auth.js";
-import { endpointsAmbientes } from "./api/ambientes.js";
+import { endpointsAmbientes } from "./api/rooms.js";
 
 const app = express();
 

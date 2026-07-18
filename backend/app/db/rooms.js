@@ -23,3 +23,11 @@ export async function updateRoom(roomId, name, isIndoors) {
   );
   return res.rows[0];
 }
+
+export async function getRoomById(roomId) {
+  const res = await db.query(
+    "SELECT id, user_id, name, image_url, temperature_level, is_indoors FROM rooms WHERE id = $1",
+    [roomId]
+  );
+  return res.rows[0];
+}

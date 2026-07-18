@@ -28,7 +28,7 @@ export async function getPlantById(plantId) {
 
 export async function getHealthRecordsByPlantId(plantId) {
   const res = await db.query(
-    "SELECT id, plant_id, diagnosis, accuracy, created_at AS date FROM plant_health_records WHERE plant_id = $1 ORDER BY created_at DESC",
+    "SELECT id, plant_id, diagnosis, accuracy, treatment_notes, created_at AS date FROM plant_health_records WHERE plant_id = $1 ORDER BY created_at DESC",
     [plantId]
   );
   return res.rows;
@@ -58,10 +58,21 @@ export async function insertPlant(userId, roomId, name, species, imageUrl) {
   return res.rows[0];
 }
 
-export async function insertHealthRecord(plantId, diagnosis, accuracy) {
+export async function insertHealthRecord(plantId, diagnosis, accuracy, treatmentNotes) {
   const res = await db.query(
-    "INSERT INTO plant_health_records (plant_id, diagnosis, accuracy) VALUES ($1, $2, $3) RETURNING id, plant_id, diagnosis, accuracy, created_at AS date",
-    [plantId, diagnosis, accuracy]
+    "INSERT INTO plant_health_records (plant_id, diagnosis, accuracy, treatment_notes) VALUES ($1, $2, $3, $4) RETURNING id, plant_id, diagnosis, accuracy, treatment_notes, created_at AS date",
+    [plantId, diagnosis, accuracy, treatmentNotes || null]
+  );
+  return res.rows[0];
+}
+
+export async function getRoomContextByPlantId(plantId) {
+  const res = await db.query(
+    `SELECT r.id, r.temperature_level, r.is_indoors 
+     FROM plants p 
+     JOIN rooms r ON p.room_id = r.id 
+     WHERE p.id = $1`,
+    [plantId]
   );
   return res.rows[0];
 }
