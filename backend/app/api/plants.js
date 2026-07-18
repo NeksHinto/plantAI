@@ -4,6 +4,7 @@ import { identifySpecies, identifyDisease } from "../services/externalServices.j
 import { getPlantById, getHealthRecordsByPlantId, updatePlant, insertPlant, insertHealthRecord, getRoomContextByPlantId } from "../db/plants.js";
 import { getRoomById } from "../db/rooms.js";
 import { generateTreatmentNotes } from "../services/treatmentRecommendation.js";
+import { mapPlantRow } from "../services/mappers.js";
 
 export const endpointsPlantas = Router();
 
@@ -44,14 +45,9 @@ endpointsPlantas.post("/add-plant", async (req, res) => {
     res.status(201).json({
       message: "Plant identified and scanned successfully",
       plant: {
-        id: newPlant.id,
-        userId: newPlant.user_id,
-        roomId: newPlant.room_id,
-        name: newPlant.name,
-        species: newPlant.species,
-        imageUrl: newPlant.image_url,
+        ...mapPlantRow(newPlant),
         confidence_score: identification?.accuracy || 100.0,
-        common_name: identification?.commonName || newPlant.species
+        common_name: identification?.commonName || newPlant.species // TODO common_name
       },
       initialDiagnosis: {
         diagnosis: newRecord.diagnosis,
@@ -136,12 +132,7 @@ endpointsPlantas.get("/:plantId", async (req, res) => {
     }));
 
     res.json({
-      id: plantRow.id,
-      userId: plantRow.user_id,
-      roomId: plantRow.room_id,
-      name: plantRow.name,
-      species: plantRow.species || "Especie desconocida",
-      imageUrl: plantRow.image_url,
+      ...mapPlantRow(plantRow),
       healthRecords
     });
 
@@ -165,14 +156,7 @@ endpointsPlantas.put("/:plantId", async (req, res) => {
 
     res.json({
       message: "Plant updated successfully",
-      plant: {
-        id: updatedPlant.id,
-        userId: updatedPlant.user_id,
-        roomId: updatedPlant.room_id,
-        name: updatedPlant.name,
-        species: updatedPlant.species || "Especie desconocida",
-        imageUrl: updatedPlant.image_url
-      }
+      plant: mapPlantRow(updatedPlant)
     });
 
   } catch (error) {
