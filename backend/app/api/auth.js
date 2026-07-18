@@ -5,14 +5,14 @@ export const endpointsAuth = Router();
 
 // login(user + password)
 endpointsAuth.post("/login", async (req, res) => {
-  const { email, password } = req.body;
+  const { username, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({ error: "Missing required fields (email, password)" });
+  if (!username || !password) {
+    return res.status(400).json({ error: "Missing required fields (username, password)" });
   }
 
   try {
-    const user = await getUserByUsername(email);
+    const user = await getUserByUsername(username);
 
     if (!user) {
       return res.status(401).json({ error: "Invalid credentials" });
