@@ -1,8 +1,8 @@
 INSERT INTO users (name, username, password) 
 VALUES 
-('Jesus Meza Caya', 'jesus@plantai.com', 'hasheado123'), 
-('Nicole Renée', 'nicole@plantai.com', 'hasheado456'),
-('Dylan Rivas', 'dylan@plantai.com', 'hasheado789');
+('Jesus Meza Caya', 'jesus', 'hasheado123'), 
+('Nicole Renée', 'nicole', 'hasheado456'),
+('Dylan Rivas', 'dylan', 'hasheado789');
 
 INSERT INTO rooms (user_id, name, is_indoors, temperature_level) 
 VALUES 
