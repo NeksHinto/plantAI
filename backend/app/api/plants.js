@@ -42,13 +42,13 @@ endpointsPlantas.post("/add-plant", async (req, res) => {
 
     const newRecord = await insertHealthRecord(newPlant.id, diagnosisText, diagnosisAccuracy, treatmentNotes);
 
+    const plantResponse = mapPlantRow(newPlant);
+    plantResponse.common_name = identification?.commonName || newPlant.species;
+    plantResponse.confidence_score = identification?.accuracy || 100.0;
+
     res.status(201).json({
       message: "Plant identified and scanned successfully",
-      plant: {
-        ...mapPlantRow(newPlant),
-        confidence_score: identification?.accuracy || 100.0,
-        common_name: identification?.commonName || newPlant.species // TODO common_name
-      },
+      plant: plantResponse,
       initialDiagnosis: {
         diagnosis: newRecord.diagnosis,
         accuracy: newRecord.accuracy ? Number(newRecord.accuracy) : 100,

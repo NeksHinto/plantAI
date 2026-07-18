@@ -27,7 +27,7 @@ export function mapPlantRow(row) { // TODO Review
     roomId: row.room_id,
     name: row.name,
     species: row.species || "Especie desconocida",
-    common_name: row.species || "Especie desconocida",
+    common_name: row.common_name || row.species || "nombre desconocido",
     imageUrl: row.image_url,
     status
   };
