@@ -10,7 +10,7 @@ VALUES
 (3, 'Balcón', FALSE, '28.0°C'),
 (3, 'Dormitorio', TRUE, '20.0°C');
 
-INSERT INTO plants (user_id, room_id, name, species, image_url)
+INSERT INTO plants (user_id, room_id, name, common_name, species, image_url)
 VALUES
 (3, 1, 'Mi Helecho', 'Monstera deliciosa', 'dummy image'),
 (3, 2, 'Cactus balcón', 'Cactaceae', 'dummy image');
