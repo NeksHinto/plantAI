@@ -25,6 +25,7 @@ CREATE TABLE plants (
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     room_id INT REFERENCES rooms(id) ON DELETE SET NULL,
     name VARCHAR(100) NOT NULL,
+    common_name VARCHAR(150),
     species VARCHAR(100),
     image_url VARCHAR(255)
 );
