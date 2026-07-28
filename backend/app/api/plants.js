@@ -26,7 +26,7 @@ endpointsPlantas.post("/add-plant", async (req, res) => {
     const plantName = name || (identification?.commonName !== "Unknown common name" ? identification.commonName : "New Plant");
     const plantSpecies = identification?.species || "Unknown species";
 
-    const newPlant = await insertPlant(Number(userId), Number(roomId), plantName, plantSpecies, imageUrl);
+    const newPlant = await insertPlant(Number(userId), Number(roomId), plantName, identification?.commonName || null, plantSpecies, imageUrl);
 
     const diagnosisText = diagnosis?.diagnosis || "no disease";
     const diagnosisAccuracy = diagnosis?.accuracy !== undefined ? diagnosis.accuracy : 100.00;
