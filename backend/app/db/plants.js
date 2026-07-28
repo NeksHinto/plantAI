@@ -76,3 +76,27 @@ export async function getRoomContextByPlantId(plantId) {
   );
   return res.rows[0];
 }
+
+export async function deletePlant(plantId) {
+  const res = await db.query(
+    "DELETE FROM plants WHERE id = $1 RETURNING id",
+    [plantId]
+  );
+  return res.rows[0];
+}
+
+export async function deleteHealthRecord(recordId) {
+  const res = await db.query(
+    "DELETE FROM plant_health_records WHERE id = $1 RETURNING id",
+    [recordId]
+  );
+  return res.rows[0];
+}
+
+export async function updateHealthRecord(recordId, treatmentNotes) {
+  const res = await db.query(
+    "UPDATE plant_health_records SET treatment_notes = $1 WHERE id = $2 RETURNING id, plant_id, diagnosis, accuracy, treatment_notes, created_at AS date",
+    [treatmentNotes, recordId]
+  );
+  return res.rows[0];
+}

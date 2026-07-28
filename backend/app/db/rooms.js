@@ -31,3 +31,19 @@ export async function getRoomById(roomId) {
   );
   return res.rows[0];
 }
+
+export async function insertRoom(userId, name, isIndoors) {
+  const res = await db.query(
+    "INSERT INTO rooms (user_id, name, is_indoors) VALUES ($1, $2, $3) RETURNING id, user_id, name, image_url, temperature_level, is_indoors",
+    [userId, name, isIndoors !== undefined ? isIndoors : true]
+  );
+  return res.rows[0];
+}
+
+export async function deleteRoom(roomId) {
+  const res = await db.query(
+    "DELETE FROM rooms WHERE id = $1 RETURNING id",
+    [roomId]
+  );
+  return res.rows[0];
+}

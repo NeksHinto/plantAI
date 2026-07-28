@@ -12,8 +12,8 @@ VALUES
 
 INSERT INTO plants (user_id, room_id, name, common_name, species, image_url)
 VALUES
-(3, 1, 'Mi Helecho', 'Monstera deliciosa', 'dummy image'),
-(3, 2, 'Cactus balcón', 'Cactaceae', 'dummy image');
+(3, 1, 'Mi Helecho', 'Helecho Común', 'Monstera deliciosa', 'dummy image'),
+(3, 2, 'Cactus balcón', 'Cactus de Balcón', 'Cactaceae', 'dummy image');
 
 INSERT INTO plant_health_records (plant_id, diagnosis, accuracy, treatment_notes)
 VALUES
