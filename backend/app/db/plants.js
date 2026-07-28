@@ -2,7 +2,7 @@ import { db } from "./pool.js";
 
 export async function getPlantsByRoomId(roomId) {
   const res = await db.query(
-    `SELECT p.id, p.user_id, p.room_id, p.name, p.species, p.image_url,
+    `SELECT p.id, p.user_id, p.room_id, p.name, p.common_name, p.species, p.image_url,
             h.diagnosis, h.accuracy
      FROM plants p
      LEFT JOIN LATERAL (
@@ -20,7 +20,7 @@ export async function getPlantsByRoomId(roomId) {
 
 export async function getPlantById(plantId) {
   const res = await db.query(
-    "SELECT id, user_id, room_id, name, species, image_url FROM plants WHERE id = $1",
+    "SELECT id, user_id, room_id, name, common_name, species, image_url FROM plants WHERE id = $1",
     [plantId]
   );
   return res.rows[0];
@@ -40,7 +40,7 @@ export async function updatePlant(plantId, name, roomId) {
      SET name = COALESCE($1, name),
          room_id = COALESCE($2, room_id)
      WHERE id = $3
-     RETURNING id, user_id, room_id, name, species, image_url`,
+     RETURNING id, user_id, room_id, name, common_name, species, image_url`,
     [
       name !== undefined ? name : null,
       roomId !== undefined ? Number(roomId) : null,
@@ -50,10 +50,10 @@ export async function updatePlant(plantId, name, roomId) {
   return res.rows[0];
 }
 
-export async function insertPlant(userId, roomId, name, species, imageUrl) {
+export async function insertPlant(userId, roomId, name, commonName, species, imageUrl) {
   const res = await db.query(
-    "INSERT INTO plants (user_id, room_id, name, species, image_url) VALUES ($1, $2, $3, $4, $5) RETURNING id, user_id, room_id, name, species, image_url",
-    [userId, roomId, name, species, imageUrl]
+    "INSERT INTO plants (user_id, room_id, name, common_name, species, image_url) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, user_id, room_id, name, common_name, species, image_url",
+    [userId, roomId, name, commonName || null, species, imageUrl]
   );
   return res.rows[0];
 }
@@ -73,6 +73,30 @@ export async function getRoomContextByPlantId(plantId) {
      JOIN rooms r ON p.room_id = r.id 
      WHERE p.id = $1`,
     [plantId]
+  );
+  return res.rows[0];
+}
+
+export async function deletePlant(plantId) {
+  const res = await db.query(
+    "DELETE FROM plants WHERE id = $1 RETURNING id",
+    [plantId]
+  );
+  return res.rows[0];
+}
+
+export async function deleteHealthRecord(recordId) {
+  const res = await db.query(
+    "DELETE FROM plant_health_records WHERE id = $1 RETURNING id",
+    [recordId]
+  );
+  return res.rows[0];
+}
+
+export async function updateHealthRecord(recordId, treatmentNotes) {
+  const res = await db.query(
+    "UPDATE plant_health_records SET treatment_notes = $1 WHERE id = $2 RETURNING id, plant_id, diagnosis, accuracy, treatment_notes, created_at AS date",
+    [treatmentNotes, recordId]
   );
   return res.rows[0];
 }
