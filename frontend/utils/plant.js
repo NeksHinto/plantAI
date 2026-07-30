@@ -21,7 +21,11 @@ function fillPlantHeader(plant) {
     avatar.alt = plant.nickname;
   }
   if (name) name.textContent = plant.nickname;
-  if (species) species.textContent = plant.species;
+  if (species) {
+    species.textContent = plant.commonName && plant.commonName !== plant.species
+      ? `${plant.commonName} (${plant.species})`
+      : plant.species;
+  }
   if (scanBtn) scanBtn.href = `scanner?plantId=${plant.id}`;
 
   document.title = `${plant.nickname} | PlantAI`;
@@ -42,6 +46,7 @@ function createTimelinePoint(entry) {
       </div>
       <img class="timeline__popup-image" src="${entry.image}" alt="Escaneo del ${formatDate(entry.date)}">
       <p class="timeline__popup-result"><strong>Resultado:</strong> ${entry.scanResult}</p>
+      ${entry.treatmentNotes ? `<p class="timeline__popup-notes"><strong>Recomendaciones:</strong> ${entry.treatmentNotes}</p>` : ""}
       <p class="timeline__popup-notes"><strong>Confianza:</strong> ${Math.round(entry.accuracy ?? 0)}%</p>
     </div>
   `;
