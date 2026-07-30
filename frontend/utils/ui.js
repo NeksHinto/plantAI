@@ -110,3 +110,41 @@ export function showLoading(container, message = "Cargando...") {
 export function clearContainer(container) {
   if (container) container.replaceChildren();
 }
+
+export function showConfirmModal({ title, message, confirmText = "Eliminar", cancelText = "Cancelar", isDanger = true }) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+
+    overlay.innerHTML = `
+      <div class="modal" role="dialog" aria-modal="true">
+        <h3 class="modal__title">${title}</h3>
+        <p class="modal__message">${message}</p>
+        <div class="modal__actions">
+          <button class="btn btn--outline btn--sm modal__cancel-btn" type="button">${cancelText}</button>
+          <button class="btn ${isDanger ? "btn--danger" : "btn--primary"} btn--sm modal__confirm-btn" type="button">${confirmText}</button>
+        </div>
+      </div>
+    `;
+
+    document.body.append(overlay);
+
+    const cancelBtn = overlay.querySelector(".modal__cancel-btn");
+    const confirmBtn = overlay.querySelector(".modal__confirm-btn");
+
+    function close(result) {
+      overlay.classList.add("is-closing");
+      setTimeout(() => {
+        overlay.remove();
+        resolve(result);
+      }, 150);
+    }
+
+    cancelBtn.addEventListener("click", () => close(false));
+    confirmBtn.addEventListener("click", () => close(true));
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) close(false);
+    });
+  });
+}
+
