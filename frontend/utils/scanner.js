@@ -43,10 +43,10 @@ function fillPlantHeaderFromDetail(plant) {
 function renderScanResult(container, result, context) {
   const scannedDate = new Date(result.scannedAt);
   const saveHref = context.plantId
-    ? `plant.html?id=${context.plantId}`
+    ? `plant?id=${context.plantId}`
     : context.savedPlantId
-      ? `plant.html?id=${context.savedPlantId}`
-      : "dashboard.html";
+      ? `plant?id=${context.savedPlantId}`
+      : "dashboard";
 
   container.innerHTML = `
     <article class="scan-result">
@@ -166,7 +166,7 @@ async function runScan(context) {
     storeScanPreview(selectedPreviewUrl);
   }
 
-  const resultsUrl = new URL("scanner-results.html", window.location.href);
+  const resultsUrl = new URL("scanner-results", window.location.href);
   if (context.plantId) resultsUrl.searchParams.set("plantId", context.plantId);
   if (context.roomId) resultsUrl.searchParams.set("roomId", context.roomId);
   resultsUrl.searchParams.set("imageUrl", imageUrl);
@@ -196,14 +196,14 @@ async function initScannerResults() {
       const rawPlant = await fetchPlantById(context.plantId);
       const plant = mapPlantDetailFromApi(rawPlant);
       fillPlantHeaderFromDetail(plant);
-      setPlantHeaderBack(`scanner.html?plantId=${context.plantId}`);
-      setPlantHeaderAction("Ver historial", `plant.html?id=${context.plantId}`);
+      setPlantHeaderBack(`scanner?plantId=${context.plantId}`);
+      setPlantHeaderAction("Ver historial", `plant?id=${context.plantId}`);
     } catch {
-      setPlantHeaderBack("dashboard.html");
+      setPlantHeaderBack("dashboard");
     }
   } else {
-    setPlantHeaderBack(context.roomId ? `room.html?id=${context.roomId}` : "dashboard.html");
-    setPlantHeaderAction("Ver historial", "dashboard.html");
+    setPlantHeaderBack(context.roomId ? `room?id=${context.roomId}` : "dashboard");
+    setPlantHeaderAction("Ver historial", "dashboard");
   }
 
   try {
@@ -263,12 +263,12 @@ async function initScannerResults() {
 
 function contextCancelHref(params) {
   if (params.get("plantId")) {
-    return `scanner.html?plantId=${params.get("plantId")}`;
+    return `scanner?plantId=${params.get("plantId")}`;
   }
   if (params.get("roomId")) {
-    return `scanner.html?roomId=${params.get("roomId")}`;
+    return `scanner?roomId=${params.get("roomId")}`;
   }
-  return "dashboard.html";
+  return "dashboard";
 }
 
 function initScanner() {
@@ -278,8 +278,8 @@ function initScanner() {
     initPlantHeaderForScanner(context.plantId);
     setupScannerForm();
   } else if (context.roomId) {
-    setPlantHeaderBack(`room.html?id=${context.roomId}`);
-    setPlantHeaderAction("Ver historial", "dashboard.html");
+    setPlantHeaderBack(`room?id=${context.roomId}`);
+    setPlantHeaderAction("Ver historial", "dashboard");
     setupScannerForm();
   } else {
     const zone = document.querySelector(".scanner-zone");
@@ -292,10 +292,10 @@ async function initPlantHeaderForScanner(plantId) {
     const rawPlant = await fetchPlantById(plantId);
     const plant = mapPlantDetailFromApi(rawPlant);
     fillPlantHeaderFromDetail(plant);
-    setPlantHeaderBack(`plant.html?id=${plant.id}`);
-    setPlantHeaderAction("Ver historial", `plant.html?id=${plant.id}`);
+    setPlantHeaderBack(`plant?id=${plant.id}`);
+    setPlantHeaderAction("Ver historial", `plant?id=${plant.id}`);
   } catch {
-    setPlantHeaderBack("dashboard.html");
+    setPlantHeaderBack("dashboard");
   }
 }
 

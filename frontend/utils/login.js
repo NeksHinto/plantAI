@@ -4,7 +4,7 @@ import { showError } from "./ui.js";
 
 function initLogin() {
   if (getSession()?.userId) {
-    window.location.href = "pages/dashboard.html";
+    window.location.href = "pages/dashboard";
     return;
   }
   const form = document.querySelector("#login-form");
@@ -25,7 +25,7 @@ function initLogin() {
     try {
       const session = await login(username, password);
       setSession(session);
-      window.location.href = "pages/dashboard.html";
+      window.location.href = "pages/dashboard";
     } catch (error) {
       showError(errorSlot, error.message ?? "No se pudo iniciar sesión");
     } finally {

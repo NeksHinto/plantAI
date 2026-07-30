@@ -22,7 +22,7 @@ function fillPlantHeader(plant) {
   }
   if (name) name.textContent = plant.nickname;
   if (species) species.textContent = plant.species;
-  if (scanBtn) scanBtn.href = `scanner.html?plantId=${plant.id}`;
+  if (scanBtn) scanBtn.href = `scanner?plantId=${plant.id}`;
 
   document.title = `${plant.nickname} | PlantAI`;
 }
@@ -116,7 +116,7 @@ async function initPlantDetail() {
     const plant = mapPlantDetailFromApi(rawPlant);
 
     fillPlantHeader(plant);
-    setPlantHeaderBack(`room.html?id=${plant.roomId}`);
+    setPlantHeaderBack(`room?id=${plant.roomId}`);
     // TODO: implementar formulario de edición (PUT /plantas/:plantId)
     setPlantHeaderAction("Editar planta", "#");
 
@@ -135,13 +135,14 @@ async function initPlantHeaderOnly() {
     const rawPlant = await fetchPlantById(plantId);
     const plant = mapPlantDetailFromApi(rawPlant);
     fillPlantHeader(plant);
-    setPlantHeaderBack(`plant.html?id=${plant.id}`);
-    setPlantHeaderAction("Ver historial", `plant.html?id=${plant.id}`);
+    setPlantHeaderBack(`plant?id=${plant.id}`);
+    setPlantHeaderAction("Ver historial", `plant?id=${plant.id}`);
   } catch {
-    setPlantHeaderBack("dashboard.html");
-    setPlantHeaderAction("Ver historial", "dashboard.html");
+    setPlantHeaderBack("dashboard");
+    setPlantHeaderAction("Ver historial", "dashboard");
   }
 }
+
 
 function initPlant() {
   const timeline = document.querySelector("#timeline");
