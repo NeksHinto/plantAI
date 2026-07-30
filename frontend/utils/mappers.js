@@ -86,7 +86,7 @@ export function mapHealthRecordToTimelineEntry(record, plantImage) {
     time: formatTime(record.date),
     status,
     label: statusLabel(status),
-    note: "", // TODO: el backend no expone notas de usuario en PlantHealthRecord
+    treatmentNotes: record.treatmentNotes ?? "",
     scanResult: record.diagnosis ?? "Sin diagnóstico",
     image: plantImage,
     accuracy: record.accuracy,
@@ -127,7 +127,7 @@ export function mapScanResultFromApi({ identification, diagnosis, imageUrl, scan
     matchPercent: Math.round(identification?.accuracy ?? 0),
     healthStatus,
     healthLabel: diagnosis?.diagnosis ?? "Sin diagnóstico",
-    recommendation: buildRecommendation(diagnosis),
+    recommendation: diagnosis?.treatmentNotes ?? buildRecommendation(diagnosis),
     image: imageUrl,
     scannedAt: scannedAt ?? new Date().toISOString(),
     diagnosisAccuracy: diagnosis?.accuracy,
