@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Escanear planta | PlantAI</title>
   <link rel="stylesheet" href="../styles/main.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="app-shell">
   <div data-include="../components/header-plant.html"></div>
@@ -18,12 +19,12 @@
     <form id="scanner-form">
       <section class="scanner-zone" aria-labelledby="scanner-heading">
         <h3 id="scanner-heading" class="sr-only">Opciones de escaneo</h3>
-        <div class="scanner-zone__icon" aria-hidden="true">🍃</div>
+        <div class="scanner-zone__icon" aria-hidden="true"><i data-lucide="leaf"></i></div>
         <p class="scanner-zone__title">Escanear o adjuntar foto</p>
         <p class="scanner-zone__subtitle">Para analizar el estado de tu planta</p>
 
         <button class="scanner-option" type="button" id="scan-camera-btn">
-          <span class="scanner-option__icon" aria-hidden="true">📷</span>
+          <span class="scanner-option__icon" aria-hidden="true"><i data-lucide="camera"></i></span>
           <span>
             <span class="scanner-option__label">Escanear con cámara</span>
             <span class="scanner-option__hint">Usá la cámara de tu dispositivo para tomar una foto</span>
@@ -31,7 +32,7 @@
         </button>
 
         <label class="scanner-option">
-          <span class="scanner-option__icon" aria-hidden="true">📎</span>
+          <span class="scanner-option__icon" aria-hidden="true"><i data-lucide="paperclip"></i></span>
           <span>
             <span class="scanner-option__label">Adjuntar foto</span>
             <span class="scanner-option__hint">Seleccioná una imagen desde tu galería o archivos</span>
@@ -59,7 +60,7 @@
         </button>
 
         <p class="scanner-zone__privacy">
-          <span aria-hidden="true">🔒</span>
+          <i data-lucide="lock" aria-hidden="true"></i>
           Tus imágenes están protegidas y solo se usan para análisis de la planta
         </p>
       </section>
@@ -72,3 +73,4 @@
   <script type="module" src="../utils/scanner.js"></script>
 </body>
 </html>
+

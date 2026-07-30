@@ -9,6 +9,16 @@ const STATUS_LABELS = {
   [HEALTH_STATUS.ALERTA]: "Alerta",
 };
 
+export function refreshIcons() {
+  try {
+    if (typeof window !== "undefined" && window.lucide && typeof window.lucide.createIcons === "function") {
+      window.lucide.createIcons();
+    }
+  } catch (e) {
+    console.warn("Lucide refresh error:", e);
+  }
+}
+
 export function getStatusLabel(status) {
   return STATUS_LABELS[status] ?? status;
 }
@@ -48,7 +58,7 @@ export function createPagination(totalPages, currentPage = 1) {
 
   const prev = document.createElement("button");
   prev.className = "pagination__btn";
-  prev.textContent = "‹";
+  prev.innerHTML = `<i data-lucide="chevron-left" aria-hidden="true"></i>`;
   prev.disabled = currentPage === 1;
   nav.append(prev);
 
@@ -62,10 +72,11 @@ export function createPagination(totalPages, currentPage = 1) {
 
   const next = document.createElement("button");
   next.className = "pagination__btn";
-  next.textContent = "›";
+  next.innerHTML = `<i data-lucide="chevron-right" aria-hidden="true"></i>`;
   next.disabled = currentPage === totalPages;
   nav.append(next);
 
+  setTimeout(refreshIcons, 0);
   return nav;
 }
 
@@ -73,11 +84,13 @@ export function createSearchBar(placeholder) {
   const wrapper = document.createElement("div");
   wrapper.className = "search-bar";
   wrapper.innerHTML = `
-    <span class="search-bar__icon" aria-hidden="true">🔍</span>
+    <i data-lucide="search" class="search-bar__icon" aria-hidden="true"></i>
     <input class="search-bar__input" type="search" placeholder="${placeholder}">
   `;
+  setTimeout(refreshIcons, 0);
   return wrapper;
 }
+
 
 export function fillUserGreeting(selector, userName) {
   const element = document.querySelector(selector);

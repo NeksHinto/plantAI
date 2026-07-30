@@ -9,6 +9,7 @@ import {
   showConfirmModal,
   showError,
   showLoading,
+  refreshIcons,
 } from "./ui.js";
 
 let currentHistory = [];
@@ -47,7 +48,9 @@ function createTimelinePoint(entry, index, onDelete, onUpdateNotes) {
     <div class="timeline__popup" role="dialog" aria-label="Detalles del escaneo">
       <div class="timeline__popup-header">
         <span class="timeline__popup-date"><strong>${formatDate(entry.date)}</strong> • ${entry.time}</span>
-        <button class="timeline__popup-close" type="button" aria-label="Cerrar detalles">✕</button>
+        <button class="timeline__popup-close" type="button" aria-label="Cerrar detalles">
+          <i data-lucide="x" aria-hidden="true"></i>
+        </button>
       </div>
       <div class="timeline__popup-badge"></div>
       <div class="timeline__popup-body">
@@ -60,7 +63,9 @@ function createTimelinePoint(entry, index, onDelete, onUpdateNotes) {
           <div class="timeline__popup-field">
             <div class="timeline__popup-label-row">
               <span class="timeline__popup-label">Notas</span>
-              <button class="timeline__action-btn timeline__action-btn--edit" type="button" title="Editar notas" aria-label="Editar notas">✏️</button>
+              <button class="timeline__action-btn timeline__action-btn--edit" type="button" title="Editar notas" aria-label="Editar notas">
+                <i data-lucide="pencil" aria-hidden="true"></i>
+              </button>
             </div>
             <p class="timeline__popup-val timeline__popup-notes-text">${entry.treatmentNotes || "Sin observaciones."}</p>
             <form class="timeline__edit-notes-form" style="display: none;">
@@ -79,7 +84,9 @@ function createTimelinePoint(entry, index, onDelete, onUpdateNotes) {
         </div>
       </div>
       <div class="timeline__popup-footer">
-        <button class="timeline__delete-btn" type="button" title="Eliminar este escaneo">🗑️ Eliminar registro</button>
+        <button class="timeline__delete-btn" type="button" title="Eliminar este escaneo">
+          <i data-lucide="trash-2" aria-hidden="true"></i> Eliminar registro
+        </button>
       </div>
     </div>
   `;
@@ -197,6 +204,8 @@ function renderTimeline(container, history, onDelete, onUpdateNotes) {
       closeAllPopups();
     }
   });
+
+  setTimeout(refreshIcons, 0);
 }
 
 function renderScanAlbum(container, history) {
@@ -275,6 +284,7 @@ async function initPlantDetail() {
   if (!timeline && !album) return;
 
   const plantId = new URLSearchParams(window.location.search).get("id");
+
   if (!plantId) {
     showError(timeline, "Falta el parámetro id de la planta.");
     return;
@@ -299,7 +309,8 @@ async function initPlantDetail() {
 }
 
 async function initPlantHeaderOnly() {
-  const plantId = new URLSearchParams(window.location.search).get("plantId");
+  const params = new URLSearchParams(window.location.search);
+  const plantId = params.get("id") || params.get("plantId");
   if (!plantId) return;
 
   try {
@@ -324,6 +335,10 @@ function initPlant() {
   }
 }
 
-document.addEventListener("components:loaded", initPlant);
+document.addEventListener("components:loaded", () => {
+  initPlant();
+  refreshIcons();
+});
+
 
 

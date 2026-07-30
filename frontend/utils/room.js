@@ -41,6 +41,7 @@ async function initRoom() {
   const params = new URLSearchParams(window.location.search);
   const roomId = params.get("id");
 
+
   const expandedContainer = document.querySelector("#room-expanded");
   const collapsedContainer = document.querySelector("#rooms-collapsed");
 

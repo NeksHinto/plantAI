@@ -27,6 +27,7 @@ function getScanContext() {
   };
 }
 
+
 function fillPlantHeaderFromDetail(plant) {
   const avatar = document.querySelector("[data-plant-avatar]");
   const name = document.querySelector("[data-plant-name]");
@@ -189,6 +190,7 @@ async function initScannerResults() {
     cancelHref: contextCancelHref(params),
   };
 
+
   showLoading(container, "Analizando imagen...");
 
   if (context.plantId) {
@@ -262,14 +264,18 @@ async function initScannerResults() {
 }
 
 function contextCancelHref(params) {
-  if (params.get("plantId")) {
-    return `scanner?plantId=${params.get("plantId")}`;
+  const plantId = params.get("plantId");
+  const roomId = params.get("roomId");
+
+  if (plantId) {
+    return `scanner?plantId=${plantId}`;
   }
-  if (params.get("roomId")) {
-    return `scanner?roomId=${params.get("roomId")}`;
+  if (roomId) {
+    return `scanner?roomId=${roomId}`;
   }
   return "dashboard";
 }
+
 
 function initScanner() {
   const context = getScanContext();
