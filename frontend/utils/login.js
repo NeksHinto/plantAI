@@ -16,14 +16,14 @@ function initLogin() {
     event.preventDefault();
     clearError(errorSlot);
 
-    const email = form.email.value.trim();
+    const username = form.username.value.trim();
     const password = form.password.value;
     const submitBtn = form.querySelector('button[type="submit"]');
 
     submitBtn.disabled = true;
 
     try {
-      const session = await login(email, password);
+      const session = await login(username, password);
       setSession(session);
       window.location.href = "pages/dashboard.html";
     } catch (error) {
