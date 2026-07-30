@@ -1,4 +1,5 @@
-import { createBadge, getStatusLabel } from "./ui.js";
+import { createBadge, getStatusLabel, refreshIcons } from "./ui.js";
+
 
 export function createRoomCard(room, expanded, onClick) {
   const card = document.createElement("article");
@@ -42,9 +43,10 @@ export function createRoomCard(room, expanded, onClick) {
     </p>
 
     <span class="room-card__chevron">
-      ${expanded ? "⌃" : "⌄"}
+      ${expanded ? '<i data-lucide="chevron-up" aria-hidden="true"></i>' : '<i data-lucide="chevron-down" aria-hidden="true"></i>'}
     </span>
   `;
+
 
   button.addEventListener("click", onClick);
   card.append(button);

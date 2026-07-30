@@ -25,3 +25,17 @@ export function updatePlant(plantId, fields) {
     body: JSON.stringify(fields),
   });
 }
+
+export function updateHealthRecord(recordId, treatmentNotes) {
+  return apiRequest(`/plantas/records/${recordId}`, {
+    method: "PUT",
+    body: JSON.stringify({ treatmentNotes }),
+  });
+}
+
+export function deleteHealthRecord(recordId) {
+  return apiRequest(`/plantas/records/${recordId}`, {
+    method: "DELETE",
+  });
+}
+

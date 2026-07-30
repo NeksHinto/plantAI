@@ -13,7 +13,16 @@ async function loadComponents() {
     })
   );
 
+  try {
+    if (typeof lucide !== "undefined" && lucide.createIcons) {
+      lucide.createIcons();
+    }
+  } catch {
+    // ignorar
+  }
+
   document.dispatchEvent(new CustomEvent("components:loaded"));
 }
 
 document.addEventListener("DOMContentLoaded", loadComponents);
+
