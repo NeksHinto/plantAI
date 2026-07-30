@@ -1,8 +1,10 @@
 INSERT INTO users (name, username, password) 
 VALUES 
-('Jesus Meza Caya', 'jesus', 'hasheado123'), 
-('Nicole Renée', 'nicole', 'hasheado456'),
-('Dylan Rivas', 'dylan', 'hasheado789');
+('Jesus Meza Caya', 'jesus', '1234'), 
+('Nicole Renée', 'nicole', '1234'),
+('Dylan Rivas', 'dylan', '1234'),   
+('Agustin Mazurkiewich', 'agustin', '1234');
+
 
 INSERT INTO rooms (user_id, name, is_indoors, temperature_level) 
 VALUES 
