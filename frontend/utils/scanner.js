@@ -268,12 +268,12 @@ function contextCancelHref(params) {
   const roomId = params.get("roomId");
 
   if (plantId) {
-    return `scanner?plantId=${plantId}`;
+    return `scanner.html?plantId=${plantId}`;
   }
   if (roomId) {
-    return `scanner?roomId=${roomId}`;
+    return `scanner.html?roomId=${roomId}`;
   }
-  return "dashboard";
+  return "dashboard.html";
 }
 
 
@@ -284,8 +284,8 @@ function initScanner() {
     initPlantHeaderForScanner(context.plantId);
     setupScannerForm();
   } else if (context.roomId) {
-    setPlantHeaderBack(`room?id=${context.roomId}`);
-    setPlantHeaderAction("Ver historial", "dashboard");
+    setPlantHeaderBack(`room.html?id=${context.roomId}`);
+    setPlantHeaderAction("Ver historial", "dashboard.html");
     setupScannerForm();
   } else {
     const zone = document.querySelector(".scanner-zone");
@@ -298,10 +298,10 @@ async function initPlantHeaderForScanner(plantId) {
     const rawPlant = await fetchPlantById(plantId);
     const plant = mapPlantDetailFromApi(rawPlant);
     fillPlantHeaderFromDetail(plant);
-    setPlantHeaderBack(`plant?id=${plant.id}`);
-    setPlantHeaderAction("Ver historial", `plant?id=${plant.id}`);
+    setPlantHeaderBack(`plant.html?id=${plant.id}`);
+    setPlantHeaderAction("Ver historial", `plant.html?id=${plant.id}`);
   } catch {
-    setPlantHeaderBack("dashboard");
+    setPlantHeaderBack("dashboard.html");
   }
 }
 
