@@ -22,3 +22,9 @@ export function updateRoom(roomId, fields) {
     body: JSON.stringify(fields),
   });
 }
+
+export function deleteRoom(roomId) {
+  return apiRequest(`/rooms/${roomId}`, {
+    method: "DELETE",
+  });
+}
