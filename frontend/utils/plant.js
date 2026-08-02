@@ -30,7 +30,7 @@ function fillPlantHeader(plant) {
       ? `${plant.commonName} (${plant.species})`
       : plant.species;
   }
-  if (scanBtn) scanBtn.href = `scanner?plantId=${plant.id}`;
+  if (scanBtn) scanBtn.href = `scanner.html?plantId=${plant.id}`;
 
   document.title = `${plant.nickname} | PlantAI`;
 }
