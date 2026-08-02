@@ -37,7 +37,6 @@ export function setupRoomCreation(userId, onRoomCreated) {
 
     const formData = new FormData(form);
     const name = formData.get("name")?.trim();
-    const isIndoors = formData.get("isIndoors") === "true";
 
     if (!name) {
       errorMessage.textContent = "Ingresa un nombre para el ambiente";
@@ -49,7 +48,7 @@ export function setupRoomCreation(userId, onRoomCreated) {
       await createRoom({
         userId,
         name,
-        isIndoors,
+        isIndoors: true,
       });
 
       closeModal();

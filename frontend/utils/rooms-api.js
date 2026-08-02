@@ -15,7 +15,6 @@ export function createRoom(fields) {
   });
 }
 
-// TODO: conectar UI de edición de ambiente cuando exista el formulario
 export function updateRoom(roomId, fields) {
   return apiRequest(`/rooms/${roomId}`, {
     method: "PUT",

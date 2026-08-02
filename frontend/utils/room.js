@@ -1,4 +1,4 @@
-import { deleteRoom, fetchRooms, fetchPlantsByRoom, } from "./rooms-api.js";
+import { deleteRoom, fetchRooms, fetchPlantsByRoom, updateRoom, } from "./rooms-api.js";
 import { mapPlantFromApi, mapRoomFromApi } from "./mappers.js";
 import { requireAuth } from "./session.js";
 import {
@@ -31,6 +31,72 @@ async function loadRoomPageData(userId, activeRoomId) {
     ),
   };
 }
+
+function setupRoomEdition(room) {
+  const editButton = document.querySelector("#edit-room-button");
+  const modal = document.querySelector("#edit-room-modal");
+  const form = document.querySelector("#edit-room-form");
+  const nameInput = document.querySelector("#edit-room-name");
+  const cancelButton = document.querySelector("#cancel-edit-room");
+  const errorMessage = document.querySelector("#edit-room-error");
+
+  if (!editButton || !modal || !form || !nameInput) {
+    return;
+  }
+
+  function openModal() {
+    nameInput.value = room.name;
+    errorMessage.hidden = true;
+    modal.hidden = false;
+    nameInput.focus();
+  }
+
+  function closeModal() {
+    modal.hidden = true;
+  }
+
+  editButton.addEventListener("click", openModal);
+  cancelButton?.addEventListener("click", closeModal);
+
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) {
+      closeModal();
+    }
+  });
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const name = nameInput.value.trim();
+
+    if (!name) {
+      errorMessage.textContent = "Ingresa un nombre para el ambiente";
+      errorMessage.hidden = false;
+      return;
+    }
+
+    try {
+      await updateRoom(room.id, { name });
+
+      room.name = name;
+      closeModal();
+
+      const title = document.querySelector(".room-expanded__title");
+
+      if (title) {
+        title.textContent = name;
+      }
+
+      document.title = `${name} | PlantAI`;
+    } catch (error) {
+      errorMessage.textContent =
+        error.message ?? "No se pudo editar el ambiente";
+
+      errorMessage.hidden = false;
+    }
+  });
+}
+
 
 function setupRoomDeletion(roomId) {
   const deleteButton = document.querySelector("#delete-room-button");
@@ -103,8 +169,6 @@ async function initRoom() {
     return;
   }
 
-  setupRoomDeletion(roomId);
-
   showLoading(expandedContainer, "Cargando ambiente...");
 
   try {
@@ -120,6 +184,9 @@ async function initRoom() {
 
     expandedContainer.replaceChildren();
     expandedContainer.append(createExpandedRoom(activeRoom, activeRoom.plants));
+
+    setupRoomEdition(activeRoom);
+    setupRoomDeletion(activeRoom.id);
 
     if (collapsedContainer) {
       collapsedContainer.replaceChildren();
