@@ -30,7 +30,7 @@ function fillPlantHeader(plant) {
       ? `${plant.commonName} (${plant.species})`
       : plant.species;
   }
-  if (scanBtn) scanBtn.href = `scanner?plantId=${plant.id}`;
+  if (scanBtn) scanBtn.href = `scanner.html?plantId=${plant.id}`;
 
   document.title = `${plant.nickname} | PlantAI`;
 }
@@ -299,7 +299,7 @@ async function initPlantDetail() {
     currentHistory = plant.history;
 
     fillPlantHeader(plant);
-    setPlantHeaderBack(`room?id=${plant.roomId}`);
+    setPlantHeaderBack(`room.html?id=${plant.roomId}`);
     setPlantHeaderAction("Editar planta", "#");
 
     refreshHistoryViews();
@@ -317,11 +317,11 @@ async function initPlantHeaderOnly() {
     const rawPlant = await fetchPlantById(plantId);
     const plant = mapPlantDetailFromApi(rawPlant);
     fillPlantHeader(plant);
-    setPlantHeaderBack(`plant?id=${plant.id}`);
-    setPlantHeaderAction("Ver historial", `plant?id=${plant.id}`);
+    setPlantHeaderBack(`plant.html?id=${plant.id}`);
+    setPlantHeaderAction("Ver historial", `plant.html?id=${plant.id}`);
   } catch {
-    setPlantHeaderBack("dashboard");
-    setPlantHeaderAction("Ver historial", "dashboard");
+    setPlantHeaderBack("dashboard.html");
+    setPlantHeaderAction("Ver historial", "dashboard.html");
   }
 }
 

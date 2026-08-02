@@ -27,6 +27,9 @@
         <div id="rooms-search"></div>
         <div id="rooms-page-size"></div>
         <div id="rooms-pagination"></div>
+        <button class="btn btn--primary" id="add-room-button" type="button">
+           Agregar ambiente
+        </button>
       </div>
 
       <div id="rooms-grid" class="card-grid card-grid--rooms"></div>
@@ -47,6 +50,63 @@
       <div id="plants-grid" class="card-grid card-grid--plants"></div>
     </section>
   </main>
+
+  <div class="modal-overlay" id="room-modal" hidden>
+    <section
+      class="modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="room-modal-title"
+    >
+      <h2 class="modal__title" id="room-modal-title">
+        Agregar ambiente
+      </h2>
+
+      <form id="room-form">
+        <div class="modal__field">
+          <label for="room-name">Nombre</label>
+
+          <input
+            class="modal__input"
+            id="room-name"
+            name="name"
+            type="text"
+            maxlength="60"
+            required
+          >
+        </div>
+
+        <div class="modal__field">
+          <label for="room-location">Ubicacion</label>
+
+          <select
+            class="modal__input"
+            id="room-location"
+            name="isIndoors"
+          >
+            <option value="true">Interior</option>
+            <option value="false">Exterior</option>
+          </select>
+        </div>
+
+        <p class="modal__error" id="room-form-error" hidden></p>
+
+        <div class="modal__actions">
+          <button
+            class="btn btn--secondary"
+            id="cancel-room-button"
+            type="button"
+          >
+            Cancelar
+          </button>
+
+          <button class="btn btn--primary" type="submit">
+            Guardar ambiente
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
 
   <div data-include="../components/footer.html"></div>
 

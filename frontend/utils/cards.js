@@ -74,7 +74,7 @@ export function createRoomCard(room, expanded, onClick) {
 
     const roomLink = document.createElement("a");
     roomLink.className = "btn btn--secondary room-card__room-link";
-    roomLink.href = `room?id=${room.id}`;
+    roomLink.href = `room.html?id=${room.id}`;
     roomLink.textContent = "Ver ambiente";
 
     content.append(title, plants, roomLink);
@@ -87,7 +87,7 @@ export function createRoomCard(room, expanded, onClick) {
 export function createPlantCard(plant) {
   const link = document.createElement("a");
   link.className = "plant-card";
-  link.href = `plant?id=${plant.id}`;
+  link.href = `plant.html?id=${plant.id}`;
 
   link.innerHTML = `
     <img class="plant-card__image" src="${plant.image}" alt="${plant.name}">
@@ -107,7 +107,7 @@ export function createPlantCard(plant) {
 export function createCompactPlantCard(plant) {
   const link = document.createElement("a");
   link.className = "plant-card plant-card--compact";
-  link.href = `plant?id=${plant.id}`;
+  link.href = `plant.html?id=${plant.id}`;
 
   link.innerHTML = `
     <img class="plant-card__image" src="${plant.image}" alt="${plant.name}">
@@ -150,7 +150,7 @@ export function createExpandedRoom(room, plants) {
 
   const addLink = document.createElement("a");
   addLink.className = "btn btn--secondary";
-  addLink.href = `scanner?roomId=${room.id}`;
+  addLink.href = `scanner.html?roomId=${room.id}`;
   addLink.textContent = "Agregar nueva planta";
   addLink.style.margin = "0 1rem 1rem";
   section.append(addLink);
@@ -161,7 +161,7 @@ export function createExpandedRoom(room, plants) {
 export function createCollapsedRoom(room) {
   const link = document.createElement("a");
   link.className = "room-collapsed";
-  link.href = `room?id=${room.id}`;
+  link.href = `room.html?id=${room.id}`;
 
   link.innerHTML = `
     <img class="room-collapsed__image" src="${room.image}" alt="${room.name}">

@@ -1,4 +1,4 @@
-import { fetchRooms, fetchPlantsByRoom } from "./rooms-api.js";
+import { deleteRoom, fetchRooms, fetchPlantsByRoom, } from "./rooms-api.js";
 import { mapPlantFromApi, mapRoomFromApi } from "./mappers.js";
 import { requireAuth } from "./session.js";
 import {
@@ -32,6 +32,59 @@ async function loadRoomPageData(userId, activeRoomId) {
   };
 }
 
+function setupRoomDeletion(roomId) {
+  const deleteButton = document.querySelector("#delete-room-button");
+  const modal = document.querySelector("#delete-room-modal");
+  const cancelButton = document.querySelector("#cancel-delete-room");
+  const confirmButton = document.querySelector("#confirm-delete-room");
+  const errorMessage = document.querySelector("#delete-room-error");
+
+  if (!deleteButton || !modal || !confirmButton) {
+    return;
+  }
+
+  function openModal() {
+    modal.hidden = false;
+
+    if (errorMessage) {
+      errorMessage.hidden = true;
+    }
+  }
+
+  function closeModal() {
+    modal.hidden = true;
+  }
+
+  deleteButton.addEventListener("click", openModal);
+  cancelButton?.addEventListener("click", closeModal);
+
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) {
+      closeModal();
+    }
+  });
+
+  confirmButton.addEventListener("click", async () => {
+    confirmButton.disabled = true;
+    confirmButton.textContent = "Eliminando...";
+
+    try {
+      await deleteRoom(roomId);
+      window.location.href = "dashboard.html";
+    } catch (error) {
+      if (errorMessage) {
+        errorMessage.textContent =
+          error.message ?? "No se pudo eliminar el ambiente";
+
+        errorMessage.hidden = false;
+      }
+
+      confirmButton.disabled = false;
+      confirmButton.textContent = "Eliminar ambiente";
+    }
+  });
+}
+
 async function initRoom() {
   const session = requireAuth();
   if (!session) return;
@@ -49,6 +102,8 @@ async function initRoom() {
     showError(expandedContainer, "Falta el parámetro id del ambiente.");
     return;
   }
+
+  setupRoomDeletion(roomId);
 
   showLoading(expandedContainer, "Cargando ambiente...");
 
