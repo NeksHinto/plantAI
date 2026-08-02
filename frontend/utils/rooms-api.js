@@ -8,6 +8,13 @@ export function fetchPlantsByRoom(roomId) {
   return apiRequest(`/rooms/${roomId}/plants`);
 }
 
+export function createRoom(fields) {
+  return apiRequest("/rooms", {
+    method: "POST",
+    body: JSON.stringify(fields),
+  });
+}
+
 // TODO: conectar UI de edición de ambiente cuando exista el formulario
 export function updateRoom(roomId, fields) {
   return apiRequest(`/rooms/${roomId}`, {
