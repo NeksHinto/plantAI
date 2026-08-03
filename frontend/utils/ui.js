@@ -1,32 +1,13 @@
-import { HEALTH_STATUS } from "./constants.js";
-
-const STATUS_LABELS = {
-  [HEALTH_STATUS.SALUDABLE]: "Saludable",
-  [HEALTH_STATUS.ATENCION]: "Atención",
-  [HEALTH_STATUS.CRITICO]: "Crítico",
-  [HEALTH_STATUS.MEJORANDO]: "Mejorando",
-  [HEALTH_STATUS.SALUD_OPTIMA]: "Salud Óptima",
-  [HEALTH_STATUS.ALERTA]: "Alerta",
-};
+import { statusLabel } from "./mappers.js";
 
 export function refreshIcons() {
-  try {
-    if (typeof window !== "undefined" && window.lucide && typeof window.lucide.createIcons === "function") {
-      window.lucide.createIcons();
-    }
-  } catch (e) {
-    console.warn("Lucide refresh error:", e);
+  if (window.lucide?.createIcons) {
+    window.lucide.createIcons();
   }
 }
 
 export function getStatusLabel(status) {
-  return STATUS_LABELS[status] ?? status;
-}
-
-export function getStatusFromPercent(percent) {
-  if (percent === 0) return HEALTH_STATUS.SALUDABLE;
-  if (percent >= 40) return HEALTH_STATUS.CRITICO;
-  return HEALTH_STATUS.ATENCION;
+  return statusLabel(status);
 }
 
 export function createBadge(status, label) {
@@ -91,7 +72,6 @@ export function createSearchBar(placeholder) {
   return wrapper;
 }
 
-
 export function fillUserGreeting(selector, userName) {
   const element = document.querySelector(selector);
   if (element) element.textContent = `Hola, ${userName}`;
@@ -120,10 +100,6 @@ export function showLoading(container, message = "Cargando...") {
   container.innerHTML = `<p class="loading-message">${message}</p>`;
 }
 
-export function clearContainer(container) {
-  if (container) container.replaceChildren();
-}
-
 export function showConfirmModal({ title, message, confirmText = "Eliminar", cancelText = "Cancelar", isDanger = true }) {
   return new Promise((resolve) => {
     const overlay = document.createElement("div");
@@ -142,9 +118,6 @@ export function showConfirmModal({ title, message, confirmText = "Eliminar", can
 
     document.body.append(overlay);
 
-    const cancelBtn = overlay.querySelector(".modal__cancel-btn");
-    const confirmBtn = overlay.querySelector(".modal__confirm-btn");
-
     function close(result) {
       overlay.classList.add("is-closing");
       setTimeout(() => {
@@ -153,11 +126,10 @@ export function showConfirmModal({ title, message, confirmText = "Eliminar", can
       }, 150);
     }
 
-    cancelBtn.addEventListener("click", () => close(false));
-    confirmBtn.addEventListener("click", () => close(true));
+    overlay.querySelector(".modal__cancel-btn").addEventListener("click", () => close(false));
+    overlay.querySelector(".modal__confirm-btn").addEventListener("click", () => close(true));
     overlay.addEventListener("click", (e) => {
       if (e.target === overlay) close(false);
     });
   });
 }
-
