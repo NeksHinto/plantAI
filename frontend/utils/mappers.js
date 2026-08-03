@@ -18,6 +18,7 @@ export function resolvePlantImage(imageUrl) {
 }
 
 export function resolveRoomImage(room) {
+  if (room.imageUrl && room.imageUrl !== "dummy image") return room.imageUrl;
   return room.isIndoors ? PLACEHOLDER_ROOM_INDOOR : PLACEHOLDER_ROOM_OUTDOOR;
 }
 
