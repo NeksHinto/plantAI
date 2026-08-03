@@ -19,20 +19,32 @@ function fillPlantHeader(plant) {
   const name = document.querySelector("[data-plant-name]");
   const species = document.querySelector("[data-plant-species]");
   const scanBtn = document.querySelector("#scan-plant-btn");
+  const info = document.querySelector("#plant-info");
 
   if (avatar) {
     avatar.src = plant.image;
-    avatar.alt = plant.nickname;
+    avatar.alt = plant.name;
   }
-  if (name) name.textContent = plant.nickname;
+  if (name) name.textContent = plant.name;
   if (species) {
     species.textContent = plant.commonName && plant.commonName !== plant.species
       ? `${plant.commonName} (${plant.species})`
-      : plant.species;
+      : (plant.species || plant.commonName || "");
   }
-  if (scanBtn) scanBtn.href = `scanner?plantId=${plant.id}`;
+  if (scanBtn) scanBtn.href = `scanner.html?plantId=${plant.id}`;
 
-  document.title = `${plant.nickname} | PlantAI`;
+  if (info) {
+    info.innerHTML = `
+      <dl class="plant-info">
+        <div><dt>Nombre</dt><dd>${plant.name}</dd></div>
+        <div><dt>Nombre común</dt><dd>${plant.commonName || "—"}</dd></div>
+        <div><dt>Especie</dt><dd>${plant.species || "—"}</dd></div>
+        <div><dt>Ambiente</dt><dd>#${plant.roomId ?? "—"}</dd></div>
+      </dl>
+    `;
+  }
+
+  document.title = `${plant.name} | PlantAI`;
 }
 
 function createTimelinePoint(entry, index, onDelete, onUpdateNotes) {
@@ -44,7 +56,7 @@ function createTimelinePoint(entry, index, onDelete, onUpdateNotes) {
     <time class="timeline__date" datetime="${entry.date}">${formatDate(entry.date)}</time>
     <button class="timeline__dot timeline__dot--${entry.status}" type="button" aria-label="Ver escaneo del ${formatDate(entry.date)}"></button>
     <span class="timeline__label timeline__label--${entry.status}">${entry.label}</span>
-    <span class="timeline__note">${entry.treatmentNotes || entry.note || entry.scanResult}</span>
+    <span class="timeline__note">${entry.treatmentNotes || entry.diagnosis}</span>
     <div class="timeline__popup" role="dialog" aria-label="Detalles del escaneo">
       <div class="timeline__popup-header">
         <span class="timeline__popup-date"><strong>${formatDate(entry.date)}</strong> • ${entry.time}</span>
@@ -58,7 +70,7 @@ function createTimelinePoint(entry, index, onDelete, onUpdateNotes) {
         <div class="timeline__popup-details">
           <div class="timeline__popup-field">
             <span class="timeline__popup-label">Resultado del escaneo</span>
-            <p class="timeline__popup-val">${entry.scanResult || entry.label}</p>
+            <p class="timeline__popup-val">${entry.diagnosis || entry.label}</p>
           </div>
           <div class="timeline__popup-field">
             <div class="timeline__popup-label-row">
@@ -299,7 +311,7 @@ async function initPlantDetail() {
     currentHistory = plant.history;
 
     fillPlantHeader(plant);
-    setPlantHeaderBack(`room?id=${plant.roomId}`);
+    setPlantHeaderBack(`room.html?id=${plant.roomId}`);
     setPlantHeaderAction("Editar planta", "#");
 
     refreshHistoryViews();
@@ -317,11 +329,11 @@ async function initPlantHeaderOnly() {
     const rawPlant = await fetchPlantById(plantId);
     const plant = mapPlantDetailFromApi(rawPlant);
     fillPlantHeader(plant);
-    setPlantHeaderBack(`plant?id=${plant.id}`);
-    setPlantHeaderAction("Ver historial", `plant?id=${plant.id}`);
+    setPlantHeaderBack(`plant.html?id=${plant.id}`);
+    setPlantHeaderAction("Ver historial", `plant.html?id=${plant.id}`);
   } catch {
-    setPlantHeaderBack("dashboard");
-    setPlantHeaderAction("Ver historial", "dashboard");
+    setPlantHeaderBack("dashboard.html");
+    setPlantHeaderAction("Ver historial", "dashboard.html");
   }
 }
 
