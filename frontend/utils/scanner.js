@@ -35,9 +35,9 @@ function fillPlantHeaderFromDetail(plant) {
 
   if (avatar) {
     avatar.src = plant.image;
-    avatar.alt = plant.nickname;
+    avatar.alt = plant.name;
   }
-  if (name) name.textContent = plant.nickname;
+  if (name) name.textContent = plant.name;
   if (species) species.textContent = plant.species;
 }
 

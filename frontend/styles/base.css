@@ -33,6 +33,27 @@ body {
   font-size: 0.875rem;
 }
 
+.plant-info {
+  display: grid;
+  gap: var(--space-sm);
+  margin: 0;
+}
+
+.plant-info > div {
+  display: grid;
+  grid-template-columns: 8rem 1fr;
+  gap: var(--space-sm);
+}
+
+.plant-info dt {
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.plant-info dd {
+  margin: 0;
+}
+
 img {
   display: block;
   max-width: 100%;

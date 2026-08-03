@@ -32,7 +32,7 @@ export function createRoomCard(room, expanded, onClick) {
 
     <div class="room-card__body">
       <h3 class="room-card__title">${room.name}</h3>
-      <p class="room-card__meta">${room.plantCount} plantas</p>
+      <p class="room-card__meta">${room.plantCount} plantas · ${room.isIndoors ? "Interior" : "Exterior"}${room.temperatureLevel ? ` · ${room.temperatureLevel}` : ""}</p>
     </div>
 
     <p
@@ -93,7 +93,7 @@ export function createPlantCard(plant) {
     <img class="plant-card__image" src="${plant.image}" alt="${plant.name}">
     <div class="plant-card__body">
       <h3 class="plant-card__name">${plant.name}</h3>
-      <p class="plant-card__room">${plant.roomName}</p>
+      <p class="plant-card__room">${plant.commonName || plant.species || ""} · ${plant.roomName}</p>
     </div>
   `;
 
@@ -113,7 +113,7 @@ export function createCompactPlantCard(plant) {
     <img class="plant-card__image" src="${plant.image}" alt="${plant.name}">
     <div class="plant-card__body">
       <h3 class="plant-card__name">${plant.name}</h3>
-      <p class="plant-card__room">${plant.species ?? ""}</p>
+      <p class="plant-card__room">${plant.commonName || plant.species || ""}</p>
     </div>
   `;
 
@@ -130,7 +130,10 @@ export function createExpandedRoom(room, plants) {
   section.innerHTML = `
     <header class="room-expanded__header">
       <img class="room-expanded__image" src="${room.image}" alt="${room.name}">
-      <h2 class="room-expanded__title">${room.name}</h2>
+      <div>
+        <h2 class="room-expanded__title">${room.name}</h2>
+        <p class="room-card__meta">${room.isIndoors ? "Interior" : "Exterior"}${room.temperatureLevel ? ` · ${room.temperatureLevel}` : ""}</p>
+      </div>
     </header>
     <div class="room-expanded__plants" aria-label="Plantas en ${room.name}"></div>
   `;
@@ -183,6 +186,7 @@ export function createCollapsedRoom(room) {
     <img class="room-collapsed__image" src="${room.image}" alt="${room.name}">
     <div class="room-collapsed__body">
       <h3 class="room-collapsed__title">${room.name}</h3>
+      <p class="room-card__meta">${room.isIndoors ? "Interior" : "Exterior"}${room.temperatureLevel ? ` · ${room.temperatureLevel}` : ""}</p>
     </div>
     <span aria-hidden="true">›</span>
   `;

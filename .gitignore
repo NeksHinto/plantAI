@@ -1,4 +1,6 @@
 # plantAI/.gitignore
 node_modules/
 .env
+backend/.env
 data/
+.DS_Store
