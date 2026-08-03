@@ -122,21 +122,26 @@ export function mapScanResultFromApi({ identification, diagnosis, imageUrl, scan
     accuracy: diagnosis?.accuracy,
   });
 
+  const hasIdentification = Boolean(identification);
   const matchPercent = Math.round(identification?.accuracy ?? 0);
   const species = identification?.species ?? "Especie desconocida";
+
+  const diagnosisAccuracy = diagnosis?.accuracy !== undefined ? Math.round(diagnosis.accuracy) : null;
+  const isDiagnosisLowConfidence = diagnosisAccuracy !== null && diagnosisAccuracy < 15;
 
   return {
     species,
     commonName: identification?.commonName,
     matchPercent,
-    isLowConfidence: matchPercent < 15,
-    isUnidentified: species === "Especie desconocida" || matchPercent < 5,
+    isSpeciesLowConfidence: hasIdentification && matchPercent < 15,
+    isDiagnosisLowConfidence,
+    isUnidentified: hasIdentification && (species === "Especie desconocida" || matchPercent < 5),
     healthStatus,
     healthLabel: diagnosis?.diagnosis ?? "Sin diagnóstico",
     recommendation: diagnosis?.treatmentNotes ?? buildRecommendation(diagnosis),
     image: imageUrl,
     scannedAt: scannedAt ?? new Date().toISOString(),
-    diagnosisAccuracy: diagnosis?.accuracy,
+    diagnosisAccuracy,
   };
 }
 

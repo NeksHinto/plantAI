@@ -49,15 +49,24 @@ function renderScanResult(container, result, context) {
       ? `plant.html?id=${context.savedPlantId}`
       : "dashboard.html";
 
-  const matchClass = result.isLowConfidence
+  const speciesMatchClass = result.isSpeciesLowConfidence
     ? "scan-result__match scan-result__match--warning"
     : "scan-result__match";
 
-  const lowConfidenceBanner = result.isLowConfidence
+  const speciesWarningBanner = result.isSpeciesLowConfidence
     ? `
       <div class="scan-result__warning-banner">
         <i data-lucide="alert-triangle"></i>
         <span>Identificación dudosa (coincidencia menor al 15%). Verificá si la especie detectada es correcta.</span>
+      </div>
+    `
+    : "";
+
+  const diagnosisWarningBanner = result.isDiagnosisLowConfidence
+    ? `
+      <div class="scan-result__warning-banner">
+        <i data-lucide="alert-triangle"></i>
+        <span>Diagnóstico con baja precisión (confianza menor al 15%). El resultado de salud podría ser impreciso.</span>
       </div>
     `
     : "";
@@ -70,8 +79,8 @@ function renderScanResult(container, result, context) {
           <section class="scan-result__section">
             <h3 class="scan-result__section-title">Identificación botánica</h3>
             <p class="scan-result__species">${result.species}</p>
-            <p class="${matchClass}">${result.matchPercent}% coincidencia</p>
-            ${lowConfidenceBanner}
+            <p class="${speciesMatchClass}">${result.matchPercent}% coincidencia</p>
+            ${speciesWarningBanner}
           </section>
           <section class="scan-result__section">
             <h3 class="scan-result__section-title">Estado de salud</h3>
@@ -79,6 +88,7 @@ function renderScanResult(container, result, context) {
               <p class="scan-result__alert-title">${result.healthLabel}</p>
               <p class="scan-result__recommendation">${result.recommendation}</p>
             </div>
+            ${diagnosisWarningBanner}
           </section>
         </div>
       </div>

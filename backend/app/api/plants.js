@@ -48,7 +48,7 @@ endpointsPlantas.post("/add-plant", async (req, res) => {
     const newPlant = await insertPlant(Number(userId), Number(roomId), plantName, identification?.commonName || null, plantSpecies, imageUrl);
 
     const diagnosisText = diagnosis?.diagnosis || "Sin enfermedad";
-    const diagnosisAccuracy = diagnosis?.accuracy !== undefined ? diagnosis.accuracy : 100.00;
+    const diagnosisAccuracy = diagnosis?.accuracy ?? 0;
 
     // Generar notas médicas/climáticas utilizando Gemini / Fallback
     const treatmentNotes = await generateTreatmentNotes({
@@ -70,7 +70,7 @@ endpointsPlantas.post("/add-plant", async (req, res) => {
       plant: plantResponse,
       initialDiagnosis: {
         diagnosis: newRecord.diagnosis,
-        accuracy: newRecord.accuracy ? Number(newRecord.accuracy) : 100,
+        accuracy: newRecord.accuracy !== undefined && newRecord.accuracy !== null ? Number(newRecord.accuracy) : 0,
         treatmentNotes: newRecord.treatment_notes
       }
     });
@@ -97,7 +97,7 @@ endpointsPlantas.post("/identify-disease", async (req, res) => {
     ]);
 
     const diagnosisText = diagnosis?.diagnosis || "Sin enfermedad";
-    const diagnosisAccuracy = diagnosis?.accuracy !== undefined ? diagnosis.accuracy : 100.00;
+    const diagnosisAccuracy = diagnosis?.accuracy ?? 0;
 
     // Generar notas médicas/climáticas utilizando Gemini / Fallback
     const treatmentNotes = await generateTreatmentNotes({
@@ -116,7 +116,7 @@ endpointsPlantas.post("/identify-disease", async (req, res) => {
         id: newRecord.id,
         plantId: newRecord.plant_id,
         diagnosis: newRecord.diagnosis,
-        accuracy: newRecord.accuracy ? Number(newRecord.accuracy) : 100,
+        accuracy: newRecord.accuracy !== undefined && newRecord.accuracy !== null ? Number(newRecord.accuracy) : 0,
         treatmentNotes: newRecord.treatment_notes,
         date: newRecord.date
       }
