@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,12 +8,13 @@
   <link rel="stylesheet" href="../styles/main.css">
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
+
 <body class="app-shell">
   <div data-include="../components/header-app.html"></div>
 
   <main class="page-main container">
     <nav aria-label="Migas de pan">
-      <a href="dashboard.html"><i data-lucide="arrow-left" aria-hidden="true"></i> Volver al dashboard</a>
+      <a href="dashboard"><i data-lucide="arrow-left" aria-hidden="true"></i> Volver al dashboard</a>
     </nav>
 
     <div id="room-expanded"></div>
@@ -22,12 +24,7 @@
 
 
   <div class="modal-overlay" id="edit-room-modal" hidden>
-    <section
-      class="modal"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="edit-room-title"
-    >
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="edit-room-title">
       <h2 class="modal__title" id="edit-room-title">
         Editar ambiente
       </h2>
@@ -36,31 +33,17 @@
         <div class="modal__field">
           <label for="edit-room-name">Nombre del ambiente</label>
 
-          <input
-            class="modal__input"
-            id="edit-room-name"
-            name="name"
-            type="text"
-            maxlength="60"
-            required
-          >
+          <input class="modal__input" id="edit-room-name" name="name" type="text" maxlength="60" required>
         </div>
 
         <p class="modal__error" id="edit-room-error" hidden></p>
 
         <div class="modal__actions">
-          <button
-            class="btn btn--secondary"
-            id="cancel-edit-room"
-            type="button"
-          >
+          <button class="btn btn--secondary" id="cancel-edit-room" type="button">
             Cancelar
           </button>
 
-          <button
-            class="btn btn--primary"
-            type="submit"
-          >
+          <button class="btn btn--primary" type="submit">
             Guardar cambios
           </button>
         </div>
@@ -70,12 +53,7 @@
 
 
   <div class="modal-overlay" id="delete-room-modal" hidden>
-    <section
-      class="modal"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="delete-room-title"
-    >
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="delete-room-title">
       <h2 class="modal__title" id="delete-room-title">
         Eliminar ambiente
       </h2>
@@ -88,19 +66,11 @@
       <p class="modal__error" id="delete-room-error" hidden></p>
 
       <div class="modal__actions">
-        <button
-          class="btn btn--secondary"
-          id="cancel-delete-room"
-          type="button"
-        >
+        <button class="btn btn--secondary" id="cancel-delete-room" type="button">
           Cancelar
         </button>
 
-        <button
-          class="btn btn--danger"
-          id="confirm-delete-room"
-          type="button"
-        >
+        <button class="btn btn--danger" id="confirm-delete-room" type="button">
           Eliminar ambiente
         </button>
       </div>
@@ -113,5 +83,5 @@
   <script type="module" src="../utils/header.js"></script>
   <script type="module" src="../utils/room.js"></script>
 </body>
-</html>
 
+</html>
