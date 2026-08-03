@@ -1,8 +1,18 @@
 // plantas.js
 import { Router } from "express";
 import { identifySpecies, identifyDisease } from "../services/externalServices.js";
-import { getPlantById, getHealthRecordsByPlantId, updatePlant, insertPlant, insertHealthRecord, getRoomContextByPlantId, deletePlant, deleteHealthRecord, updateHealthRecord } from "../db/plants.js";
-import { getRoomById } from "../db/rooms.js";
+import {
+  getPlantById,
+  getHealthRecordsByPlantId,
+  updatePlant,
+  insertPlant,
+  insertHealthRecord,
+  getRoomContextByPlantId,
+  deletePlant,
+  deleteHealthRecord,
+  updateHealthRecord,
+  getRoomById,
+} from "../db/dataAccess.js";
 import { generateTreatmentNotes } from "../services/treatmentRecommendation.js";
 import { mapPlantRow } from "../services/mappers.js";
 

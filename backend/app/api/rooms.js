@@ -1,7 +1,12 @@
 // ambientes.js
 import { Router } from "express";
-import { getRoomsByUserId, updateRoom, insertRoom, deleteRoom } from "../db/rooms.js";
-import { getPlantsByRoomId } from "../db/plants.js";
+import {
+  getRoomsByUserId,
+  updateRoom,
+  insertRoom,
+  deleteRoom,
+  getPlantsByRoomId,
+} from "../db/dataAccess.js";
 import { mapPlantRow } from "../services/mappers.js";
 
 export const endpointsAmbientes = Router();
