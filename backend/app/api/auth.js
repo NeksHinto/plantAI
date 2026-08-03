@@ -1,6 +1,6 @@
 // auth.js
 import { Router } from "express";
-import { getUserByUsername } from "../db/users.js";
+import { getUserByUsername } from "../db/dataAccess.js";
 export const endpointsAuth = Router();
 
 // login(user + password)
