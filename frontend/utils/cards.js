@@ -32,7 +32,7 @@ export function createRoomCard(room, expanded, onClick) {
 
     <div class="room-card__body">
       <h3 class="room-card__title">${room.name}</h3>
-      <p class="room-card__meta">${room.plantCount} plantas</p>
+      <p class="room-card__meta">${room.plantCount} plantas · ${room.isIndoors ? "Interior" : "Exterior"}${room.temperatureLevel ? ` · ${room.temperatureLevel}` : ""}</p>
     </div>
 
     <p
@@ -74,7 +74,7 @@ export function createRoomCard(room, expanded, onClick) {
 
     const roomLink = document.createElement("a");
     roomLink.className = "btn btn--secondary room-card__room-link";
-    roomLink.href = `room?id=${room.id}`;
+    roomLink.href = `room.html?id=${room.id}`;
     roomLink.textContent = "Ver ambiente";
 
     content.append(title, plants, roomLink);
@@ -87,13 +87,13 @@ export function createRoomCard(room, expanded, onClick) {
 export function createPlantCard(plant) {
   const link = document.createElement("a");
   link.className = "plant-card";
-  link.href = `plant?id=${plant.id}`;
+  link.href = `plant.html?id=${plant.id}`;
 
   link.innerHTML = `
     <img class="plant-card__image" src="${plant.image}" alt="${plant.name}">
     <div class="plant-card__body">
       <h3 class="plant-card__name">${plant.name}</h3>
-      <p class="plant-card__room">${plant.roomName}</p>
+      <p class="plant-card__room">${plant.commonName || plant.species || ""} · ${plant.roomName}</p>
     </div>
   `;
 
@@ -107,13 +107,13 @@ export function createPlantCard(plant) {
 export function createCompactPlantCard(plant) {
   const link = document.createElement("a");
   link.className = "plant-card plant-card--compact";
-  link.href = `plant?id=${plant.id}`;
+  link.href = `plant.html?id=${plant.id}`;
 
   link.innerHTML = `
     <img class="plant-card__image" src="${plant.image}" alt="${plant.name}">
     <div class="plant-card__body">
       <h3 class="plant-card__name">${plant.name}</h3>
-      <p class="plant-card__room">${plant.species ?? ""}</p>
+      <p class="plant-card__room">${plant.commonName || plant.species || ""}</p>
     </div>
   `;
 
@@ -130,7 +130,10 @@ export function createExpandedRoom(room, plants) {
   section.innerHTML = `
     <header class="room-expanded__header">
       <img class="room-expanded__image" src="${room.image}" alt="${room.name}">
-      <h2 class="room-expanded__title">${room.name}</h2>
+      <div>
+        <h2 class="room-expanded__title">${room.name}</h2>
+        <p class="room-card__meta">${room.isIndoors ? "Interior" : "Exterior"}${room.temperatureLevel ? ` · ${room.temperatureLevel}` : ""}</p>
+      </div>
     </header>
     <div class="room-expanded__plants" aria-label="Plantas en ${room.name}"></div>
   `;
@@ -150,7 +153,7 @@ export function createExpandedRoom(room, plants) {
 
   const addLink = document.createElement("a");
   addLink.className = "btn btn--secondary";
-  addLink.href = `scanner?roomId=${room.id}`;
+  addLink.href = `scanner.html?roomId=${room.id}`;
   addLink.textContent = "Agregar nueva planta";
   addLink.style.margin = "0 1rem 1rem";
   section.append(addLink);
@@ -161,12 +164,13 @@ export function createExpandedRoom(room, plants) {
 export function createCollapsedRoom(room) {
   const link = document.createElement("a");
   link.className = "room-collapsed";
-  link.href = `room?id=${room.id}`;
+  link.href = `room.html?id=${room.id}`;
 
   link.innerHTML = `
     <img class="room-collapsed__image" src="${room.image}" alt="${room.name}">
     <div class="room-collapsed__body">
       <h3 class="room-collapsed__title">${room.name}</h3>
+      <p class="room-card__meta">${room.isIndoors ? "Interior" : "Exterior"}${room.temperatureLevel ? ` · ${room.temperatureLevel}` : ""}</p>
     </div>
     <span aria-hidden="true">›</span>
   `;
