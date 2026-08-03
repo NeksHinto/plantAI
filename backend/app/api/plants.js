@@ -23,6 +23,15 @@ endpointsPlantas.post("/add-plant", async (req, res) => {
       getRoomById(roomId)
     ]);
 
+    const speciesAccuracy = identification?.accuracy ?? 0;
+
+    if (identification?.notFound || speciesAccuracy < 5) {
+      return res.status(422).json({
+        error: "SPECIES_NOT_FOUND",
+        message: "No se pudo identificar la especie de la planta (coincidencia menor al 5%). Intente tomar otra foto más nítida o centrada en la planta."
+      });
+    }
+
     const plantName = name || (identification?.commonName !== "Nombre comun desconocido" ? identification.commonName : "Nueva planta");
     const plantSpecies = identification?.species || "Especie desconocida";
 
@@ -44,7 +53,7 @@ endpointsPlantas.post("/add-plant", async (req, res) => {
 
     const plantResponse = mapPlantRow(newPlant);
     plantResponse.common_name = identification?.commonName || newPlant.species;
-    plantResponse.confidence_score = identification?.accuracy || 100.0;
+    plantResponse.confidence_score = speciesAccuracy;
 
     res.status(201).json({
       message: "Planta identificada y escaneada correctamente",

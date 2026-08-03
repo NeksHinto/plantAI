@@ -49,6 +49,19 @@ function renderScanResult(container, result, context) {
       ? `plant.html?id=${context.savedPlantId}`
       : "dashboard.html";
 
+  const matchClass = result.isLowConfidence
+    ? "scan-result__match scan-result__match--warning"
+    : "scan-result__match";
+
+  const lowConfidenceBanner = result.isLowConfidence
+    ? `
+      <div class="scan-result__warning-banner">
+        <i data-lucide="alert-triangle"></i>
+        <span>Identificación dudosa (coincidencia menor al 15%). Verificá si la especie detectada es correcta.</span>
+      </div>
+    `
+    : "";
+
   container.innerHTML = `
     <article class="scan-result">
       <div class="scan-result__body">
@@ -57,7 +70,8 @@ function renderScanResult(container, result, context) {
           <section class="scan-result__section">
             <h3 class="scan-result__section-title">Identificación botánica</h3>
             <p class="scan-result__species">${result.species}</p>
-            <p class="scan-result__match">${result.matchPercent}% coincidencia</p>
+            <p class="${matchClass}">${result.matchPercent}% coincidencia</p>
+            ${lowConfidenceBanner}
           </section>
           <section class="scan-result__section">
             <h3 class="scan-result__section-title">Estado de salud</h3>
@@ -82,10 +96,54 @@ function renderScanResult(container, result, context) {
     </p>
   `;
 
+  try {
+    if (window.lucide && typeof window.lucide.createIcons === "function") {
+      window.lucide.createIcons();
+    }
+  } catch (e) {
+    // ignore
+  }
+
   const saveBtn = container.querySelector("#save-scan-btn");
   saveBtn.addEventListener("click", () => {
     window.location.href = saveHref;
   });
+}
+
+function renderUnidentifiedResult(container, context, customMessage) {
+  const retryHref = context.roomId
+    ? `scanner.html?roomId=${context.roomId}`
+    : context.plantId
+      ? `scanner.html?plantId=${context.plantId}`
+      : "dashboard.html";
+
+  container.innerHTML = `
+    <article class="scan-result scan-result--failed">
+      <div class="scan-result__body scan-result__body--failed">
+        <div class="scan-result__failed-icon">
+          <i data-lucide="alert-octagon"></i>
+        </div>
+        <section class="scan-result__section">
+          <h3 class="scan-result__failed-title">Especie no identificada</h3>
+          <p class="scan-result__failed-text">
+            ${customMessage || "No pudimos reconocer la especie de tu planta. Intentá tomar una foto más nítida o centrada en las hojas."}
+          </p>
+        </section>
+      </div>
+      <div class="scan-result__actions btn-group">
+        <a class="btn btn--secondary" href="${context.cancelHref}">Cancelar</a>
+        <a class="btn btn--primary" href="${retryHref}">Volver a escanear</a>
+      </div>
+    </article>
+  `;
+
+  try {
+    if (window.lucide && typeof window.lucide.createIcons === "function") {
+      window.lucide.createIcons();
+    }
+  } catch (e) {
+    // ignore
+  }
 }
 
 function handleSelectedFile(file) {
@@ -415,7 +473,11 @@ async function initScannerResults() {
 
     renderScanResult(container, result, context);
   } catch (error) {
-    showError(container, error.message ?? "Error al procesar el escaneo");
+    if (error.status === 422 || error.code === "SPECIES_NOT_FOUND" || error.message?.includes("5%")) {
+      renderUnidentifiedResult(container, context, error.message);
+    } else {
+      showError(container, error.message ?? "Error al procesar el escaneo");
+    }
   }
 }
 

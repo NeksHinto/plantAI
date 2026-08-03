@@ -6,19 +6,50 @@ export async function identifySpecies(imageUrl) {
   try {
     const url = `https://my-api.plantnet.org/v2/identify/all?api-key=${PLANTNET_API_KEY}&images=${encodeURIComponent(imageUrl)}`;
     const response = await fetch(url);
-    if (!response.ok) throw new Error("Error with Pl@ntNet Species");
+    if (!response.ok) {
+      if (response.status === 404) {
+        return {
+          commonName: "Nombre comun desconocido",
+          species: "Especie desconocida",
+          family: "Familia desconocida",
+          accuracy: 0,
+          notFound: true
+        };
+      }
+      throw new Error("Error with Pl@ntNet Species");
+    }
 
     const data = await response.json();
     const bestResult = data.results?.[0];
 
+    if (!bestResult) {
+      return {
+        commonName: "Nombre comun desconocido",
+        species: "Especie desconocida",
+        family: "Familia desconocida",
+        accuracy: 0,
+        notFound: true
+      };
+    }
+
+    const accuracy = bestResult?.score ? Number((bestResult.score * 100).toFixed(1)) : 0;
+
     return {
-      commonName: bestResult?.species?.commonNames?.[0] || "Unknown common name",
-      species: bestResult?.species?.scientificNameWithoutAuthor || "Unknown species",
-      family: bestResult?.species?.family?.scientificNameWithoutAuthor || "Unknown family",
-      accuracy: bestResult?.score ? (bestResult.score * 100) : 0
+      commonName: bestResult?.species?.commonNames?.[0] || "Nombre comun desconocido",
+      species: bestResult?.species?.scientificNameWithoutAuthor || "Especie desconocida",
+      family: bestResult?.species?.family?.scientificNameWithoutAuthor || "Familia desconocida",
+      accuracy,
+      notFound: accuracy === 0
     };
   } catch (error) {
-    console.error(error);
+    console.error("identifySpecies error:", error);
+    return {
+      commonName: "Nombre comun desconocido",
+      species: "Especie desconocida",
+      family: "Familia desconocida",
+      accuracy: 0,
+      notFound: true
+    };
   }
 }
 

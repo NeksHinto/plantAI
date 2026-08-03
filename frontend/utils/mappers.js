@@ -122,10 +122,15 @@ export function mapScanResultFromApi({ identification, diagnosis, imageUrl, scan
     accuracy: diagnosis?.accuracy,
   });
 
+  const matchPercent = Math.round(identification?.accuracy ?? 0);
+  const species = identification?.species ?? "Especie desconocida";
+
   return {
-    species: identification?.species ?? "Especie desconocida",
+    species,
     commonName: identification?.commonName,
-    matchPercent: Math.round(identification?.accuracy ?? 0),
+    matchPercent,
+    isLowConfidence: matchPercent < 15,
+    isUnidentified: species === "Especie desconocida" || matchPercent < 5,
     healthStatus,
     healthLabel: diagnosis?.diagnosis ?? "Sin diagnóstico",
     recommendation: diagnosis?.treatmentNotes ?? buildRecommendation(diagnosis),
