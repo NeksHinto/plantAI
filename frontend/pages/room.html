@@ -16,8 +16,96 @@
     </nav>
 
     <div id="room-expanded"></div>
+
     <div id="rooms-collapsed" class="room-collapsed-grid"></div>
   </main>
+
+
+  <div class="modal-overlay" id="edit-room-modal" hidden>
+    <section
+      class="modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="edit-room-title"
+    >
+      <h2 class="modal__title" id="edit-room-title">
+        Editar ambiente
+      </h2>
+
+      <form id="edit-room-form">
+        <div class="modal__field">
+          <label for="edit-room-name">Nombre del ambiente</label>
+
+          <input
+            class="modal__input"
+            id="edit-room-name"
+            name="name"
+            type="text"
+            maxlength="60"
+            required
+          >
+        </div>
+
+        <p class="modal__error" id="edit-room-error" hidden></p>
+
+        <div class="modal__actions">
+          <button
+            class="btn btn--secondary"
+            id="cancel-edit-room"
+            type="button"
+          >
+            Cancelar
+          </button>
+
+          <button
+            class="btn btn--primary"
+            type="submit"
+          >
+            Guardar cambios
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+
+  <div class="modal-overlay" id="delete-room-modal" hidden>
+    <section
+      class="modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="delete-room-title"
+    >
+      <h2 class="modal__title" id="delete-room-title">
+        Eliminar ambiente
+      </h2>
+
+      <p class="modal__message">
+        Las plantas asociadas a este ambiente dejaran de estar disponibles,
+        deseas continuar
+      </p>
+
+      <p class="modal__error" id="delete-room-error" hidden></p>
+
+      <div class="modal__actions">
+        <button
+          class="btn btn--secondary"
+          id="cancel-delete-room"
+          type="button"
+        >
+          Cancelar
+        </button>
+
+        <button
+          class="btn btn--danger"
+          id="confirm-delete-room"
+          type="button"
+        >
+          Eliminar ambiente
+        </button>
+      </div>
+    </section>
+  </div>
 
   <div data-include="../components/footer.html"></div>
 

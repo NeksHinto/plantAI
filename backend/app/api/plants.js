@@ -1,8 +1,18 @@
 // plantas.js
 import { Router } from "express";
 import { identifySpecies, identifyDisease } from "../services/externalServices.js";
-import { getPlantById, getHealthRecordsByPlantId, updatePlant, insertPlant, insertHealthRecord, getRoomContextByPlantId, deletePlant, deleteHealthRecord, updateHealthRecord } from "../db/plants.js";
-import { getRoomById } from "../db/rooms.js";
+import {
+  getPlantById,
+  getHealthRecordsByPlantId,
+  updatePlant,
+  insertPlant,
+  insertHealthRecord,
+  getRoomContextByPlantId,
+  deletePlant,
+  deleteHealthRecord,
+  updateHealthRecord,
+  getRoomById,
+} from "../db/dataAccess.js";
 import { generateTreatmentNotes } from "../services/treatmentRecommendation.js";
 import { mapPlantRow } from "../services/mappers.js";
 
@@ -23,12 +33,12 @@ endpointsPlantas.post("/add-plant", async (req, res) => {
       getRoomById(roomId)
     ]);
 
-    const plantName = name || (identification?.commonName !== "Unknown common name" ? identification.commonName : "New Plant");
-    const plantSpecies = identification?.species || "Unknown species";
+    const plantName = name || (identification?.commonName !== "Nombre comun desconocido" ? identification.commonName : "Nueva planta");
+    const plantSpecies = identification?.species || "Especie desconocida";
 
     const newPlant = await insertPlant(Number(userId), Number(roomId), plantName, identification?.commonName || null, plantSpecies, imageUrl);
 
-    const diagnosisText = diagnosis?.diagnosis || "no disease";
+    const diagnosisText = diagnosis?.diagnosis || "Sin enfermedad";
     const diagnosisAccuracy = diagnosis?.accuracy !== undefined ? diagnosis.accuracy : 100.00;
 
     // Generar notas médicas/climáticas utilizando Gemini / Fallback
@@ -47,7 +57,7 @@ endpointsPlantas.post("/add-plant", async (req, res) => {
     plantResponse.confidence_score = identification?.accuracy || 100.0;
 
     res.status(201).json({
-      message: "Plant identified and scanned successfully",
+      message: "Planta identificada y escaneada correctamente",
       plant: plantResponse,
       initialDiagnosis: {
         diagnosis: newRecord.diagnosis,
@@ -67,7 +77,7 @@ endpointsPlantas.post("/identify-disease", async (req, res) => {
   const { imageUrl, plantId } = req.body;
 
   if (!imageUrl || !plantId) {
-    return res.status(400).json({ error: "Missing required data (imageUrl, plantId)" });
+    return res.status(400).json({ error: "Faltan datos requeridos (imageUrl, plantId)" });
   }
 
   try {
@@ -77,12 +87,12 @@ endpointsPlantas.post("/identify-disease", async (req, res) => {
       getPlantById(plantId)
     ]);
 
-    const diagnosisText = diagnosis?.diagnosis || "no disease";
+    const diagnosisText = diagnosis?.diagnosis || "Sin enfermedad";
     const diagnosisAccuracy = diagnosis?.accuracy !== undefined ? diagnosis.accuracy : 100.00;
 
     // Generar notas médicas/climáticas utilizando Gemini / Fallback
     const treatmentNotes = await generateTreatmentNotes({
-      species: plant?.species || "Unknown species",
+      species: plant?.species || "Especie desconocida",
       diagnosis: diagnosisText,
       accuracy: diagnosisAccuracy,
       temperature: roomContext?.temperature_level,
@@ -92,7 +102,7 @@ endpointsPlantas.post("/identify-disease", async (req, res) => {
     const newRecord = await insertHealthRecord(Number(plantId), diagnosisText, diagnosisAccuracy, treatmentNotes);
 
     res.status(201).json({
-      message: "Disease diagnosis completed",
+      message: "Diagnostico de la enfermedad completado",
       healthRecord: {
         id: newRecord.id,
         plantId: newRecord.plant_id,
@@ -117,7 +127,7 @@ endpointsPlantas.get("/:plantId", async (req, res) => {
     const plantRow = await getPlantById(plantId);
 
     if (!plantRow) {
-      return res.status(404).json({ error: "Plant not found" });
+      return res.status(404).json({ error: "Planta no encontrada" });
     }
 
     const recordsRows = await getHealthRecordsByPlantId(plantId);
@@ -151,11 +161,11 @@ endpointsPlantas.put("/:plantId", async (req, res) => {
     const updatedPlant = await updatePlant(plantId, name, roomId);
 
     if (!updatedPlant) {
-      return res.status(404).json({ error: "Plant not found" });
+      return res.status(404).json({ error: "Planta no encontrada" });
     }
 
     res.json({
-      message: "Plant updated successfully",
+      message: "Planta actualizada correctamente",
       plant: mapPlantRow(updatedPlant)
     });
 
@@ -172,10 +182,10 @@ endpointsPlantas.delete("/:plantId", async (req, res) => {
   try {
     const deletedPlant = await deletePlant(plantId);
     if (!deletedPlant) {
-      return res.status(404).json({ error: "Plant not found" });
+      return res.status(404).json({ error: "Planta no encontrada" });
     }
     res.json({
-      message: "Plant deleted successfully",
+      message: "Planta eliminada correctamente",
       plantId: deletedPlant.id
     });
   } catch (error) {
@@ -192,10 +202,10 @@ endpointsPlantas.put("/records/:recordId", async (req, res) => {
   try {
     const updatedRecord = await updateHealthRecord(recordId, treatmentNotes);
     if (!updatedRecord) {
-      return res.status(404).json({ error: "Health record not found" });
+      return res.status(404).json({ error: "Registro de salud no encontrado" });
     }
     res.json({
-      message: "Health record updated successfully",
+      message: "Registro de salud actualizado correctamente",
       healthRecord: updatedRecord
     });
   } catch (error) {
@@ -211,10 +221,10 @@ endpointsPlantas.delete("/records/:recordId", async (req, res) => {
   try {
     const deletedRecord = await deleteHealthRecord(recordId);
     if (!deletedRecord) {
-      return res.status(404).json({ error: "Health record not found" });
+      return res.status(404).json({ error: "Registro de salud no encontrado" });
     }
     res.json({
-      message: "Health record deleted successfully",
+      message: "Registro de salud eliminado correctamente",
       recordId: deletedRecord.id
     });
   } catch (error) {

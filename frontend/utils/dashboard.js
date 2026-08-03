@@ -1,5 +1,6 @@
 import { fetchRooms, fetchPlantsByRoom } from "./rooms-api.js";
 import { mapPlantFromApi, mapRoomFromApi } from "./mappers.js";
+import { setupRoomCreation } from "./room-management.js";
 import { requireAuth } from "./session.js";
 import { paginateItems, filterByQuery } from "./pagination.js";
 import {
@@ -217,7 +218,7 @@ async function initDashboard() {
   showLoading(plantsGrid, "Cargando plantas...");
 
   try {
-    const { rooms, plants } = await loadDashboardData(session.userId);
+    let { rooms, plants } = await loadDashboardData(session.userId);
 
     const roomsState = { all: rooms, filtered: rooms, page: 1, expandedRoomId: null };
     const plantsState = { all: plants, filtered: plants, page: 1 };
@@ -269,6 +270,26 @@ async function initDashboard() {
         plantsState
       );
 
+    async function reloadDashboard() {
+      const data = await loadDashboardData(session.userId);
+
+      rooms = data.rooms;
+      plants = data.plants;
+
+      roomsState.all = rooms;
+      roomsState.filtered = rooms;
+      roomsState.page = 1;
+      roomsState.expandedRoomId = null;
+
+      plantsState.all = plants;
+      plantsState.filtered = plants;
+      plantsState.page = 1;
+
+      renderRooms();
+      renderPlants();
+    }
+
+    setupRoomCreation(session.userId, reloadDashboard);
     renderRooms();
     renderPlants();
     setupTabs();

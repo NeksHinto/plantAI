@@ -1,4 +1,3 @@
-// app.js
 import express from "express";
 import cors from "cors";
 import { endpointsPlantas } from "./api/plants.js";
@@ -7,15 +6,11 @@ import { endpointsAmbientes } from "./api/rooms.js";
 
 const app = express();
 
-const corsOptions = {
-  origin: '*', // Replace with domain
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-};
-
-app.use(cors(corsOptions));
-
-const port = 8000;
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
 
 app.use(express.json());
 app.use("/api/v1/plantas", endpointsPlantas);
@@ -24,6 +19,6 @@ app.use("/api/v1/rooms", endpointsAmbientes);
 
 app.get("/health", (req, res) => res.send("OK"));
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}/`);
+app.listen(8000, () => {
+  console.log("Server running at http://localhost:8000/");
 });

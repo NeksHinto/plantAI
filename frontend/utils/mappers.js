@@ -3,9 +3,14 @@ import { formatTime } from "./format.js";
 
 const NO_DISEASE = ["no disease", "sin enfermedad", "no se detect"];
 
-export function resolveImage(url, fallback) {
-  if (!url || url === "dummy image") return fallback;
-  return url;
+export function resolvePlantImage(imageUrl) {
+  if (!imageUrl || imageUrl === "dummy image") return PLACEHOLDER_PLANT;
+  return imageUrl;
+}
+
+export function resolveRoomImage(room) {
+  if (room.imageUrl && room.imageUrl !== "dummy image") return room.imageUrl;
+  return room.isIndoors ? PLACEHOLDER_ROOM_INDOOR : PLACEHOLDER_ROOM_OUTDOOR;
 }
 
 export function healthStatusFromRecord(record) {
