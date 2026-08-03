@@ -11,7 +11,7 @@ endpointsAmbientes.get("/", async (req, res) => {
   const { userId } = req.query;
 
   if (!userId) {
-    return res.status(400).json({ error: "Missing required parameter: userId" });
+    return res.status(400).json({ error: "Falta el parametro requerido: userId" });
   }
 
   try {
@@ -43,11 +43,11 @@ endpointsAmbientes.put("/:roomId", async (req, res) => {
     const updatedRoom = await updateRoom(roomId, name, isIndoors);
 
     if (!updatedRoom) {
-      return res.status(404).json({ error: "Room not found" });
+      return res.status(404).json({ error: "Habitación no encontrada" });
     }
 
     res.json({
-      message: "Room updated successfully",
+      message: "Habitación actualizada correctamente",
       room: {
         id: updatedRoom.id,
         userId: updatedRoom.user_id,
@@ -84,13 +84,13 @@ endpointsAmbientes.post("/", async (req, res) => {
   const { userId, name, isIndoors } = req.body;
 
   if (!userId || !name) {
-    return res.status(400).json({ error: "Missing required fields (userId, name)" });
+    return res.status(400).json({ error: "Faltan campos requeridos (userId, name)" });
   }
 
   try {
     const newRoom = await insertRoom(Number(userId), name, isIndoors);
     res.status(201).json({
-      message: "Room created successfully",
+      message: "Habitación creada correctamente",
       room: {
         id: newRoom.id,
         userId: newRoom.user_id,
@@ -113,10 +113,10 @@ endpointsAmbientes.delete("/:roomId", async (req, res) => {
   try {
     const deletedRoom = await deleteRoom(roomId);
     if (!deletedRoom) {
-      return res.status(404).json({ error: "Room not found" });
+      return res.status(404).json({ error: "Habitación no encontrada" });
     }
     res.json({
-      message: "Room deleted successfully",
+      message: "Habitación eliminada correctamente",
       roomId: deletedRoom.id
     });
   } catch (error) {
