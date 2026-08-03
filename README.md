@@ -23,8 +23,6 @@ db-init/           schema + seeds (Postgres Docker)
 
 ## Variables de entorno
 
-Todo vive en `backend/.env` (copiá desde `backend/.env.example`).
-
 | Variable | Para qué |
 |---|---|
 | `DB_PROVIDER` | `local` (default) o `supabase` |
@@ -40,7 +38,6 @@ Todo vive en `backend/.env` (copiá desde `backend/.env.example`).
 
 ```bash
 cp backend/.env.example backend/.env
-# completar PLANTNET_API_KEY (y el resto si hace falta)
 
 docker compose --env-file backend/.env up --build
 ```
@@ -61,7 +58,7 @@ Login seed: usuario `dylan` / pass `1234` (ver `db-init/02-seeds.sql`)
 ### 2) Backend local + Postgres Docker
 
 ```bash
-nvm use          # Node 22
+nvm use # Node >=22
 docker compose --env-file backend/.env up db -d
 
 cd backend/app
@@ -88,11 +85,7 @@ nvm use
 cd backend/app && npm install && npm run dev
 ```
 
-Postgres Docker no se usa en este modo (puede quedar apagado).
-
 ### 4) Solo frontend
-
-Sirve para mirar maquetas, pero login/dashboard van a fallar sin API.
 
 ```bash
 cd frontend && python3 -m http.server 8765
