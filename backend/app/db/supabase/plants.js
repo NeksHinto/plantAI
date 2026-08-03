@@ -1,11 +1,11 @@
-import { supabase } from "./client.js";
+import { getSupabase } from "./client.js";
 
 function withDateAlias(record) {
   return { ...record, date: record.created_at };
 }
 
 export async function getPlantsByRoomId(roomId) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("plants")
     .select(
       "id, user_id, room_id, name, common_name, species, image_url, plant_health_records(diagnosis, accuracy, created_at)"
@@ -23,7 +23,7 @@ export async function getPlantsByRoomId(roomId) {
 }
 
 export async function getPlantById(plantId) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("plants")
     .select("id, user_id, room_id, name, common_name, species, image_url")
     .eq("id", plantId)
@@ -34,7 +34,7 @@ export async function getPlantById(plantId) {
 }
 
 export async function getHealthRecordsByPlantId(plantId) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("plant_health_records")
     .select("id, plant_id, diagnosis, accuracy, treatment_notes, created_at")
     .eq("plant_id", plantId)
@@ -49,7 +49,7 @@ export async function updatePlant(plantId, name, roomId) {
   if (name !== undefined) fields.name = name;
   if (roomId !== undefined) fields.room_id = Number(roomId);
 
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("plants")
     .update(fields)
     .eq("id", plantId)
@@ -61,7 +61,7 @@ export async function updatePlant(plantId, name, roomId) {
 }
 
 export async function insertPlant(userId, roomId, name, commonName, species, imageUrl) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("plants")
     .insert({
       user_id: userId,
@@ -79,7 +79,7 @@ export async function insertPlant(userId, roomId, name, commonName, species, ima
 }
 
 export async function insertHealthRecord(plantId, diagnosis, accuracy, treatmentNotes) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("plant_health_records")
     .insert({
       plant_id: plantId,
@@ -95,7 +95,7 @@ export async function insertHealthRecord(plantId, diagnosis, accuracy, treatment
 }
 
 export async function getRoomContextByPlantId(plantId) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("plants")
     .select("rooms(id, temperature_level, is_indoors)")
     .eq("id", plantId)
@@ -106,7 +106,7 @@ export async function getRoomContextByPlantId(plantId) {
 }
 
 export async function deletePlant(plantId) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("plants")
     .delete()
     .eq("id", plantId)
@@ -118,7 +118,7 @@ export async function deletePlant(plantId) {
 }
 
 export async function deleteHealthRecord(recordId) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("plant_health_records")
     .delete()
     .eq("id", recordId)
@@ -130,7 +130,7 @@ export async function deleteHealthRecord(recordId) {
 }
 
 export async function updateHealthRecord(recordId, treatmentNotes) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("plant_health_records")
     .update({ treatment_notes: treatmentNotes })
     .eq("id", recordId)
