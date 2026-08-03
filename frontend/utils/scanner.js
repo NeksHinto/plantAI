@@ -27,6 +27,7 @@ function getScanContext() {
   };
 }
 
+
 function fillPlantHeaderFromDetail(plant) {
   const avatar = document.querySelector("[data-plant-avatar]");
   const name = document.querySelector("[data-plant-name]");
@@ -87,55 +88,211 @@ function renderScanResult(container, result, context) {
   });
 }
 
-function setupScannerForm() {
-  const fileInput = document.querySelector("#scan-file-input");
-  const cameraBtn = document.querySelector("#scan-camera-btn");
+function handleSelectedFile(file) {
+  if (!file) return;
+
+  if (!file.type.startsWith("image/")) {
+    alert("El archivo seleccionado no es una imagen valida");
+    const fileInput = document.querySelector("#scan-file-input");
+    if (fileInput) fileInput.value = "";
+    return;
+  }
+
+  if (selectedPreviewUrl) {
+    revokePreviewUrl(selectedPreviewUrl);
+  }
+
+  selectedPreviewUrl = createPreviewUrl(file);
+
   const preview = document.querySelector("#scanner-preview");
   const previewImage = document.querySelector("#scanner-preview-image");
   const previewName = document.querySelector("#scanner-preview-name");
   const submitBtn = document.querySelector("#scan-submit-btn");
+
+  if (previewImage) {
+    previewImage.src = selectedPreviewUrl;
+  }
+
+  if (previewName) {
+    previewName.textContent = file.name;
+  }
+
+  if (preview) {
+    preview.hidden = false;
+  }
+
+  if (submitBtn) {
+    submitBtn.disabled = false;
+  }
+}
+
+function openCameraModal(onCapture) {
+  let currentStream = null;
+  let currentFacingMode = "environment"; // Priorizar cámara trasera
+
+  const overlay = document.createElement("div");
+  overlay.className = "modal-overlay";
+
+  overlay.innerHTML = `
+    <div class="modal modal--camera" role="dialog" aria-modal="true">
+      <h3 class="modal__title">Escanear planta</h3>
+      <p class="modal__message">Alineá tu planta en el visor para tomar la foto.</p>
+      
+      <div class="camera-viewport">
+        <video class="camera-video" autoplay playsinline></video>
+      </div>
+
+      <div class="camera-controls">
+        <button class="camera-action-btn camera-close-btn" type="button" title="Cancelar">
+          <i data-lucide="x"></i>
+        </button>
+        
+        <button class="camera-shutter" type="button" title="Capturar foto">
+          <i data-lucide="camera"></i>
+        </button>
+        
+        <button class="camera-action-btn camera-flip-btn" type="button" title="Voltear cámara" style="display: none;">
+          <i data-lucide="refresh-cw"></i>
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.append(overlay);
+
+  const video = overlay.querySelector(".camera-video");
+  const shutterBtn = overlay.querySelector(".camera-shutter");
+  const closeBtn = overlay.querySelector(".camera-close-btn");
+  const flipBtn = overlay.querySelector(".camera-flip-btn");
+
+  // Actualizar los iconos de Lucide cargados
+  try {
+    if (window.lucide && typeof window.lucide.createIcons === "function") {
+      window.lucide.createIcons();
+    }
+  } catch (e) {
+    console.warn("Lucide refresh error in camera modal:", e);
+  }
+
+  function stopStream() {
+    if (currentStream) {
+      currentStream.getTracks().forEach((track) => track.stop());
+      currentStream = null;
+    }
+  }
+
+  function closeCameraModal() {
+    stopStream();
+    overlay.classList.add("is-closing");
+    setTimeout(() => {
+      overlay.remove();
+    }, 150);
+  }
+
+  async function startCamera(facingMode) {
+    stopStream();
+    try {
+      currentStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: facingMode } },
+        audio: false
+      });
+      video.srcObject = currentStream;
+
+      const videoTrack = currentStream.getVideoTracks()[0];
+      const settings = videoTrack ? videoTrack.getSettings() : {};
+      const activeFacingMode = settings.facingMode || facingMode;
+
+      // Espejar la imagen del visor si estamos usando la cámara frontal (para que se sienta natural)
+      if (activeFacingMode === "user") {
+        video.classList.remove("camera-video--unmirrored");
+      } else {
+        video.classList.add("camera-video--unmirrored");
+      }
+    } catch (err) {
+      console.error("Error al acceder a la cámara:", err);
+      alert("No se pudo acceder a la cámara. Por favor, comprobá los permisos e intentá nuevamente o adjuntá un archivo.");
+      closeCameraModal();
+    }
+  }
+
+  // Detectar si hay múltiples cámaras disponibles para habilitar el botón de voltear
+  navigator.mediaDevices.enumerateDevices()
+    .then((devices) => {
+      const videoDevices = devices.filter((d) => d.kind === "videoinput");
+      if (videoDevices.length > 1) {
+        flipBtn.style.display = "flex";
+      }
+    })
+    .catch((err) => {
+      console.warn("Error enumerando cámaras:", err);
+    });
+
+  // Conectar eventos del modal
+  flipBtn.addEventListener("click", () => {
+    currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
+    startCamera(currentFacingMode);
+  });
+
+  shutterBtn.addEventListener("click", () => {
+    if (!video.videoWidth || !video.videoHeight) return;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext("2d");
+
+    // Verificar si la cámara activa real es de tipo "user" para dibujar la imagen espejada
+    const videoTrack = currentStream ? currentStream.getVideoTracks()[0] : null;
+    const settings = videoTrack ? videoTrack.getSettings() : {};
+    const activeFacingMode = settings.facingMode || currentFacingMode;
+
+    if (activeFacingMode === "user") {
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+    }
+
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob((blob) => {
+      if (blob) {
+        const file = new File([blob], `captura-${Date.now()}.jpg`, { type: "image/jpeg" });
+        onCapture(file);
+        closeCameraModal();
+      } else {
+        alert("Error al capturar la imagen. Por favor, intentá de nuevo.");
+      }
+    }, "image/jpeg", 0.95);
+  });
+
+  closeBtn.addEventListener("click", closeCameraModal);
+
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) {
+      closeCameraModal();
+    }
+  });
+
+  startCamera(currentFacingMode);
+}
+
+function setupScannerForm() {
+  const fileInput = document.querySelector("#scan-file-input");
+  const cameraBtn = document.querySelector("#scan-camera-btn");
   const context = getScanContext();
 
   if (fileInput) {
     fileInput.addEventListener("change", () => {
       const file = fileInput.files?.[0];
-      if (!file) return;
-
-      if (!file.type.startsWith("image/")) {
-        alert("El archivo seleccionado no es una imagen valida");
-        fileInput.value = "";
-        return;
-      }
-
-      if (selectedPreviewUrl) {
-        revokePreviewUrl(selectedPreviewUrl);
-      }
-
-      selectedPreviewUrl = createPreviewUrl(file);
-
-      if (previewImage) {
-        previewImage.src = selectedPreviewUrl;
-      }
-
-      if (previewName) {
-        previewName.textContent = file.name;
-      }
-
-      if (preview) {
-        preview.hidden = false;
-      }
-
-      if (submitBtn) {
-        submitBtn.disabled = false;
-      }
+      handleSelectedFile(file);
     });
   }
 
   if (cameraBtn) {
     cameraBtn.addEventListener("click", (event) => {
       event.preventDefault();
-      // TODO: integrar getUserMedia para captura con cámara
-      alert("Captura con cámara pendiente de implementación. Usá 'Adjuntar foto' por ahora.");
+      openCameraModal((file) => {
+        handleSelectedFile(file);
+      });
     });
   }
 
@@ -188,6 +345,7 @@ async function initScannerResults() {
     imageUrl: params.get("imageUrl") ?? TEMP_PUBLIC_SCAN_IMAGE_URL,
     cancelHref: contextCancelHref(params),
   };
+
 
   showLoading(container, "Analizando imagen...");
 
@@ -262,14 +420,18 @@ async function initScannerResults() {
 }
 
 function contextCancelHref(params) {
-  if (params.get("plantId")) {
-    return `scanner.html?plantId=${params.get("plantId")}`;
+  const plantId = params.get("plantId");
+  const roomId = params.get("roomId");
+
+  if (plantId) {
+    return `scanner.html?plantId=${plantId}`;
   }
-  if (params.get("roomId")) {
-    return `scanner.html?roomId=${params.get("roomId")}`;
+  if (roomId) {
+    return `scanner.html?roomId=${roomId}`;
   }
   return "dashboard.html";
 }
+
 
 function initScanner() {
   const context = getScanContext();

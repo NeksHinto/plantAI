@@ -1,5 +1,6 @@
 import { createBadge, getStatusLabel } from "./ui.js";
 
+
 export function createRoomCard(room, expanded, onClick) {
   const card = document.createElement("article");
 
@@ -42,9 +43,10 @@ export function createRoomCard(room, expanded, onClick) {
     </p>
 
     <span class="room-card__chevron">
-      ${expanded ? "⌃" : "⌄"}
+      ${expanded ? '<i data-lucide="chevron-up" aria-hidden="true"></i>' : '<i data-lucide="chevron-down" aria-hidden="true"></i>'}
     </span>
   `;
+
 
   button.addEventListener("click", onClick);
   card.append(button);
@@ -77,7 +79,7 @@ export function createRoomCard(room, expanded, onClick) {
 
     content.append(title, plants, roomLink);
     card.append(content);
-    }
+  }
 
   return card;
 }
@@ -146,12 +148,28 @@ export function createExpandedRoom(room, plants) {
     plants.forEach((plant) => plantsContainer.append(createCompactPlantCard(plant)));
   }
 
+  const actions = document.createElement("div");
+  actions.className = "room-expanded__actions";
+
   const addLink = document.createElement("a");
   addLink.className = "btn btn--secondary";
   addLink.href = `scanner.html?roomId=${room.id}`;
   addLink.textContent = "Agregar nueva planta";
-  addLink.style.margin = "0 1rem 1rem";
-  section.append(addLink);
+
+  const editButton = document.createElement("button");
+  editButton.className = "btn btn--secondary";
+  editButton.id = "edit-room-button";
+  editButton.type = "button";
+  editButton.textContent = "Editar ambiente";
+
+  const deleteButton = document.createElement("button");
+  deleteButton.className = "btn btn--danger-outline";
+  deleteButton.id = "delete-room-button";
+  deleteButton.type = "button";
+  deleteButton.textContent = "Eliminar ambiente";
+
+  actions.append(addLink, editButton, deleteButton);
+  section.append(actions);
 
   return section;
 }

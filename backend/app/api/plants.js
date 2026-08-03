@@ -1,7 +1,7 @@
 // plantas.js
 import { Router } from "express";
 import { identifySpecies, identifyDisease } from "../services/externalServices.js";
-import { getPlantById, getHealthRecordsByPlantId, updatePlant, insertPlant, insertHealthRecord, getRoomContextByPlantId } from "../db/plants.js";
+import { getPlantById, getHealthRecordsByPlantId, updatePlant, insertPlant, insertHealthRecord, getRoomContextByPlantId, deletePlant, deleteHealthRecord, updateHealthRecord } from "../db/plants.js";
 import { getRoomById } from "../db/rooms.js";
 import { generateTreatmentNotes } from "../services/treatmentRecommendation.js";
 import { mapPlantRow } from "../services/mappers.js";
@@ -26,7 +26,7 @@ endpointsPlantas.post("/add-plant", async (req, res) => {
     const plantName = name || (identification?.commonName !== "Unknown common name" ? identification.commonName : "New Plant");
     const plantSpecies = identification?.species || "Unknown species";
 
-    const newPlant = await insertPlant(Number(userId), Number(roomId), plantName, plantSpecies, imageUrl);
+    const newPlant = await insertPlant(Number(userId), Number(roomId), plantName, identification?.commonName || null, plantSpecies, imageUrl);
 
     const diagnosisText = diagnosis?.diagnosis || "no disease";
     const diagnosisAccuracy = diagnosis?.accuracy !== undefined ? diagnosis.accuracy : 100.00;
@@ -161,6 +161,64 @@ endpointsPlantas.put("/:plantId", async (req, res) => {
 
   } catch (error) {
     console.error("Error en edit-plant:", error);
+    res.sendStatus(500);
+  }
+});
+
+// delete-plant(plantId)
+endpointsPlantas.delete("/:plantId", async (req, res) => {
+  const { plantId } = req.params;
+
+  try {
+    const deletedPlant = await deletePlant(plantId);
+    if (!deletedPlant) {
+      return res.status(404).json({ error: "Plant not found" });
+    }
+    res.json({
+      message: "Plant deleted successfully",
+      plantId: deletedPlant.id
+    });
+  } catch (error) {
+    console.error("Error en delete-plant:", error);
+    res.sendStatus(500);
+  }
+});
+
+// edit-health-record(recordId)
+endpointsPlantas.put("/records/:recordId", async (req, res) => {
+  const { recordId } = req.params;
+  const { treatmentNotes } = req.body;
+
+  try {
+    const updatedRecord = await updateHealthRecord(recordId, treatmentNotes);
+    if (!updatedRecord) {
+      return res.status(404).json({ error: "Health record not found" });
+    }
+    res.json({
+      message: "Health record updated successfully",
+      healthRecord: updatedRecord
+    });
+  } catch (error) {
+    console.error("Error en edit-health-record:", error);
+    res.sendStatus(500);
+  }
+});
+
+// delete-health-record(recordId)
+endpointsPlantas.delete("/records/:recordId", async (req, res) => {
+  const { recordId } = req.params;
+
+  try {
+    const deletedRecord = await deleteHealthRecord(recordId);
+    if (!deletedRecord) {
+      return res.status(404).json({ error: "Health record not found" });
+    }
+    res.json({
+      message: "Health record deleted successfully",
+      recordId: deletedRecord.id
+    });
+  } catch (error) {
+    console.error("Error en delete-health-record:", error);
     res.sendStatus(500);
   }
 });

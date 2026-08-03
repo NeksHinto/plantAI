@@ -284,3 +284,30 @@
   font-weight: 700;
   margin-bottom: var(--space-xs);
 }
+
+.room-expanded__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  padding: 0 var(--space-md) var(--space-md);
+}
+
+.btn--danger-outline {
+  background: var(--color-surface);
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.btn--danger-outline:hover {
+  background: var(--color-danger-bg);
+}
+
+@media (max-width: 600px) {
+  .room-expanded__actions {
+    flex-direction: column;
+  }
+
+  .room-expanded__actions .btn {
+    width: 100%;
+  }
+}

@@ -58,3 +58,10 @@
 .btn-group .btn {
   flex: 1;
 }
+
+.btn--sm {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.75rem;
+  border-radius: var(--radius-sm);
+}
+

@@ -1,6 +1,6 @@
 // ambientes.js
 import { Router } from "express";
-import { getRoomsByUserId, updateRoom } from "../db/rooms.js";
+import { getRoomsByUserId, updateRoom, insertRoom, deleteRoom } from "../db/rooms.js";
 import { getPlantsByRoomId } from "../db/plants.js";
 import { mapPlantRow } from "../services/mappers.js";
 
@@ -75,6 +75,52 @@ endpointsAmbientes.get("/:roomId/plants", async (req, res) => {
 
   } catch (error) {
     console.error("Error en get-plants-by-room-id:", error);
+    res.sendStatus(500);
+  }
+});
+
+// create-room(userId, name, isIndoors)
+endpointsAmbientes.post("/", async (req, res) => {
+  const { userId, name, isIndoors } = req.body;
+
+  if (!userId || !name) {
+    return res.status(400).json({ error: "Missing required fields (userId, name)" });
+  }
+
+  try {
+    const newRoom = await insertRoom(Number(userId), name, isIndoors);
+    res.status(201).json({
+      message: "Room created successfully",
+      room: {
+        id: newRoom.id,
+        userId: newRoom.user_id,
+        name: newRoom.name,
+        imageUrl: newRoom.image_url,
+        temperatureLevel: newRoom.temperature_level,
+        isIndoors: newRoom.is_indoors
+      }
+    });
+  } catch (error) {
+    console.error("Error en create-room:", error);
+    res.sendStatus(500);
+  }
+});
+
+// delete-room(roomId)
+endpointsAmbientes.delete("/:roomId", async (req, res) => {
+  const { roomId } = req.params;
+
+  try {
+    const deletedRoom = await deleteRoom(roomId);
+    if (!deletedRoom) {
+      return res.status(404).json({ error: "Room not found" });
+    }
+    res.json({
+      message: "Room deleted successfully",
+      roomId: deletedRoom.id
+    });
+  } catch (error) {
+    console.error("Error en delete-room:", error);
     res.sendStatus(500);
   }
 });
