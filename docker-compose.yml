@@ -1,4 +1,13 @@
 services:
+
+  frontend:
+    build: ./frontend
+    image: plantai-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
   backend:
     build: ./backend
     image: plantai-backend
