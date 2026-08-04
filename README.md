@@ -8,7 +8,7 @@ Stack: HTML/CSS/JS (frontend) · Node/Express (backend) · Postgres local (Docke
 - Jesus Meza Caya — 113014
 - Agustin Ezequiel Mazurkiewich — 112809
 - Nicole Renée Hinojo Toré — 114011
-- Dylan Laureano Rivas — 112702
+- Dylan Laureano Rivas — 112701
 
 ## Arquitectura (resumen)
 ```
