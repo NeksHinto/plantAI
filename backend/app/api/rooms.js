@@ -42,10 +42,10 @@ endpointsAmbientes.get("/", async (req, res) => {
 // edit-room(roomId, {campos modificados})
 endpointsAmbientes.put("/:roomId", async (req, res) => {
   const { roomId } = req.params;
-  const { name, isIndoors } = req.body;
+  const { name, isIndoors, temperatureLevel} = req.body;
 
   try {
-    const updatedRoom = await updateRoom(roomId, name, isIndoors);
+    const updatedRoom = await updateRoom(roomId, name, isIndoors, temperatureLevel);
 
     if (!updatedRoom) {
       return res.status(404).json({ error: "Habitación no encontrada" });

@@ -8,16 +8,18 @@ export async function getRoomsByUserId(userId) {
   return res.rows;
 }
 
-export async function updateRoom(roomId, name, isIndoors) {
+export async function updateRoom(roomId, name, isIndoors, temperatureLevel) {
   const res = await db.query(
     `UPDATE rooms 
      SET name = COALESCE($1, name),
-         is_indoors = COALESCE($2, is_indoors)
-     WHERE id = $3
+         is_indoors = COALESCE($2, is_indoors),
+         temperature_level = COALESCE($3, temperature_level)
+     WHERE id = $4
      RETURNING id, user_id, name, image_url, temperature_level, is_indoors`,
     [
       name !== undefined ? name : null,
       isIndoors !== undefined ? isIndoors : null,
+      temperatureLevel !== undefined ? temperatureLevel : null,
       roomId
     ]
   );

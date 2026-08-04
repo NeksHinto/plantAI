@@ -37,15 +37,20 @@ function setupRoomEdition(room) {
   const modal = document.querySelector("#edit-room-modal");
   const form = document.querySelector("#edit-room-form");
   const nameInput = document.querySelector("#edit-room-name");
+  const locationInput = document.querySelector("#edit-room-location");
+  const temperatureInput = document.querySelector("#edit-room-temperature");
   const cancelButton = document.querySelector("#cancel-edit-room");
   const errorMessage = document.querySelector("#edit-room-error");
 
-  if (!editButton || !modal || !form || !nameInput) {
+  if (!editButton || !modal || !form || !nameInput || !locationInput || !temperatureInput) {
     return;
   }
 
   function openModal() {
     nameInput.value = room.name;
+    locationInput.value = String(room.isIndoors);
+    temperatureInput.value = room.temperatureLevel ?? "";
+
     errorMessage.hidden = true;
     modal.hidden = false;
     nameInput.focus();
@@ -68,17 +73,27 @@ function setupRoomEdition(room) {
     event.preventDefault();
 
     const name = nameInput.value.trim();
+    const isIndoors = locationInput.value === "true";
+    const temperatureValue = temperatureInput.value;
+    const temperatureLevel = Number(temperatureValue);
 
     if (!name) {
       errorMessage.textContent = "Ingresa un nombre para el ambiente";
       errorMessage.hidden = false;
       return;
     }
+    if (temperatureValue === "" || Number.isNaN(temperatureLevel)) {
+      errorMessage.textContent = "Ingresa una temperatura valida";
+      errorMessage.hidden = false;
+      return;
+    }
 
     try {
-      await updateRoom(room.id, { name });
+      await updateRoom(room.id, { name, isIndoors, temperatureLevel, });
 
       room.name = name;
+      room.isIndoors = isIndoors;
+      room.temperatureLevel = temperatureLevel;
       closeModal();
 
       const title = document.querySelector(".room-expanded__title");

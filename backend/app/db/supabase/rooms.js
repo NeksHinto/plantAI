@@ -37,10 +37,11 @@ export async function insertRoom(userId, name, isIndoors, temperatureLevel) {
   return data;
 }
 
-export async function updateRoom(roomId, name, isIndoors) {
+export async function updateRoom(roomId, name, isIndoors, temperatureLevel) {
   const fields = {};
   if (name !== undefined) fields.name = name;
   if (isIndoors !== undefined) fields.is_indoors = isIndoors;
+  if (temperatureLevel !== undefined) fields.temperature_level = temperatureLevel;
 
   const { data, error } = await getSupabase()
     .from("rooms")
