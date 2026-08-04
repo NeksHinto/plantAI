@@ -1,4 +1,4 @@
-import { addPlant, identifyDisease, fetchPlantById } from "./plants-api.js";
+import { addPlant, identifyDisease, fetchPlantById, analyzeScan } from "./plants-api.js";
 import { mapPlantDetailFromApi, mapScanResultFromApi } from "./mappers.js";
 import { TEMP_PUBLIC_SCAN_IMAGE_URL } from "./constants.js";
 import { requireAuth } from "./session.js";
@@ -41,7 +41,7 @@ function fillPlantHeaderFromDetail(plant) {
   if (species) species.textContent = plant.species;
 }
 
-function renderScanResult(container, result, context) {
+function renderScanResult(container, result, context, onSave) {
   const scannedDate = new Date(result.scannedAt);
   const saveHref = context.plantId
     ? `plant.html?id=${context.plantId}`
@@ -115,8 +115,22 @@ function renderScanResult(container, result, context) {
   }
 
   const saveBtn = container.querySelector("#save-scan-btn");
-  saveBtn.addEventListener("click", () => {
-    window.location.href = saveHref;
+  saveBtn.addEventListener("click", async () => {
+    if (!onSave) {
+      window.location.href = saveHref;
+      return;
+    }
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = "Guardando...";
+    try {
+      const redirectUrl = await onSave();
+      window.location.href = redirectUrl;
+    } catch (err) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = "Guardar en historial";
+      alert(err.message || "Error al guardar en el historial.");
+    }
   });
 }
 
@@ -433,40 +447,11 @@ async function initScannerResults() {
   }
 
   try {
-    let scanPayload;
-
-    if (context.plantId) {
-      const response = await identifyDisease({
-        imageUrl: context.imageUrl,
-        plantId: context.plantId,
-      });
-      scanPayload = {
-        identification: null,
-        diagnosis: response.healthRecord,
-        imageUrl: context.imageUrl,
-        scannedAt: response.healthRecord?.date,
-      };
-    } else if (context.roomId) {
-      const response = await addPlant({
-        imageUrl: context.imageUrl,
-        userId: session.userId,
-        roomId: context.roomId,
-        name: "Nueva planta",
-      });
-      context.savedPlantId = response.plant?.id;
-      scanPayload = {
-        identification: {
-          species: response.plant?.species,
-          commonName: response.plant?.common_name,
-          accuracy: response.plant?.confidence_score,
-        },
-        diagnosis: response.initialDiagnosis,
-        imageUrl: context.imageUrl,
-        scannedAt: new Date().toISOString(),
-      };
-    } else {
-      throw new Error("Falta plantId o roomId para escanear.");
-    }
+    const scanPayload = await analyzeScan({
+      imageUrl: context.imageUrl,
+      roomId: context.roomId,
+      plantId: context.plantId,
+    });
 
     const result = mapScanResultFromApi(scanPayload);
     result.image = getScanPreview() ?? context.imageUrl;
@@ -481,7 +466,33 @@ async function initScannerResults() {
       }
     }
 
-    renderScanResult(container, result, context);
+    renderScanResult(container, result, context, async () => {
+      if (context.roomId) {
+        const response = await addPlant({
+          imageUrl: context.imageUrl,
+          userId: session.userId,
+          roomId: context.roomId,
+          name: "Nueva planta",
+          species: result.species,
+          commonName: result.commonName,
+          diagnosis: result.healthLabel,
+          diagnosisAccuracy: result.diagnosisAccuracy,
+          treatmentNotes: result.recommendation,
+          confidenceScore: result.matchPercent,
+        });
+        return `plant.html?id=${response.plant?.id}`;
+      } else if (context.plantId) {
+        await identifyDisease({
+          imageUrl: context.imageUrl,
+          plantId: context.plantId,
+          diagnosis: result.healthLabel,
+          diagnosisAccuracy: result.diagnosisAccuracy,
+          treatmentNotes: result.recommendation,
+        });
+        return `plant.html?id=${context.plantId}`;
+      }
+      return "dashboard.html";
+    });
   } catch (error) {
     if (error.status === 422 || error.code === "SPECIES_NOT_FOUND" || error.message?.includes("5%")) {
       renderUnidentifiedResult(container, context, error.message);
