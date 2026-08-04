@@ -36,10 +36,24 @@ export function setupRoomCreation(userId, onRoomCreated) {
     event.preventDefault();
 
     const formData = new FormData(form);
+
     const name = formData.get("name")?.trim();
+    const isIndoors = formData.get("isIndoors") === "true";
+    const temperatureValue = formData.get("temperatureLevel");
+    const temperatureLevel = Number(temperatureValue);
 
     if (!name) {
       errorMessage.textContent = "Ingresa un nombre para el ambiente";
+      errorMessage.hidden = false;
+      return;
+    }
+
+    if (
+      temperatureValue === null ||
+      temperatureValue === "" ||
+      Number.isNaN(temperatureLevel)
+    ) {
+      errorMessage.textContent = "Ingresa una temperatura valida";
       errorMessage.hidden = false;
       return;
     }
@@ -48,7 +62,8 @@ export function setupRoomCreation(userId, onRoomCreated) {
       await createRoom({
         userId,
         name,
-        isIndoors: true,
+        isIndoors,
+        temperatureLevel,
       });
 
       closeModal();

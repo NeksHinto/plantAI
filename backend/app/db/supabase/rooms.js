@@ -21,13 +21,14 @@ export async function getRoomById(roomId) {
   return data;
 }
 
-export async function insertRoom(userId, name, isIndoors) {
+export async function insertRoom(userId, name, isIndoors, temperatureLevel) {
   const { data, error } = await getSupabase()
     .from("rooms")
     .insert({
       user_id: userId,
       name,
-      is_indoors: isIndoors !== undefined ? isIndoors : true,
+      is_indoors: isIndoors,
+      temperature_level: temperatureLevel
     })
     .select("id, user_id, name, image_url, temperature_level, is_indoors")
     .single();
@@ -36,10 +37,11 @@ export async function insertRoom(userId, name, isIndoors) {
   return data;
 }
 
-export async function updateRoom(roomId, name, isIndoors) {
+export async function updateRoom(roomId, name, isIndoors, temperatureLevel) {
   const fields = {};
   if (name !== undefined) fields.name = name;
   if (isIndoors !== undefined) fields.is_indoors = isIndoors;
+  if (temperatureLevel !== undefined) fields.temperature_level = temperatureLevel;
 
   const { data, error } = await getSupabase()
     .from("rooms")
