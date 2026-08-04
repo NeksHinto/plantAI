@@ -76,6 +76,39 @@
           >
         </div>
 
+        <div class="modal__field">
+          <label for="room-location">Ubicacion</label>
+
+          <select
+            class="modal__input"
+            id="room-location"
+            name="isIndoors"
+            required
+          >
+            <option value="true">Interior</option>
+            <option value="false">Exterior</option>
+          </select>
+        </div>
+
+        <div class="modal__field">
+          <label for="room-temperature">
+            Temperatura del ambiente
+          </label>
+
+          <input
+            class="modal__input"
+            id="room-temperature"
+            name="temperatureLevel"
+            type="number"
+            min="-20"
+            max="60"
+            step="0.1"
+            placeholder="Ejemplo: 24"
+            required
+          >
+        </div>
+
+
         <p class="modal__error" id="room-form-error" hidden></p>
 
         <div class="modal__actions">
