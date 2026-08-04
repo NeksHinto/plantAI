@@ -3,14 +3,17 @@ import { formatTime } from "./format.js";
 
 const NO_DISEASE = ["no disease", "sin enfermedad", "no se detect"];
 
-export function resolvePlantImage(imageUrl) {
-  if (!imageUrl || imageUrl === "dummy image") return PLACEHOLDER_PLANT;
+export function resolveImage(imageUrl, fallback) {
+  if (!imageUrl || imageUrl === "dummy image") return fallback;
   return imageUrl;
 }
 
+export function resolvePlantImage(imageUrl) {
+  return resolveImage(imageUrl, PLACEHOLDER_PLANT);
+}
+
 export function resolveRoomImage(room) {
-  if (room.imageUrl && room.imageUrl !== "dummy image") return room.imageUrl;
-  return room.isIndoors ? PLACEHOLDER_ROOM_INDOOR : PLACEHOLDER_ROOM_OUTDOOR;
+  return resolveImage(room?.imageUrl, PLACEHOLDER_ROOM);
 }
 
 export function healthStatusFromRecord(record) {
@@ -101,14 +104,33 @@ export function mapPlantDetailFromApi(plant) {
 }
 
 export function mapScanResultFromApi({ identification, diagnosis, imageUrl, scannedAt }) {
+  const healthStatus = healthStatusFromRecord({
+    diagnosis: diagnosis?.diagnosis,
+    accuracy: diagnosis?.accuracy,
+  });
+
+  const hasIdentification = Boolean(identification);
+  const matchPercent = Math.round(identification?.accuracy ?? 0);
+  const species = identification?.species ?? "Especie desconocida";
+
+  const diagnosisAccuracy = diagnosis?.accuracy !== undefined && diagnosis?.accuracy !== null
+    ? Math.round(Number(diagnosis.accuracy))
+    : 0;
+
+  const isDiagnosisLowConfidence = diagnosisAccuracy < 15;
+
   return {
-    species: identification?.species ?? "Especie desconocida",
+    species,
     commonName: identification?.commonName,
-    matchPercent: Math.round(identification?.accuracy ?? 0),
+    matchPercent,
+    isSpeciesLowConfidence: hasIdentification && matchPercent < 15,
+    isDiagnosisLowConfidence,
+    isUnidentified: hasIdentification && (species === "Especie desconocida" || matchPercent < 5),
+    healthStatus,
     healthLabel: diagnosis?.diagnosis ?? "Sin diagnóstico",
     recommendation: diagnosis?.treatmentNotes ?? "Sin notas de tratamiento.",
     image: imageUrl,
     scannedAt: scannedAt ?? new Date().toISOString(),
-    diagnosisAccuracy: diagnosis?.accuracy,
+    diagnosisAccuracy,
   };
 }

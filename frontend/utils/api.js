@@ -19,8 +19,10 @@ export async function apiRequest(path, options = {}) {
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    const message = data?.error ?? `Error ${response.status}`;
-    throw new ApiError(message, response.status);
+    const message = data?.message ?? data?.error ?? `Error ${response.status}`;
+    const error = new ApiError(message, response.status);
+    error.code = data?.error;
+    throw error;
   }
 
   return data;

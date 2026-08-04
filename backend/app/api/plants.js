@@ -18,50 +18,150 @@ import { mapPlantRow } from "../services/mappers.js";
 
 export const endpointsPlantas = Router();
 
-// add-plant(image): identifica la especie de planta y realiza un diagnostico.
+// analyze-scan: Analiza la imagen (especie y/o enfermedad) SIN guardar nada en la base de datos
+endpointsPlantas.post("/analyze-scan", async (req, res) => {
+  const { imageUrl, roomId, plantId } = req.body;
+
+  if (!imageUrl || (!roomId && !plantId)) {
+    return res.status(400).json({ error: "Faltan datos obligatorios (imageUrl y roomId o plantId)" });
+  }
+
+  try {
+    if (roomId) {
+      const [identification, diagnosis, room] = await Promise.all([
+        identifySpecies(imageUrl),
+        identifyDisease(imageUrl),
+        getRoomById(roomId)
+      ]);
+
+      const speciesAccuracy = identification?.accuracy ?? 0;
+
+      if (identification?.notFound || speciesAccuracy < 5) {
+        return res.status(422).json({
+          error: "SPECIES_NOT_FOUND",
+          message: "No se pudo identificar la especie de la planta (coincidencia menor al 5%). Intente tomar otra foto más nítida o centrada en la planta."
+        });
+      }
+
+      const plantSpecies = identification?.species || "Especie desconocida";
+      const diagnosisText = diagnosis?.diagnosis || "Sin enfermedad";
+      const diagnosisAccuracy = diagnosis?.accuracy ?? 0;
+
+      const treatmentNotes = await generateTreatmentNotes({
+        species: plantSpecies,
+        diagnosis: diagnosisText,
+        accuracy: diagnosisAccuracy,
+        temperature: room?.temperature_level,
+        isIndoors: room?.is_indoors
+      });
+
+      return res.json({
+        identification: {
+          species: plantSpecies,
+          commonName: identification?.commonName || plantSpecies,
+          accuracy: speciesAccuracy
+        },
+        diagnosis: {
+          diagnosis: diagnosisText,
+          accuracy: diagnosisAccuracy,
+          treatmentNotes
+        }
+      });
+    } else {
+      const [diagnosis, roomContext, plant] = await Promise.all([
+        identifyDisease(imageUrl),
+        getRoomContextByPlantId(plantId),
+        getPlantById(plantId)
+      ]);
+
+      const diagnosisText = diagnosis?.diagnosis || "Sin enfermedad";
+      const diagnosisAccuracy = diagnosis?.accuracy ?? 0;
+
+      const treatmentNotes = await generateTreatmentNotes({
+        species: plant?.species || "Especie desconocida",
+        diagnosis: diagnosisText,
+        accuracy: diagnosisAccuracy,
+        temperature: roomContext?.temperature_level,
+        isIndoors: roomContext?.is_indoors
+      });
+
+      return res.json({
+        identification: null,
+        diagnosis: {
+          diagnosis: diagnosisText,
+          accuracy: diagnosisAccuracy,
+          treatmentNotes
+        }
+      });
+    }
+  } catch (error) {
+    console.error("Error en analyze-scan:", error);
+    res.sendStatus(500);
+  }
+});
+
+// add-plant(image): crea la planta y su registro diagnostico inicial en la base de datos.
 endpointsPlantas.post("/add-plant", async (req, res) => {
-  const { imageUrl, userId, roomId, name } = req.body;
+  const { imageUrl, userId, roomId, name, species, commonName, diagnosis: reqDiagnosis, diagnosisAccuracy: reqAccuracy, treatmentNotes: reqNotes, confidenceScore } = req.body;
 
   if (!imageUrl || !userId || !roomId) {
     return res.status(400).json({ error: "Faltan datos obligatorios (imageUrl, userId, roomId)" });
   }
 
   try {
-    const [identification, diagnosis, room] = await Promise.all([
-      identifySpecies(imageUrl),
-      identifyDisease(imageUrl),
-      getRoomById(roomId)
-    ]);
+    let plantSpecies = species;
+    let plantCommonName = commonName;
+    let speciesAccuracy = confidenceScore;
+    let diagnosisText = reqDiagnosis;
+    let diagnosisAccuracy = reqAccuracy;
+    let treatmentNotes = reqNotes;
 
-    const plantName = name || (identification?.commonName !== "Nombre comun desconocido" ? identification.commonName : "Nueva planta");
-    const plantSpecies = identification?.species || "Especie desconocida";
+    // Si los datos no vienen precargados del análisis previa, los calculamos
+    if (!plantSpecies || diagnosisText === undefined) {
+      const [identification, diagnosis, room] = await Promise.all([
+        identifySpecies(imageUrl),
+        identifyDisease(imageUrl),
+        getRoomById(roomId)
+      ]);
 
-    const newPlant = await insertPlant(Number(userId), Number(roomId), plantName, identification?.commonName || null, plantSpecies, imageUrl);
+      speciesAccuracy = identification?.accuracy ?? 0;
 
-    const diagnosisText = diagnosis?.diagnosis || "Sin enfermedad";
-    const diagnosisAccuracy = diagnosis?.accuracy !== undefined ? diagnosis.accuracy : 100.00;
+      if (identification?.notFound || speciesAccuracy < 5) {
+        return res.status(422).json({
+          error: "SPECIES_NOT_FOUND",
+          message: "No se pudo identificar la especie de la planta (coincidencia menor al 5%). Intente tomar otra foto más nítida o centrada en la planta."
+        });
+      }
 
-    // Generar notas médicas/climáticas utilizando Gemini / Fallback
-    const treatmentNotes = await generateTreatmentNotes({
-      species: plantSpecies,
-      diagnosis: diagnosisText,
-      accuracy: diagnosisAccuracy,
-      temperature: room?.temperature_level,
-      isIndoors: room?.is_indoors
-    });
+      plantCommonName = identification?.commonName || null;
+      plantSpecies = identification?.species || "Especie desconocida";
+      diagnosisText = diagnosis?.diagnosis || "Sin enfermedad";
+      diagnosisAccuracy = diagnosis?.accuracy ?? 0;
 
-    const newRecord = await insertHealthRecord(newPlant.id, diagnosisText, diagnosisAccuracy, treatmentNotes);
+      treatmentNotes = await generateTreatmentNotes({
+        species: plantSpecies,
+        diagnosis: diagnosisText,
+        accuracy: diagnosisAccuracy,
+        temperature: room?.temperature_level,
+        isIndoors: room?.is_indoors
+      });
+    }
+
+    const plantName = name || (plantCommonName && plantCommonName !== "Nombre comun desconocido" ? plantCommonName : "Nueva planta");
+
+    const newPlant = await insertPlant(Number(userId), Number(roomId), plantName, plantCommonName, plantSpecies, imageUrl);
+    const newRecord = await insertHealthRecord(newPlant.id, diagnosisText || "Sin enfermedad", diagnosisAccuracy ?? 0, treatmentNotes || "");
 
     const plantResponse = mapPlantRow(newPlant);
-    plantResponse.common_name = identification?.commonName || newPlant.species;
-    plantResponse.confidence_score = identification?.accuracy || 100.0;
+    plantResponse.common_name = plantCommonName || newPlant.species;
+    plantResponse.confidence_score = speciesAccuracy ?? 100.0;
 
     res.status(201).json({
       message: "Planta identificada y escaneada correctamente",
       plant: plantResponse,
       initialDiagnosis: {
         diagnosis: newRecord.diagnosis,
-        accuracy: newRecord.accuracy ? Number(newRecord.accuracy) : 100,
+        accuracy: newRecord.accuracy !== undefined && newRecord.accuracy !== null ? Number(newRecord.accuracy) : 0,
         treatmentNotes: newRecord.treatment_notes
       }
     });
@@ -72,34 +172,39 @@ endpointsPlantas.post("/add-plant", async (req, res) => {
   }
 });
 
-// identify-disease(image): Realiza y devuelve diagnostico 
+// identify-disease(image): Realiza y devuelve diagnostico guardandolo en la base de datos.
 endpointsPlantas.post("/identify-disease", async (req, res) => {
-  const { imageUrl, plantId } = req.body;
+  const { imageUrl, plantId, diagnosis: reqDiagnosis, diagnosisAccuracy: reqAccuracy, treatmentNotes: reqNotes } = req.body;
 
-  if (!imageUrl || !plantId) {
-    return res.status(400).json({ error: "Faltan datos requeridos (imageUrl, plantId)" });
+  if ((!imageUrl && !reqDiagnosis) || !plantId) {
+    return res.status(400).json({ error: "Faltan datos requeridos (plantId y imageUrl o datos del diagnóstico)" });
   }
 
   try {
-    const [diagnosis, roomContext, plant] = await Promise.all([
-      identifyDisease(imageUrl),
-      getRoomContextByPlantId(plantId),
-      getPlantById(plantId)
-    ]);
+    let diagnosisText = reqDiagnosis;
+    let diagnosisAccuracy = reqAccuracy;
+    let treatmentNotes = reqNotes;
 
-    const diagnosisText = diagnosis?.diagnosis || "Sin enfermedad";
-    const diagnosisAccuracy = diagnosis?.accuracy !== undefined ? diagnosis.accuracy : 100.00;
+    if (!diagnosisText) {
+      const [diagnosis, roomContext, plant] = await Promise.all([
+        identifyDisease(imageUrl),
+        getRoomContextByPlantId(plantId),
+        getPlantById(plantId)
+      ]);
 
-    // Generar notas médicas/climáticas utilizando Gemini / Fallback
-    const treatmentNotes = await generateTreatmentNotes({
-      species: plant?.species || "Especie desconocida",
-      diagnosis: diagnosisText,
-      accuracy: diagnosisAccuracy,
-      temperature: roomContext?.temperature_level,
-      isIndoors: roomContext?.is_indoors
-    });
+      diagnosisText = diagnosis?.diagnosis || "Sin enfermedad";
+      diagnosisAccuracy = diagnosis?.accuracy ?? 0;
 
-    const newRecord = await insertHealthRecord(Number(plantId), diagnosisText, diagnosisAccuracy, treatmentNotes);
+      treatmentNotes = await generateTreatmentNotes({
+        species: plant?.species || "Especie desconocida",
+        diagnosis: diagnosisText,
+        accuracy: diagnosisAccuracy,
+        temperature: roomContext?.temperature_level,
+        isIndoors: roomContext?.is_indoors
+      });
+    }
+
+    const newRecord = await insertHealthRecord(Number(plantId), diagnosisText, diagnosisAccuracy ?? 0, treatmentNotes || "");
 
     res.status(201).json({
       message: "Diagnostico de la enfermedad completado",
@@ -107,7 +212,7 @@ endpointsPlantas.post("/identify-disease", async (req, res) => {
         id: newRecord.id,
         plantId: newRecord.plant_id,
         diagnosis: newRecord.diagnosis,
-        accuracy: newRecord.accuracy ? Number(newRecord.accuracy) : 100,
+        accuracy: newRecord.accuracy !== undefined && newRecord.accuracy !== null ? Number(newRecord.accuracy) : 0,
         treatmentNotes: newRecord.treatment_notes,
         date: newRecord.date
       }

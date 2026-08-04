@@ -4,17 +4,24 @@ export function fetchPlantById(plantId) {
   return apiRequest(`/plantas/${plantId}`);
 }
 
-export function addPlant({ imageUrl, userId, roomId, name }) {
-  return apiRequest("/plantas/add-plant", {
+export function analyzeScan({ imageUrl, roomId, plantId }) {
+  return apiRequest("/plantas/analyze-scan", {
     method: "POST",
-    body: JSON.stringify({ imageUrl, userId, roomId, name }),
+    body: JSON.stringify({ imageUrl, roomId, plantId }),
   });
 }
 
-export function identifyDisease({ imageUrl, plantId }) {
+export function addPlant(data) {
+  return apiRequest("/plantas/add-plant", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function identifyDisease(data) {
   return apiRequest("/plantas/identify-disease", {
     method: "POST",
-    body: JSON.stringify({ imageUrl, plantId }),
+    body: JSON.stringify(data),
   });
 }
 
