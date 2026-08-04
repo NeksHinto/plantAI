@@ -21,13 +21,14 @@ export async function getRoomById(roomId) {
   return data;
 }
 
-export async function insertRoom(userId, name, isIndoors) {
+export async function insertRoom(userId, name, isIndoors, temperatureLevel) {
   const { data, error } = await getSupabase()
     .from("rooms")
     .insert({
       user_id: userId,
       name,
-      is_indoors: isIndoors !== undefined ? isIndoors : true,
+      is_indoors: isIndoors,
+      temperature_level: temperatureLevel
     })
     .select("id, user_id, name, image_url, temperature_level, is_indoors")
     .single();

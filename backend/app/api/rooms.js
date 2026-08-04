@@ -86,14 +86,14 @@ endpointsAmbientes.get("/:roomId/plants", async (req, res) => {
 
 // create-room(userId, name, isIndoors)
 endpointsAmbientes.post("/", async (req, res) => {
-  const { userId, name, isIndoors } = req.body;
+  const { userId, name, isIndoors, temperatureLevel } = req.body;
 
-  if (!userId || !name) {
-    return res.status(400).json({ error: "Faltan campos requeridos (userId, name)" });
+  if (!userId || !name || isIndoors === undefined || temperatureLevel === undefined) {
+    return res.status(400).json({ error: "Faltan campos requeridos (userId, name, isIndoors, temperatureLevel)" });
   }
 
   try {
-    const newRoom = await insertRoom(Number(userId), name, isIndoors);
+    const newRoom = await insertRoom(Number(userId), name, isIndoors, temperatureLevel);
     res.status(201).json({
       message: "Habitación creada correctamente",
       room: {
