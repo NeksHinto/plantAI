@@ -19,6 +19,11 @@ app.use("/api/v1/rooms", endpointsAmbientes);
 
 app.get("/health", (req, res) => res.send("OK"));
 
-app.listen(8000, () => {
-  console.log("Server running at http://localhost:8000/");
-});
+if (!process.env.VERCEL) {
+  app.listen(8000, () => {
+    console.log("Server running at http://localhost:8000/");
+  });
+}
+
+export default app;
+
