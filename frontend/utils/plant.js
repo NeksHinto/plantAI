@@ -53,11 +53,15 @@ function createTimelinePoint(entry, index, onDelete, onUpdateNotes) {
   point.className = "timeline__point";
   point.dataset.index = index;
 
+  const NO_DISEASE = ["no disease", "sin enfermedad", "no se detect"];
+  const isHealthy = entry.diagnosis && NO_DISEASE.some((p) => entry.diagnosis.toLowerCase().includes(p));
+  const diagnosisText = isHealthy ? "Sin enfermedad" : (entry.diagnosis || "");
+
   point.innerHTML = `
     <time class="timeline__date" datetime="${entry.date}">${formatDate(entry.date)}</time>
     <button class="timeline__dot timeline__dot--${entry.status}" type="button" aria-label="Ver escaneo del ${formatDate(entry.date)}"></button>
     <span class="timeline__label timeline__label--${entry.status}">${entry.label}</span>
-    <span class="timeline__note">${entry.treatmentNotes || entry.diagnosis}</span>
+    ${diagnosisText ? `<span class="timeline__note">${diagnosisText}</span>` : ""}
     <div class="timeline__popup" role="dialog" aria-label="Detalles del escaneo">
       <div class="timeline__popup-header">
         <span class="timeline__popup-date"><strong>${formatDate(entry.date)}</strong> • ${entry.time}</span>

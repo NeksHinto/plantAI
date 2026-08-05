@@ -61,6 +61,42 @@ export function createPagination(totalPages, currentPage = 1) {
   return nav;
 }
 
+// Agrega un botón de borrado (cruz) con ícono a la barra de búsqueda
+export function setupSearchBarClear(wrapper) {
+  if (!wrapper) return;
+  const input = wrapper.querySelector("input");
+  if (!input) return;
+
+  // Crea el botón con ícono 'x' si no existe
+  let clearBtn = wrapper.querySelector(".search-bar__clear");
+  if (!clearBtn) {
+    clearBtn = document.createElement("button");
+    clearBtn.className = "search-bar__clear";
+    clearBtn.type = "button";
+    clearBtn.setAttribute("aria-label", "Limpiar búsqueda");
+    clearBtn.hidden = !input.value;
+    clearBtn.innerHTML = `<i data-lucide="x" aria-hidden="true"></i>`;
+    wrapper.append(clearBtn);
+  }
+
+  // Muestra u oculta el botón según si hay texto escrito
+  const updateVisibility = () => {
+    clearBtn.hidden = !input.value;
+  };
+
+  input.addEventListener("input", updateVisibility);
+  clearBtn.addEventListener("click", () => {
+    input.value = "";
+    updateVisibility();
+    input.dispatchEvent(new Event("input")); // Dispara el filtro de búsqueda
+    input.focus();
+  });
+
+  updateVisibility();
+  setTimeout(refreshIcons, 0);
+}
+
+// Crea un buscador dinámico con icono de lupa y botón de borrado
 export function createSearchBar(placeholder) {
   const wrapper = document.createElement("div");
   wrapper.className = "search-bar";
@@ -68,7 +104,7 @@ export function createSearchBar(placeholder) {
     <i data-lucide="search" class="search-bar__icon" aria-hidden="true"></i>
     <input class="search-bar__input" type="search" placeholder="${placeholder}">
   `;
-  setTimeout(refreshIcons, 0);
+  setupSearchBarClear(wrapper);
   return wrapper;
 }
 

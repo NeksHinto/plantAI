@@ -6,6 +6,7 @@ import {
   createCollapsedRoom,
 } from "./cards.js";
 import { fillUserGreeting, showError, showLoading } from "./ui.js";
+import { formatTemperatureForDb, parseTemperature } from "./format.js";
 
 async function loadRoomPageData(userId, activeRoomId) {
   const rooms = await fetchRooms(userId);
@@ -49,15 +50,9 @@ function setupRoomEdition(room) {
   function openModal() {
     nameInput.value = room.name;
     locationInput.value = String(room.isIndoors);
-    temperatureInput.value = Number(room.temperatureLevel.replace("°C", "")) ?? "";
 
-    console.log(temperatureInput.value);
-
-    if (room.isIndoors === true) {
-
-    }
-
-    console.log(room.temperatureLevel);
+    const parsedTemp = parseTemperature(room.temperatureLevel);
+    temperatureInput.value = parsedTemp !== null ? parsedTemp : "";
 
     errorMessage.hidden = true;
     modal.hidden = false;
@@ -82,19 +77,21 @@ function setupRoomEdition(room) {
 
     const name = nameInput.value.trim();
     const isIndoors = locationInput.value === "true";
-    const temperatureValue = temperatureInput.value;
-    const temperatureLevel = Number(temperatureValue);
+    const rawTemperature = temperatureInput.value;
+    const parsedTemp = parseTemperature(rawTemperature);
 
     if (!name) {
       errorMessage.textContent = "Ingresa un nombre para el ambiente";
       errorMessage.hidden = false;
       return;
     }
-    if (temperatureValue === "" || Number.isNaN(temperatureLevel)) {
+    if (rawTemperature === "" || parsedTemp === null) {
       errorMessage.textContent = "Ingresa una temperatura valida";
       errorMessage.hidden = false;
       return;
     }
+
+    const temperatureLevel = formatTemperatureForDb(parsedTemp);
 
     try {
       await updateRoom(room.id, { name, isIndoors, temperatureLevel, });

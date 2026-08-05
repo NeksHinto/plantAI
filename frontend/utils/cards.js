@@ -1,5 +1,4 @@
-import { createBadge, getStatusLabel } from "./ui.js";
-
+import { createBadge, getStatusLabel, refreshIcons } from "./ui.js";
 
 export function createRoomCard(room, expanded, onClick) {
   const card = document.createElement("article");
@@ -198,12 +197,13 @@ export function createCollapsedRoom(room) {
       <h3 class="room-collapsed__title">${room.name}</h3>
       <p class="room-card__meta">${room.isIndoors ? "Interior" : "Exterior"}${room.temperatureLevel ? ` · ${room.temperatureLevel}` : ""}</p>
     </div>
-    <span aria-hidden="true">›</span>
+    <i data-lucide="chevron-right" aria-hidden="true"></i>
   `;
 
   link.querySelector(".room-collapsed__body").append(
     createBadge(room.status, `${room.badStatePercent}% en mal estado`)
   );
 
+  setTimeout(refreshIcons, 0);
   return link;
 }
