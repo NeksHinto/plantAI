@@ -8,6 +8,8 @@ import {
   revokePreviewUrl,
   storeScanPreview,
   getScanPreview,
+  readFileAsDataUrl,
+  getScanPreviewFile,
 } from "./image.js";
 import { formatDateTime } from "./format.js";
 import {
@@ -17,6 +19,7 @@ import {
   showLoading,
 } from "./ui.js";
 
+let selectedFile = null;
 let selectedPreviewUrl = null;
 
 function getScanContext() {
@@ -179,6 +182,8 @@ function handleSelectedFile(file) {
     if (fileInput) fileInput.value = "";
     return;
   }
+
+  selectedFile = file;
 
   if (selectedPreviewUrl) {
     revokePreviewUrl(selectedPreviewUrl);
@@ -396,14 +401,21 @@ async function runScan(context) {
     return;
   }
 
+  if (selectedFile) {
+    try {
+      const dataUrl = await readFileAsDataUrl(selectedFile);
+      storeScanPreview(dataUrl);
+    } catch {
+      storeScanPreview(selectedPreviewUrl);
+    }
+  } else if (selectedPreviewUrl) {
+    storeScanPreview(selectedPreviewUrl);
+  }
+
   const imageUrl = resolveImageUrlForApi(
     selectedPreviewUrl,
     TEMP_PUBLIC_SCAN_IMAGE_URL
   );
-
-  if (selectedPreviewUrl) {
-    storeScanPreview(selectedPreviewUrl);
-  }
 
   const resultsUrl = new URL("scanner-results.html", window.location.href);
   if (context.plantId) resultsUrl.searchParams.set("plantId", context.plantId);
@@ -428,7 +440,6 @@ async function initScannerResults() {
     cancelHref: contextCancelHref(params),
   };
 
-
   showLoading(container, "Analizando imagen...");
 
   if (context.plantId) {
@@ -446,8 +457,11 @@ async function initScannerResults() {
     setPlantHeaderAction("Ver historial", "dashboard.html");
   }
 
+  const scanFile = getScanPreviewFile();
+
   try {
     const scanPayload = await analyzeScan({
+      imageFile: scanFile,
       imageUrl: context.imageUrl,
       roomId: context.roomId,
       plantId: context.plantId,

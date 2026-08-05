@@ -1,5 +1,6 @@
 // plantas.js
 import { Router } from "express";
+import multer from "multer";
 import { identifySpecies, identifyDisease } from "../services/externalServices.js";
 import {
   getPlantById,
@@ -16,21 +17,24 @@ import {
 import { generateTreatmentNotes } from "../services/treatmentRecommendation.js";
 import { mapPlantRow } from "../services/mappers.js";
 
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
 export const endpointsPlantas = Router();
 
-// analyze-scan: Analiza la imagen (especie y/o enfermedad) SIN guardar nada en la base de datos
-endpointsPlantas.post("/analyze-scan", async (req, res) => {
-  const { imageUrl, roomId, plantId } = req.body;
+endpointsPlantas.post("/analyze-scan", upload.single("image"), async (req, res) => {
+  const imageInput = req.file || req.body.imageUrl;
+  const { roomId, plantId } = req.body;
 
-  if (!imageUrl || (!roomId && !plantId)) {
-    return res.status(400).json({ error: "Faltan datos obligatorios (imageUrl y roomId o plantId)" });
+  if (!imageInput || (!roomId && !plantId)) {
+    return res.status(400).json({ error: "Faltan datos obligatorios (imagen/imageUrl y roomId o plantId)" });
   }
 
   try {
     if (roomId) {
       const [identification, diagnosis, room] = await Promise.all([
-        identifySpecies(imageUrl),
-        identifyDisease(imageUrl),
+        identifySpecies(imageInput),
+        identifyDisease(imageInput),
         getRoomById(roomId)
       ]);
 
@@ -69,7 +73,7 @@ endpointsPlantas.post("/analyze-scan", async (req, res) => {
       });
     } else {
       const [diagnosis, roomContext, plant] = await Promise.all([
-        identifyDisease(imageUrl),
+        identifyDisease(imageInput),
         getRoomContextByPlantId(plantId),
         getPlantById(plantId)
       ]);

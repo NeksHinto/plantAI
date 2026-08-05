@@ -2,10 +2,29 @@
 const PLANTNET_API_KEY = process.env.PLANTNET_API_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
-export async function identifySpecies(imageUrl) {
+export async function identifySpecies(imageInput) {
   try {
-    const url = `https://my-api.plantnet.org/v2/identify/all?api-key=${PLANTNET_API_KEY}&images=${encodeURIComponent(imageUrl)}`;
-    const response = await fetch(url);
+    let response;
+    // Si la entrada es un string, asumimos que es una URL publica de imagen (metodo GET)
+    if (typeof imageInput === "string") {
+      const url = `https://my-api.plantnet.org/v2/identify/all?api-key=${PLANTNET_API_KEY}&images=${encodeURIComponent(imageInput)}`;
+      response = await fetch(url);
+    // Si es un objeto de archivo subido (con buffer), enviamos la foto en binario vía POST multipart/form-data
+    } else if (imageInput && imageInput.buffer) {
+      const url = `https://my-api.plantnet.org/v2/identify/all?include-related-images=false&no-reject=false&nb-results=10&lang=es&api-key=${PLANTNET_API_KEY}`;
+      const formData = new FormData();
+      const imageBlob = new Blob([imageInput.buffer], { type: imageInput.mimetype || "image/jpeg" });
+      formData.append("images", imageBlob, imageInput.originalname || "planta.jpg");
+      formData.append("organs", "auto");
+
+      response = await fetch(url, {
+        method: "POST",
+        body: formData,
+      });
+    } else {
+      throw new Error("Formato de imagen invalido");
+    }
+
     if (!response.ok) {
       if (response.status === 404) {
         return {
@@ -53,16 +72,28 @@ export async function identifySpecies(imageUrl) {
   }
 }
 
-export async function identifyDisease(imageUrl) {
+export async function identifyDisease(imageInput) {
   try {
-    const imageResponse = await fetch(imageUrl);
-    if (!imageResponse.ok) throw new Error("Could not download the test image to resend");
-    const imageBlob = await imageResponse.blob();
+    let imageBlob;
+    let filename = "planta.jpeg";
+
+    // Si es una URL string, la descargamos primero a un Blob para reenviar
+    if (typeof imageInput === "string") {
+      const imageResponse = await fetch(imageInput);
+      if (!imageResponse.ok) throw new Error("Could not download the test image to resend");
+      imageBlob = await imageResponse.blob();
+    // Si es un archivo binario subido (con buffer), creamos el Blob directamente
+    } else if (imageInput && imageInput.buffer) {
+      imageBlob = new Blob([imageInput.buffer], { type: imageInput.mimetype || "image/jpeg" });
+      filename = imageInput.originalname || "planta.jpeg";
+    } else {
+      throw new Error("Formato de imagen invalido");
+    }
 
     const url = `https://my-api.plantnet.org/v2/diseases/identify?include-related-images=true&no-reject=false&nb-results=10&lang=es&api-key=${PLANTNET_API_KEY}`;
     const formData = new FormData();
 
-    formData.append("images", imageBlob, "planta.jpeg");
+    formData.append("images", imageBlob, filename);
     formData.append("organs", "auto");
 
     const response = await fetch(url, {
