@@ -1,4 +1,4 @@
-import { fetchPlantById, updatePlant, updateHealthRecord, deleteHealthRecord } from "./plants-api.js";
+import { fetchPlantById, updatePlant, deletePlant, updateHealthRecord, deleteHealthRecord } from "./plants-api.js";
 import { mapPlantDetailFromApi } from "./mappers.js";
 import { formatDate } from "./format.js";
 import {
@@ -352,6 +352,47 @@ function setupPlantEdition(plant) {
   });
 }
 
+function setupPlantDeletion(plant) {
+  const infoSection = document.querySelector("#plant-info");
+
+  if (!infoSection) {
+    return;
+  }
+
+  const deleteButton = document.createElement("button");
+
+  deleteButton.className = "btn btn--outline";
+  deleteButton.type = "button";
+  deleteButton.textContent = "Eliminar planta";
+
+  deleteButton.addEventListener("click", async () => {
+    const confirmed = await showConfirmModal({
+      title: "¿Eliminar planta?",
+      message: `Se eliminara ${plant.name} y su historial clinico. Esta accion no se puede deshacer.`,
+      confirmText: "Si, eliminar",
+      cancelText: "Cancelar",
+      isDanger: true,
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await deletePlant(plant.id);
+
+      window.location.href = `room.html?id=${plant.roomId}`;
+    } catch (error) {
+      alert(
+        "No se pudo eliminar la planta: " +
+        (error.message ?? "Error desconocido")
+      );
+    }
+  });
+
+  infoSection.insertAdjacentElement("afterend", deleteButton);
+}
+
 async function initPlantDetail() {
   const timeline = document.querySelector("#timeline");
   const album = document.querySelector("#scan-album");
@@ -376,6 +417,7 @@ async function initPlantDetail() {
     setPlantHeaderBack(`room.html?id=${plant.roomId}`);
     setPlantHeaderAction("Editar planta", "#");
     setupPlantEdition(plant);
+    setupPlantDeletion(plant);
 
     refreshHistoryViews();
   } catch (error) {
