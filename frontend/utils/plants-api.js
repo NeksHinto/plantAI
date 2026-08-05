@@ -4,7 +4,22 @@ export function fetchPlantById(plantId) {
   return apiRequest(`/plantas/${plantId}`);
 }
 
-export function analyzeScan({ imageUrl, roomId, plantId }) {
+// Realiza el analisis botánico/salud.
+// Si recibe `imageFile` (File binario), arma FormData (multipart/form-data).
+// Si recibe `imageUrl` (string), envía JSON.
+export function analyzeScan({ imageUrl, imageFile, roomId, plantId }) {
+  if (imageFile) {
+    const formData = new FormData();
+    formData.append("image", imageFile);
+    if (roomId) formData.append("roomId", roomId);
+    if (plantId) formData.append("plantId", plantId);
+
+    return apiRequest("/plantas/analyze-scan", {
+      method: "POST",
+      body: formData,
+    });
+  }
+
   return apiRequest("/plantas/analyze-scan", {
     method: "POST",
     body: JSON.stringify({ imageUrl, roomId, plantId }),
