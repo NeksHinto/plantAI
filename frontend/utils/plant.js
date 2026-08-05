@@ -10,6 +10,8 @@ import {
   showConfirmModal,
   showError,
   showLoading,
+  showPlantInfoSkeleton,
+  withSkeleton,
   refreshIcons,
 } from "./ui.js";
 
@@ -424,23 +426,23 @@ async function initPlantDetail() {
     return;
   }
 
-  showLoading(timeline, "Cargando historial...");
+  const plantInfo = document.querySelector("#plant-info");
 
   try {
-    const rawPlant = await fetchPlantById(plantId);
-    const plant = mapPlantDetailFromApi(rawPlant);
-
-    const roomsResponse = await fetchRooms(plant.userId);
-
-    const rooms = Array.isArray(roomsResponse)
-      ? roomsResponse
-      : roomsResponse.rooms ?? [];
-
-    const currentRoom = rooms.find(
-      (room) => String(room.id) === String(plant.roomId)
+    const { plant, rooms } = await withSkeleton(
+      timeline,
+      "historial",
+      async () => {
+        if (plantInfo) showPlantInfoSkeleton(plantInfo);
+        const rawPlant = await fetchPlantById(plantId);
+        const mappedPlant = mapPlantDetailFromApi(rawPlant);
+        const roomsRes = await fetchRooms(mappedPlant.userId);
+        const roomsArr = Array.isArray(roomsRes) ? roomsRes : roomsRes.rooms ?? [];
+        const currentRoom = roomsArr.find((room) => String(room.id) === String(mappedPlant.roomId));
+        mappedPlant.roomName = currentRoom?.name || "Sin ambiente";
+        return { plant: mappedPlant, rooms: roomsArr };
+      }
     );
-
-    plant.roomName = currentRoom?.name || "Sin ambiente";
 
     currentHistory = plant.history;
 

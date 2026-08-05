@@ -5,7 +5,7 @@ import {
   createExpandedRoom,
   createCollapsedRoom,
 } from "./cards.js";
-import { fillUserGreeting, showError, showLoading } from "./ui.js";
+import { fillUserGreeting, showError, showLoading, withSkeleton } from "./ui.js";
 import { formatTemperatureForDb, parseTemperature } from "./format.js";
 
 async function loadRoomPageData(userId, activeRoomId) {
@@ -189,12 +189,11 @@ async function initRoom() {
     return;
   }
 
-  showLoading(expandedContainer, "Cargando ambiente...");
-
   try {
-    const { activeRoom, otherRooms } = await loadRoomPageData(
-      session.userId,
-      roomId
+    const { activeRoom, otherRooms } = await withSkeleton(
+      expandedContainer,
+      "ambiente",
+      () => loadRoomPageData(session.userId, roomId)
     );
 
     if (!activeRoom) {

@@ -15,6 +15,7 @@ import {
   setPlantHeaderAction,
   showError,
   showLoading,
+  withSkeleton,
 } from "./ui.js";
 
 let selectedPreviewUrl = null;
@@ -429,8 +430,6 @@ async function initScannerResults() {
   };
 
 
-  showLoading(container, "Analizando imagen...");
-
   if (context.plantId) {
     try {
       const rawPlant = await fetchPlantById(context.plantId);
@@ -447,11 +446,15 @@ async function initScannerResults() {
   }
 
   try {
-    const scanPayload = await analyzeScan({
-      imageUrl: context.imageUrl,
-      roomId: context.roomId,
-      plantId: context.plantId,
-    });
+    const scanPayload = await withSkeleton(
+      container,
+      "Analizando imagen",
+      () => analyzeScan({
+        imageUrl: context.imageUrl,
+        roomId: context.roomId,
+        plantId: context.plantId,
+      })
+    );
 
     const result = mapScanResultFromApi(scanPayload);
     result.image = getScanPreview() ?? context.imageUrl;

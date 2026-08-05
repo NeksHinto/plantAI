@@ -15,6 +15,7 @@ import {
   fillUserGreeting,
   showError,
   showLoading,
+  withSkeleton,
 } from "./ui.js";
 
 const DEFAULT_PAGE_SIZE = 6;
@@ -215,11 +216,12 @@ async function initDashboard() {
   const plantsPageSizeSlot = document.querySelector("#plants-page-size");
   const plantsPaginationSlot = document.querySelector("#plants-pagination");
 
-  showLoading(roomsGrid, "Cargando ambientes...");
-  showLoading(plantsGrid, "Cargando plantas...");
-
   try {
-    let { rooms, plants } = await loadDashboardData(session.userId);
+    let { rooms, plants } = await withSkeleton(
+      roomsGrid,
+      "ambientes",
+      () => loadDashboardData(session.userId)
+    );
 
     const roomsState = { all: rooms, filtered: rooms, page: 1, expandedRoomId: null };
     const plantsState = { all: plants, filtered: plants, page: 1 };

@@ -131,10 +131,210 @@ export function showError(container, message) {
   container.innerHTML = `<p class="form-error" role="alert">${message}</p>`;
 }
 
-export function showLoading(container, message = "Cargando...") {
-  if (!container) return;
-  container.innerHTML = `<p class="loading-message">${message}</p>`;
+export async function withSkeleton(container, typeOrMessage, fetchPromiseFn, count = 3) {
+  if (!container) return await fetchPromiseFn();
+
+  let timer = null;
+  let skeletonRendered = false;
+  let startTime = 0;
+
+  timer = setTimeout(() => {
+    skeletonRendered = true;
+    startTime = Date.now();
+    showLoading(container, typeOrMessage, count);
+  }, 100);
+
+  try {
+    const data = await fetchPromiseFn();
+    if (timer) clearTimeout(timer);
+
+    if (skeletonRendered) {
+      const elapsed = Date.now() - startTime;
+      const minDisplay = 300;
+      if (elapsed < minDisplay) {
+        await new Promise((resolve) => setTimeout(resolve, minDisplay - elapsed));
+      }
+    }
+
+    container.classList.add("content-fade-in");
+    setTimeout(() => container.classList.remove("content-fade-in"), 350);
+
+    return data;
+  } catch (err) {
+    if (timer) clearTimeout(timer);
+    throw err;
+  }
 }
+
+export function showLoading(container, typeOrMessage = "card", count = 3) {
+  if (!container) return;
+  
+  if (typeOrMessage.includes("ambiente")) {
+    if (typeOrMessage.includes("ambientes")) {
+      showRoomsSkeleton(container, count);
+    } else {
+      showRoomDetailSkeleton(container);
+    }
+  } else if (typeOrMessage.includes("planta")) {
+    showPlantsSkeleton(container, count);
+  } else if (typeOrMessage.includes("historial")) {
+    showTimelineSkeleton(container, 2);
+  } else if (typeOrMessage.includes("imagen") || typeOrMessage.includes("Analizando")) {
+    showScannerSkeleton(container);
+  } else {
+    showPlantsSkeleton(container, count);
+  }
+}
+
+export function showRoomsSkeleton(container, count = 3) {
+  if (!container) return;
+  const cardsHtml = Array(count)
+    .fill(0)
+    .map(
+      () => `
+    <div class="skeleton-card skeleton-room-card skeleton-fade-in" aria-hidden="true">
+      <div class="skeleton-room-header">
+        <div class="skeleton-box skeleton-circle" style="width: 3.5rem; height: 3.5rem; flex-shrink: 0;"></div>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 0.5rem;">
+          <div class="skeleton-box" style="height: 1.125rem; width: 60%;"></div>
+          <div class="skeleton-box" style="height: 0.875rem; width: 40%;"></div>
+        </div>
+        <div class="skeleton-box skeleton-pill" style="height: 1.5rem; width: 4.5rem;"></div>
+      </div>
+      <div class="skeleton-room-metrics">
+        <div class="skeleton-box" style="height: 2.25rem;"></div>
+        <div class="skeleton-box" style="height: 2.25rem;"></div>
+        <div class="skeleton-box" style="height: 2.25rem;"></div>
+      </div>
+    </div>`
+    )
+    .join("");
+  container.innerHTML = cardsHtml;
+}
+
+export function showPlantsSkeleton(container, count = 3) {
+  if (!container) return;
+  const cardsHtml = Array(count)
+    .fill(0)
+    .map(
+      () => `
+    <div class="skeleton-card skeleton-plant-card skeleton-fade-in" aria-hidden="true">
+      <div class="skeleton-box" style="width: 4rem; height: 4rem; border-radius: var(--radius-sm); flex-shrink: 0;"></div>
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 0.5rem;">
+        <div class="skeleton-box" style="height: 1.125rem; width: 55%;"></div>
+        <div class="skeleton-box" style="height: 0.875rem; width: 35%;"></div>
+        <div class="skeleton-box skeleton-pill" style="height: 1.25rem; width: 5rem;"></div>
+      </div>
+    </div>`
+    )
+    .join("");
+  container.innerHTML = cardsHtml;
+}
+
+export function showRoomDetailSkeleton(container) {
+  if (!container) return;
+  container.innerHTML = `
+    <div class="skeleton-room-expanded skeleton-fade-in" aria-hidden="true">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 1rem; flex: 1;">
+          <div class="skeleton-box skeleton-circle" style="width: 4rem; height: 4rem;"></div>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1;">
+            <div class="skeleton-box" style="height: 1.5rem; width: 45%;"></div>
+            <div class="skeleton-box" style="height: 0.875rem; width: 25%;"></div>
+          </div>
+        </div>
+        <div class="skeleton-box skeleton-pill" style="height: 2rem; width: 6rem;"></div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 1rem; margin-top: 0.5rem;">
+        <div class="skeleton-box" style="height: 4.5rem; border-radius: var(--radius-md);"></div>
+        <div class="skeleton-box" style="height: 4.5rem; border-radius: var(--radius-md);"></div>
+        <div class="skeleton-box" style="height: 4.5rem; border-radius: var(--radius-md);"></div>
+      </div>
+      <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
+        <div class="skeleton-box" style="height: 1.25rem; width: 30%;"></div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: 1rem;">
+          <div class="skeleton-card skeleton-plant-card">
+            <div class="skeleton-box" style="width: 3.5rem; height: 3.5rem; border-radius: var(--radius-sm);"></div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 0.4rem;">
+              <div class="skeleton-box" style="height: 1rem; width: 60%;"></div>
+              <div class="skeleton-box" style="height: 0.8rem; width: 40%;"></div>
+            </div>
+          </div>
+          <div class="skeleton-card skeleton-plant-card">
+            <div class="skeleton-box" style="width: 3.5rem; height: 3.5rem; border-radius: var(--radius-sm);"></div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 0.4rem;">
+              <div class="skeleton-box" style="height: 1rem; width: 60%;"></div>
+              <div class="skeleton-box" style="height: 0.8rem; width: 40%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+export function showPlantInfoSkeleton(container) {
+  if (!container) return;
+  container.innerHTML = `
+    <div class="skeleton-plant-detail skeleton-fade-in" aria-hidden="true">
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <div class="skeleton-box" style="width: 5rem; height: 5rem; border-radius: var(--radius-md); flex-shrink: 0;"></div>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 0.5rem;">
+          <div class="skeleton-box" style="height: 1.5rem; width: 60%;"></div>
+          <div class="skeleton-box" style="height: 1rem; width: 40%;"></div>
+          <div class="skeleton-box skeleton-pill" style="height: 1.25rem; width: 6rem;"></div>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-top: 0.5rem;">
+        <div class="skeleton-box" style="height: 2.25rem;"></div>
+        <div class="skeleton-box" style="height: 2.25rem;"></div>
+      </div>
+    </div>`;
+}
+
+export function showTimelineSkeleton(container, count = 2) {
+  if (!container) return;
+  const itemsHtml = Array(count)
+    .fill(0)
+    .map(
+      () => `
+    <div class="skeleton-timeline-item skeleton-fade-in" aria-hidden="true">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+        <div class="skeleton-box" style="height: 0.875rem; width: 6rem;"></div>
+        <div class="skeleton-box skeleton-pill" style="height: 1.25rem; width: 5.5rem;"></div>
+      </div>
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <div class="skeleton-box" style="width: 4rem; height: 4rem; border-radius: var(--radius-sm); flex-shrink: 0;"></div>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 0.4rem;">
+          <div class="skeleton-box" style="height: 1rem; width: 75%;"></div>
+          <div class="skeleton-box" style="height: 0.8rem; width: 90%;"></div>
+        </div>
+      </div>
+    </div>`
+    )
+    .join("");
+  container.innerHTML = `<div class="skeleton-timeline" aria-hidden="true">${itemsHtml}</div>`;
+}
+
+export function showScannerSkeleton(container) {
+  if (!container) return;
+  container.innerHTML = `
+    <div class="skeleton-scanner skeleton-fade-in" aria-hidden="true">
+      <div class="skeleton-scanner__scanline"></div>
+      <div class="skeleton-box" style="width: 100%; height: 14rem; border-radius: var(--radius-md);"></div>
+      <div style="width: 100%; display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin-top: 0.5rem;">
+        <div class="skeleton-box skeleton-pill" style="height: 1.75rem; width: 10rem;"></div>
+        <div class="skeleton-box" style="height: 1.25rem; width: 70%;"></div>
+        <div class="skeleton-box" style="height: 0.875rem; width: 85%;"></div>
+        <div class="skeleton-box" style="height: 0.875rem; width: 60%;"></div>
+      </div>
+      <div style="width: 100%; display: flex; gap: 1rem; margin-top: 1rem;">
+        <div class="skeleton-box" style="height: 2.75rem; flex: 1; border-radius: var(--radius-md);"></div>
+        <div class="skeleton-box" style="height: 2.75rem; flex: 1; border-radius: var(--radius-md);"></div>
+      </div>
+    </div>`;
+}
+
+
 
 export function showConfirmModal({ title, message, confirmText = "Eliminar", cancelText = "Cancelar", isDanger = true }) {
   return new Promise((resolve) => {
