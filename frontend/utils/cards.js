@@ -14,12 +14,24 @@ export function createRoomCard(room, expanded, onClick, onEdit, onDelete) {
   button.className = "room-card__header";
   button.setAttribute("aria-expanded", String(expanded));
 
-  let statusClass = "atencion";
+  let statusHtml = "";
 
-  if (room.badStatePercent === 0) {
-    statusClass = "saludable";
-  } else if (room.badStatePercent >= 40) {
-    statusClass = "critico";
+  if (room.plantCount > 0) {
+    let statusClass = "atencion";
+    let statusText = `${room.badStatePercent}% en mal estado`;
+
+    if (room.badStatePercent === 0) {
+      statusClass = "saludable";
+      statusText = "100% en buen estado";
+    } else if (room.badStatePercent >= 40) {
+      statusClass = "critico";
+    }
+
+    statusHtml = `
+      <p class="room-card__status-text room-card__status-text--${statusClass}">
+        ${statusText}
+      </p>
+    `;
   }
 
   button.innerHTML = `
@@ -34,12 +46,7 @@ export function createRoomCard(room, expanded, onClick, onEdit, onDelete) {
       <p class="room-card__meta">${room.plantCount} plantas · ${room.isIndoors ? "Interior" : "Exterior"}${room.temperatureLevel ? ` · ${room.temperatureLevel}` : ""}</p>
     </div>
 
-    <p
-      class="room-card__status-text
-      room-card__status-text--${statusClass}"
-    >
-      ${room.badStatePercent}% en mal estado
-    </p>
+    ${statusHtml}
 
     <span class="room-card__chevron">
       ${expanded ? '<i data-lucide="chevron-up" aria-hidden="true"></i>' : '<i data-lucide="chevron-down" aria-hidden="true"></i>'}
