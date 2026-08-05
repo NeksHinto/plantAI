@@ -1,4 +1,5 @@
-import { fetchPlantById, updateHealthRecord, deleteHealthRecord } from "./plants-api.js";
+import { fetchPlantById, updatePlant, deletePlant, updateHealthRecord, deleteHealthRecord } from "./plants-api.js";
+import { fetchRooms } from "./rooms-api.js";
 import { mapPlantDetailFromApi } from "./mappers.js";
 import { formatDate } from "./format.js";
 import {
@@ -39,7 +40,7 @@ function fillPlantHeader(plant) {
         <div><dt>Nombre</dt><dd>${plant.name}</dd></div>
         <div><dt>Nombre común</dt><dd>${plant.commonName || "—"}</dd></div>
         <div><dt>Especie</dt><dd>${plant.species || "—"}</dd></div>
-        <div><dt>Ambiente</dt><dd>#${plant.roomId ?? "—"}</dd></div>
+        <div><dt>Ambiente</dt><dd>${plant.roomName || "Sin ambiente"}</dd></div>
       </dl>
     `;
   }
@@ -290,6 +291,123 @@ function refreshHistoryViews() {
   if (album) renderScanAlbum(album, currentHistory);
 }
 
+function setupPlantEdition(plant, rooms) {
+  const editButton = document.querySelector("#plant-header-action");
+  const modal = document.querySelector("#edit-plant-modal");
+  const form = document.querySelector("#edit-plant-form");
+  const nameInput = document.querySelector("#edit-plant-name");
+  const roomSelect = document.querySelector("#edit-plant-room");
+  const cancelButton = document.querySelector("#cancel-edit-plant");
+  const deleteButton = document.querySelector("#delete-plant-button");
+  const errorMessage = document.querySelector("#edit-plant-error");
+
+  if (!editButton || !modal || !form || !nameInput || !roomSelect || !errorMessage) {
+    return;
+  }
+
+  function loadRoomOptions() {
+    roomSelect.replaceChildren();
+
+    rooms.forEach((room) => {
+      const option = document.createElement("option");
+
+      option.value = room.id;
+      option.textContent = room.name;
+      option.selected = String(room.id) === String(plant.roomId);
+
+      roomSelect.append(option);
+    });
+  }
+
+  function openModal(event) {
+    event.preventDefault();
+
+    nameInput.value = plant.name;
+    loadRoomOptions();
+
+    errorMessage.hidden = true;
+    modal.hidden = false;
+    nameInput.focus();
+  }
+
+  function closeModal() {
+    modal.hidden = true;
+  }
+
+  editButton.addEventListener("click", openModal);
+  cancelButton?.addEventListener("click", closeModal);
+
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) {
+      closeModal();
+    }
+  });
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const name = nameInput.value.trim();
+    const roomId = Number(roomSelect.value);
+
+    if (!name) {
+      errorMessage.textContent = "Ingresa un nombre para la planta";
+      errorMessage.hidden = false;
+      return;
+    }
+
+    if (!roomId) {
+      errorMessage.textContent = "Selecciona un ambiente";
+      errorMessage.hidden = false;
+      return;
+    }
+
+    try {
+      await updatePlant(plant.id, { name, roomId, });
+
+       const selectedRoom = rooms.find(
+        (room) => String(room.id) === String(roomId)
+      );
+
+      plant.name = name;
+      plant.roomId = roomId;
+      plant.roomName = selectedRoom?.name || "Sin ambiente";
+
+      fillPlantHeader(plant);
+      setPlantHeaderBack(`room.html?id=${plant.roomId}`);
+      closeModal();
+    } 
+    catch (error) {
+      errorMessage.textContent = error.message ?? "No se pudo editar la planta";
+
+      errorMessage.hidden = false;
+    }
+  });
+
+  deleteButton?.addEventListener("click", async () => {
+    const confirmed = await showConfirmModal({
+      title: "¿Eliminar planta?",
+      message: `Se eliminara ${plant.name} y su historial clinico. Esta accion no se puede deshacer.`,
+      confirmText: "Si, eliminar",
+      cancelText: "Cancelar",
+      isDanger: true,
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await deletePlant(plant.id);
+      window.location.href = `room.html?id=${plant.roomId}`;
+    } catch (error) {
+      errorMessage.textContent =
+        error.message ?? "No se pudo eliminar la planta";
+
+      errorMessage.hidden = false;
+    }
+  });
+}
+
 async function initPlantDetail() {
   const timeline = document.querySelector("#timeline");
   const album = document.querySelector("#scan-album");
@@ -308,11 +426,24 @@ async function initPlantDetail() {
     const rawPlant = await fetchPlantById(plantId);
     const plant = mapPlantDetailFromApi(rawPlant);
 
+    const roomsResponse = await fetchRooms(plant.userId);
+
+    const rooms = Array.isArray(roomsResponse)
+      ? roomsResponse
+      : roomsResponse.rooms ?? [];
+
+    const currentRoom = rooms.find(
+      (room) => String(room.id) === String(plant.roomId)
+    );
+
+    plant.roomName = currentRoom?.name || "Sin ambiente";
+
     currentHistory = plant.history;
 
     fillPlantHeader(plant);
     setPlantHeaderBack(`room.html?id=${plant.roomId}`);
     setPlantHeaderAction("Editar planta", "#");
+    setupPlantEdition(plant, rooms);
 
     refreshHistoryViews();
   } catch (error) {

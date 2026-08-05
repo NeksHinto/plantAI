@@ -46,3 +46,8 @@ export function deleteHealthRecord(recordId) {
   });
 }
 
+export function deletePlant(plantId) {
+  return apiRequest(`/plantas/${plantId}`, {
+    method: "DELETE",
+  });
+}

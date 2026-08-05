@@ -50,6 +50,12 @@
   gap: var(--space-sm);
 }
 
+.modal__danger {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-lg);
+}
+
 .btn--danger {
   background: var(--color-danger);
   color: #ffffff;
