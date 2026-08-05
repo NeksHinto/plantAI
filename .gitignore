@@ -4,3 +4,4 @@ node_modules/
 backend/.env
 data/
 .DS_Store
+backend/app/package-lock.json

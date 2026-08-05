@@ -1,5 +1,5 @@
 import { HEALTH_STATUS, PLACEHOLDER_PLANT, PLACEHOLDER_ROOM } from "./constants.js";
-import { formatTime } from "./format.js";
+import { formatTime, formatTemperatureForDb } from "./format.js";
 
 const NO_DISEASE = ["no disease", "sin enfermedad", "no se detect"];
 
@@ -60,12 +60,14 @@ export function mapRoomFromApi(room, plants = []) {
     ? Math.round((unhealthy / plants.length) * 100)
     : 0;
 
+  const formattedTemp = formatTemperatureForDb(room.temperatureLevel);
+
   return {
     id: room.id,
     userId: room.userId,
     name: room.name,
     image: resolveImage(room.imageUrl, PLACEHOLDER_ROOM),
-    temperatureLevel: room.temperatureLevel,
+    temperatureLevel: formattedTemp || room.temperatureLevel,
     isIndoors: room.isIndoors,
     plantCount: plants.length,
     badStatePercent,

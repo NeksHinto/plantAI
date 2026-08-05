@@ -20,3 +20,17 @@ export function formatDateTime(isoDate) {
   const date = new Date(isoDate);
   return date.toLocaleString("es-AR");
 }
+
+export function parseTemperature(val) {
+  if (val === null || val === undefined || val === "") return null;
+  const str = String(val).replace("°C", "").replace(",", ".").trim();
+  const num = parseFloat(str);
+  return Number.isNaN(num) ? null : num;
+}
+
+export function formatTemperatureForDb(val) {
+  const num = typeof val === "number" ? val : parseTemperature(val);
+  if (num === null || Number.isNaN(num)) return "";
+  return `${num.toFixed(1).replace(".", ",")}°C`;
+}
+

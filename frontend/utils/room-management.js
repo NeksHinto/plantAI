@@ -1,4 +1,5 @@
 import { createRoom } from "./rooms-api.js";
+import { formatTemperatureForDb, parseTemperature } from "./format.js";
 
 export function setupRoomCreation(userId, onRoomCreated) {
   const openButton = document.querySelector("#add-room-button");
@@ -39,8 +40,8 @@ export function setupRoomCreation(userId, onRoomCreated) {
 
     const name = formData.get("name")?.trim();
     const isIndoors = formData.get("isIndoors") === "true";
-    const temperatureValue = formData.get("temperatureLevel");
-    const temperatureLevel = Number(temperatureValue);
+    const rawTemperature = formData.get("temperatureLevel");
+    const parsedTemp = parseTemperature(rawTemperature);
 
     if (!name) {
       errorMessage.textContent = "Ingresa un nombre para el ambiente";
@@ -49,14 +50,16 @@ export function setupRoomCreation(userId, onRoomCreated) {
     }
 
     if (
-      temperatureValue === null ||
-      temperatureValue === "" ||
-      Number.isNaN(temperatureLevel)
+      rawTemperature === null ||
+      rawTemperature === "" ||
+      parsedTemp === null
     ) {
       errorMessage.textContent = "Ingresa una temperatura valida";
       errorMessage.hidden = false;
       return;
     }
+
+    const temperatureLevel = formatTemperatureForDb(parsedTemp);
 
     try {
       await createRoom({
