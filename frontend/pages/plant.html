@@ -59,6 +59,17 @@
           >
         </div>
 
+        <div class="modal__field">
+          <label for="edit-plant-room">Ambiente</label>
+
+          <select
+            class="modal__input"
+            id="edit-plant-room"
+            name="roomId"
+            required
+          ></select>
+        </div>
+
         <p class="modal__error" id="edit-plant-error" hidden></p>
 
         <div class="modal__actions">
@@ -75,6 +86,17 @@
           </button>
         </div>
       </form>
+
+      <div class="modal__danger">
+        <button
+          class="btn btn--danger"
+          id="delete-plant-button"
+          type="button"
+        >
+          Eliminar planta
+        </button>
+      </div>
+
     </section>
   </div>
 
