@@ -1,6 +1,6 @@
 import { fetchRooms, fetchPlantsByRoom } from "./rooms-api.js";
 import { mapPlantFromApi, mapRoomFromApi } from "./mappers.js";
-import { setupRoomCreation } from "./room-management.js";
+import { setupRoomCreation, setupRoomEdition, setupRoomDeletion } from "./room-management.js";
 import { requireAuth } from "./session.js";
 import { paginateItems, filterByQuery } from "./pagination.js";
 import {
@@ -77,7 +77,9 @@ function renderRoomsGrid(
   rooms,
   paginationSlot,
   pageSizeSlot,
-  state
+  state,
+  onEditRoom,
+  onDeleteRoom
 ) {
   const select = pageSizeSlot.querySelector("select");
   const pageSize = Number(select.value);
@@ -94,7 +96,9 @@ function renderRoomsGrid(
       state.filtered,
       paginationSlot,
       pageSizeSlot,
-      state
+      state,
+      onEditRoom,
+      onDeleteRoom
     );
   }
 
@@ -121,7 +125,9 @@ function renderRoomsGrid(
         }
 
         renderAgain();
-      }
+      },
+      onEditRoom,
+      onDeleteRoom
     );
 
     container.append(card);
@@ -252,13 +258,40 @@ async function initDashboard() {
       });
     }
 
+    async function reloadDashboard() {
+      const data = await loadDashboardData(session.userId);
+
+      rooms = data.rooms;
+      plants = data.plants;
+
+      roomsState.all = rooms;
+      const searchVal = roomsSearchSlot?.querySelector("input")?.value;
+      roomsState.filtered = searchVal ? filterByQuery(rooms, searchVal, ["name"]) : rooms;
+
+      if (roomsState.expandedRoomId && !rooms.some((r) => String(r.id) === String(roomsState.expandedRoomId))) {
+        roomsState.expandedRoomId = null;
+      }
+
+      plantsState.all = plants;
+      const plantSearchVal = document.querySelector("#plants-search")?.value;
+      plantsState.filtered = plantSearchVal ? filterByQuery(plants, plantSearchVal, ["name", "roomName"]) : plants;
+
+      renderRooms();
+      renderPlants();
+    }
+
+    const openEditRoomModal = setupRoomEdition(reloadDashboard);
+    const openDeleteRoomModal = setupRoomDeletion(reloadDashboard);
+
     const renderRooms = () =>
       renderRoomsGrid(
         roomsGrid,
         roomsState.filtered,
         roomsPaginationSlot,
         roomsPageSizeSlot,
-        roomsState
+        roomsState,
+        openEditRoomModal,
+        openDeleteRoomModal
       );
 
     const renderPlants = () =>
@@ -270,25 +303,6 @@ async function initDashboard() {
         plantsPageSizeSlot,
         plantsState
       );
-
-    async function reloadDashboard() {
-      const data = await loadDashboardData(session.userId);
-
-      rooms = data.rooms;
-      plants = data.plants;
-
-      roomsState.all = rooms;
-      roomsState.filtered = rooms;
-      roomsState.page = 1;
-      roomsState.expandedRoomId = null;
-
-      plantsState.all = plants;
-      plantsState.filtered = plants;
-      plantsState.page = 1;
-
-      renderRooms();
-      renderPlants();
-    }
 
     setupRoomCreation(session.userId, reloadDashboard);
     renderRooms();

@@ -442,7 +442,7 @@ async function initScannerResults() {
       setPlantHeaderBack("dashboard.html");
     }
   } else {
-    setPlantHeaderBack(context.roomId ? `room.html?id=${context.roomId}` : "dashboard.html");
+    setPlantHeaderBack("dashboard.html");
     setPlantHeaderAction("Ver historial", "dashboard.html");
   }
 
@@ -523,12 +523,12 @@ function initScanner() {
     initPlantHeaderForScanner(context.plantId);
     setupScannerForm();
   } else if (context.roomId) {
-    setPlantHeaderBack(`room.html?id=${context.roomId}`);
+    setPlantHeaderBack("dashboard.html");
     setPlantHeaderAction("Ver historial", "dashboard.html");
     setupScannerForm();
   } else {
     const zone = document.querySelector(".scanner-zone");
-    showError(zone, "Falta plantId o roomId. Volvé al dashboard o a un ambiente.");
+    showError(zone, "Falta plantId o roomId. Volvé al dashboard.");
   }
 }
 

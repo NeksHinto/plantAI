@@ -377,7 +377,7 @@ function setupPlantEdition(plant, rooms) {
       plant.roomName = selectedRoom?.name || "Sin ambiente";
 
       fillPlantHeader(plant);
-      setPlantHeaderBack(`room.html?id=${plant.roomId}`);
+      setPlantHeaderBack("dashboard.html");
       closeModal();
     } 
     catch (error) {
@@ -402,7 +402,7 @@ function setupPlantEdition(plant, rooms) {
 
     try {
       await deletePlant(plant.id);
-      window.location.href = `room.html?id=${plant.roomId}`;
+      window.location.href = "dashboard.html";
     } catch (error) {
       errorMessage.textContent =
         error.message ?? "No se pudo eliminar la planta";
@@ -445,7 +445,7 @@ async function initPlantDetail() {
     currentHistory = plant.history;
 
     fillPlantHeader(plant);
-    setPlantHeaderBack(`room.html?id=${plant.roomId}`);
+    setPlantHeaderBack("dashboard.html");
     setPlantHeaderAction("Editar planta", "#");
     setupPlantEdition(plant, rooms);
 
