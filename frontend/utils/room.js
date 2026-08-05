@@ -49,7 +49,15 @@ function setupRoomEdition(room) {
   function openModal() {
     nameInput.value = room.name;
     locationInput.value = String(room.isIndoors);
-    temperatureInput.value = room.temperatureLevel ?? "";
+    temperatureInput.value = Number(room.temperatureLevel.replace("°C", "")) ?? "";
+
+    console.log(temperatureInput.value);
+
+    if (room.isIndoors === true) {
+
+    }
+
+    console.log(room.temperatureLevel);
 
     errorMessage.hidden = true;
     modal.hidden = false;
