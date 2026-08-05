@@ -72,12 +72,22 @@ export function createRoomCard(room, expanded, onClick) {
       });
     }
 
+    const actions = document.createElement("div");
+    actions.className = "room-card__actions";
+
     const roomLink = document.createElement("a");
-    roomLink.className = "btn btn--secondary room-card__room-link";
+    roomLink.className = "btn btn--secondary";
     roomLink.href = `room.html?id=${room.id}`;
     roomLink.textContent = "Ver ambiente";
 
-    content.append(title, plants, roomLink);
+    const addPlantLink = document.createElement("a");
+    addPlantLink.className = "btn btn--secondary";
+    addPlantLink.href = `scanner.html?roomId=${room.id}`;
+    addPlantLink.textContent = "Agregar nueva planta";
+
+    actions.append(roomLink, addPlantLink);
+
+    content.append(title, plants, actions);
     card.append(content);
   }
 

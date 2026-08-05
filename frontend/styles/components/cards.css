@@ -88,8 +88,10 @@
   gap: var(--space-md);
 }
 
-.room-card__room-link {
-  display: inline-flex;
+.room-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
   margin-top: var(--space-md);
 }
 
@@ -303,10 +305,12 @@
 }
 
 @media (max-width: 600px) {
+  .room-card__actions,
   .room-expanded__actions {
     flex-direction: column;
   }
 
+  .room-card__actions .btn,
   .room-expanded__actions .btn {
     width: 100%;
   }
