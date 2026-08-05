@@ -11,6 +11,7 @@ import {
   createPageSizeControl,
   createPagination,
   createSearchBar,
+  setupSearchBarClear,
   fillUserGreeting,
   showError,
   showLoading,
@@ -296,6 +297,8 @@ async function initDashboard() {
 
     const plantsSearch = document.querySelector("#plants-search");
     if (plantsSearch) {
+      // Activa el botón de borrado (cruz) en la barra de búsqueda de plantas
+      setupSearchBarClear(plantsSearch.closest(".search-bar"));
       plantsSearch.addEventListener("input", (event) => {
         plantsState.filtered = filterByQuery(
           plantsState.all,
