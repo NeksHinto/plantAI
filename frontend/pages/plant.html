@@ -31,6 +31,50 @@
     </section>
   </main>
 
+  <div class="modal-overlay" id="edit-plant-modal" hidden>
+    <section
+      class="modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="edit-plant-title"
+    >
+      <h2 class="modal__title" id="edit-plant-title">
+        Editar planta
+      </h2>
+
+      <form id="edit-plant-form">
+        <div class="modal__field">
+          <label for="edit-plant-name">Nombre de la planta</label>
+
+          <input
+            class="modal__input"
+            id="edit-plant-name"
+            name="name"
+            type="text"
+            maxlength="60"
+            required
+          >
+        </div>
+
+        <p class="modal__error" id="edit-plant-error" hidden></p>
+
+        <div class="modal__actions">
+          <button
+            class="btn btn--secondary"
+            id="cancel-edit-plant"
+            type="button"
+          >
+            Cancelar
+          </button>
+
+          <button class="btn btn--primary" type="submit">
+            Guardar cambios
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+
   <div data-include="../components/footer.html"></div>
 
   <script src="../utils/include.js"></script>

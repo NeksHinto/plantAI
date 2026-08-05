@@ -1,4 +1,4 @@
-import { fetchPlantById, updateHealthRecord, deleteHealthRecord } from "./plants-api.js";
+import { fetchPlantById, updatePlant, updateHealthRecord, deleteHealthRecord } from "./plants-api.js";
 import { mapPlantDetailFromApi } from "./mappers.js";
 import { formatDate } from "./format.js";
 import {
@@ -290,6 +290,68 @@ function refreshHistoryViews() {
   if (album) renderScanAlbum(album, currentHistory);
 }
 
+function setupPlantEdition(plant) {
+  const editButton = document.querySelector("#plant-header-action");
+  const modal = document.querySelector("#edit-plant-modal");
+  const form = document.querySelector("#edit-plant-form");
+  const nameInput = document.querySelector("#edit-plant-name");
+  const cancelButton = document.querySelector("#cancel-edit-plant");
+  const errorMessage = document.querySelector("#edit-plant-error");
+
+  if (!editButton || !modal || !form || !nameInput || !errorMessage) {
+    return;
+  }
+
+  function openModal(event) {
+    event.preventDefault();
+
+    nameInput.value = plant.name;
+    errorMessage.hidden = true;
+    modal.hidden = false;
+    nameInput.focus();
+  }
+
+  function closeModal() {
+    modal.hidden = true;
+  }
+
+  editButton.addEventListener("click", openModal);
+  cancelButton?.addEventListener("click", closeModal);
+
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) {
+      closeModal();
+    }
+  });
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const name = nameInput.value.trim();
+
+    if (!name) {
+      errorMessage.textContent = "Ingresa un nombre para la planta";
+      errorMessage.hidden = false;
+      return;
+    }
+
+    try {
+      await updatePlant(plant.id, {
+        name,
+      });
+
+      plant.name = name;
+
+      fillPlantHeader(plant);
+      closeModal();
+    } catch (error) {
+      errorMessage.textContent = error.message ?? "No se pudo editar la planta";
+
+      errorMessage.hidden = false;
+    }
+  });
+}
+
 async function initPlantDetail() {
   const timeline = document.querySelector("#timeline");
   const album = document.querySelector("#scan-album");
@@ -313,6 +375,7 @@ async function initPlantDetail() {
     fillPlantHeader(plant);
     setPlantHeaderBack(`room.html?id=${plant.roomId}`);
     setPlantHeaderAction("Editar planta", "#");
+    setupPlantEdition(plant);
 
     refreshHistoryViews();
   } catch (error) {
