@@ -1,11 +1,16 @@
-import { HEALTH_STATUS, PLACEHOLDER_PLANT, PLACEHOLDER_ROOM } from "./constants.js";
+import {
+  HEALTH_STATUS,
+  PLACEHOLDER_PLANT,
+  ROOM_IMAGE_INDOOR,
+  ROOM_IMAGE_OUTDOOR,
+} from "./constants.js";
 import { formatTime, formatTemperatureForDb } from "./format.js";
 
 const NO_DISEASE = ["no disease", "sin enfermedad", "no se detect"];
 
 // Devuelve la imagen o una imagen por defecto si está vacía
 export function resolveImage(imageUrl, fallback) {
-  if (!imageUrl || imageUrl === "dummy image") return fallback;
+  if (!imageUrl) return fallback;
   return imageUrl;
 }
 
@@ -74,8 +79,10 @@ export function mapRoomFromApi(room, plants = []) {
     id: room.id,
     userId: room.userId,
     name: room.name,
-    image: resolveImage(room.imageUrl, PLACEHOLDER_ROOM),
+    image: resolveRoomImage(room),
     temperatureLevel: formattedTemp || room.temperatureLevel,
+    humidityLevel: room.humidityLevel,
+    lightLevel: room.lightLevel,
     isIndoors: room.isIndoors,
     plantCount: plants.length,
     badStatePercent,
@@ -86,7 +93,7 @@ export function mapRoomFromApi(room, plants = []) {
 
 // Mapea los detalles de una planta y su historial clínico
 export function mapPlantDetailFromApi(plant) {
-  const image = resolveImage(plant.imageUrl, PLACEHOLDER_PLANT);
+  const plantImage = resolveImage(plant.imageUrl, PLACEHOLDER_PLANT);
   const history = (plant.healthRecords ?? [])
     .map((record) => ({
       id: record.id,
@@ -98,7 +105,7 @@ export function mapPlantDetailFromApi(plant) {
       time: formatTime(record.date),
       status: healthStatusFromRecord(record),
       label: statusLabel(healthStatusFromRecord(record)),
-      image,
+      image: resolveImage(record.imageUrl, plantImage),
     }))
     .sort((a, b) => new Date(a.date) - new Date(b.date));
 
@@ -109,7 +116,7 @@ export function mapPlantDetailFromApi(plant) {
     name: plant.name,
     commonName: plant.common_name,
     species: plant.species,
-    image,
+    image: plantImage,
     history,
   };
 }
@@ -125,9 +132,10 @@ export function mapScanResultFromApi({ identification, diagnosis, imageUrl, scan
   const matchPercent = Math.round(identification?.accuracy ?? 0);
   const species = identification?.species ?? "Especie desconocida";
 
-  const diagnosisAccuracy = diagnosis?.accuracy !== undefined && diagnosis?.accuracy !== null
-    ? Math.round(Number(diagnosis.accuracy))
-    : 0;
+  const diagnosisAccuracy =
+    diagnosis?.accuracy !== undefined && diagnosis?.accuracy !== null
+      ? Math.round(Number(diagnosis.accuracy))
+      : 0;
 
   const isDiagnosisLowConfidence = diagnosisAccuracy < 15;
 
@@ -137,7 +145,8 @@ export function mapScanResultFromApi({ identification, diagnosis, imageUrl, scan
     matchPercent,
     isSpeciesLowConfidence: hasIdentification && matchPercent < 15,
     isDiagnosisLowConfidence,
-    isUnidentified: hasIdentification && (species === "Especie desconocida" || matchPercent < 5),
+    isUnidentified:
+      hasIdentification && (species === "Especie desconocida" || matchPercent < 5),
     healthStatus,
     healthLabel: diagnosis?.diagnosis ?? "Sin diagnóstico",
     recommendation: diagnosis?.treatmentNotes ?? "Sin notas de tratamiento.",

@@ -21,7 +21,7 @@ export function analyzeScan({ imageUrl, imageFile, roomId, plantId }) {
 
   return apiRequest("/plantas/analyze-scan", {
     method: "POST",
-    body: JSON.stringify({ imageUrl, roomId, plantId }),
+    body: JSON.stringify({ imageUrl, imageBase64, roomId, plantId }),
   });
 }
 

@@ -1,11 +1,12 @@
-// plantas.js
 import { Router } from "express";
 import multer from "multer";
 import { identifySpecies, identifyDisease } from "../services/externalServices.js";
 import {
   getPlantById,
   getHealthRecordsByPlantId,
+  countHealthRecordsByPlantId,
   updatePlant,
+  updatePlantImageUrl,
   insertPlant,
   insertHealthRecord,
   getRoomContextByPlantId,
@@ -18,33 +19,164 @@ import {
 import { generateTreatmentNotes } from "../services/treatmentRecommendation.js";
 import { mapPlantRow } from "../services/mappers.js";
 import { authenticateToken } from "../middleware/auth.js";
+import {
+  uploadObject,
+  resolveUpload,
+  plantImagePath,
+  healthImagePath,
+  parseDataUrl,
+} from "../services/storage.js";
 
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
+const upload = multer({ storage: multer.memoryStorage() });
 
 export const endpointsPlantas = Router();
 
-// Requerir autenticación para todos los endpoints de plantas
 endpointsPlantas.use(authenticateToken);
 
-endpointsPlantas.post("/analyze-scan", upload.single("image"), async (req, res) => {
-  const imageInput = req.file || req.body.imageUrl;
-  const { roomId, plantId } = req.body;
+function mapHealthRecord(row) {
+  return {
+    id: row.id,
+    plantId: row.plant_id,
+    diagnosis: row.diagnosis,
+    accuracy:
+      row.accuracy !== undefined && row.accuracy !== null ? Number(row.accuracy) : 0,
+    treatmentNotes: row.treatment_notes,
+    imageUrl: row.image_url || null,
+    date: row.date,
+  };
+}
 
-  if (!imageInput || (!roomId && !plantId)) {
-    return res.status(400).json({ error: "Faltan datos obligatorios (imagen/imageUrl y roomId o plantId)" });
+function fileExt(file) {
+  const mime = file?.mimetype || "";
+  if (mime.includes("png")) return "png";
+  if (mime.includes("webp")) return "webp";
+  return "jpg";
+}
+
+async function persistPlantCover({ imageSource, file, username, userId, plantId, roomId }) {
+  if (process.env.DB_PROVIDER !== "supabase") {
+    if (file?.buffer) return null;
+    return /^https?:\/\//i.test(imageSource || "") ? imageSource : null;
   }
 
   try {
+    if (file?.buffer) {
+      const path = plantImagePath(username, userId, plantId, roomId, fileExt(file));
+      return await uploadObject(path, file.buffer, file.mimetype || "image/jpeg");
+    }
+
+    if (!imageSource) return null;
+    const uploaded = await resolveUpload(
+      imageSource,
+      plantImagePath(username, userId, plantId, roomId)
+    );
+    return uploaded?.publicUrl ?? null;
+  } catch (error) {
+    console.warn(
+      "Plant cover upload skipped (check PRIVATE_SUPABASE_BUCKET_API_KEY / Storage RLS):",
+      error?.message || error
+    );
+    return null;
+  }
+}
+
+async function persistHealthImage({
+  imageSource,
+  file,
+  username,
+  userId,
+  plantId,
+  roomId,
+  series,
+}) {
+  if (process.env.DB_PROVIDER !== "supabase") {
+    if (file?.buffer) return null;
+    return /^https?:\/\//i.test(imageSource || "") ? imageSource : null;
+  }
+
+  try {
+    if (file?.buffer) {
+      const path = healthImagePath(
+        username,
+        userId,
+        plantId,
+        roomId,
+        series,
+        fileExt(file)
+      );
+      return await uploadObject(path, file.buffer, file.mimetype || "image/jpeg");
+    }
+
+    if (!imageSource) return null;
+    const uploaded = await resolveUpload(
+      imageSource,
+      healthImagePath(username, userId, plantId, roomId, series)
+    );
+    return uploaded?.publicUrl ?? null;
+  } catch (error) {
+    console.warn(
+      "Health image upload skipped (check PRIVATE_SUPABASE_BUCKET_API_KEY / Storage RLS):",
+      error?.message || error
+    );
+    return null;
+  }
+}
+
+function resolveImageInput(req) {
+  if (req.file) return req.file;
+  if (req.body?.imageBase64) return req.body.imageBase64;
+  if (req.body?.imageUrl) return req.body.imageUrl;
+  return null;
+}
+
+/** PlantNet input: multer file, http(s) URL, or data-URL converted to a buffer object. */
+function toPlantNetInput(imageInput, file) {
+  if (file?.buffer) return file;
+  if (typeof imageInput === "string" && /^https?:\/\//i.test(imageInput)) {
+    return imageInput;
+  }
+  if (typeof imageInput === "string") {
+    const parsed = parseDataUrl(imageInput);
+    if (parsed) {
+      return {
+        buffer: parsed.buffer,
+        mimetype: parsed.mimeType,
+        originalname: `scan.${parsed.ext}`,
+      };
+    }
+  }
+  return null;
+}
+
+endpointsPlantas.post("/analyze-scan", upload.single("image"), async (req, res) => {
+  const imageInput = resolveImageInput(req);
+  const { roomId, plantId } = req.body;
+  const userId = req.user.userId;
+
+  if (!imageInput || (!roomId && !plantId)) {
+    return res.status(400).json({
+      error: "Faltan datos obligatorios (imagen/imageUrl y roomId o plantId)",
+    });
+  }
+
+  try {
+    // No Storage writes here — only analyze. Images are persisted on save.
+    const plantNetInput = toPlantNetInput(imageInput, req.file);
+    if (!plantNetInput) {
+      return res.status(400).json({
+        error: "Formato de imagen inválido para analizar",
+      });
+    }
+
     if (roomId) {
       const room = await getRoomById(roomId);
-      if (!room || Number(room.user_id) !== Number(req.user.userId)) {
+      if (!room || Number(room.user_id) !== Number(userId)) {
         return res.status(404).json({ error: "Habitación no encontrada" });
       }
 
       const [identification, diagnosis] = await Promise.all([
-        identifySpecies(imageInput),
-        identifyDisease(imageInput)
+        identifySpecies(plantNetInput),
+        identifyDisease(plantNetInput),
       ]);
 
       const speciesAccuracy = identification?.accuracy ?? 0;
@@ -52,7 +184,8 @@ endpointsPlantas.post("/analyze-scan", upload.single("image"), async (req, res) 
       if (identification?.notFound || speciesAccuracy < 5) {
         return res.status(422).json({
           error: "SPECIES_NOT_FOUND",
-          message: "No se pudo identificar la especie de la planta (coincidencia menor al 5%). Intente tomar otra foto más nítida o centrada en la planta."
+          message:
+            "No se pudo identificar la especie de la planta (coincidencia menor al 5%). Intente tomar otra foto más nítida o centrada en la planta.",
         });
       }
 
@@ -65,65 +198,79 @@ endpointsPlantas.post("/analyze-scan", upload.single("image"), async (req, res) 
         diagnosis: diagnosisText,
         accuracy: diagnosisAccuracy,
         temperature: room?.temperature_level,
-        isIndoors: room?.is_indoors
+        isIndoors: room?.is_indoors,
       });
 
       return res.json({
         identification: {
           species: plantSpecies,
           commonName: identification?.commonName || plantSpecies,
-          accuracy: speciesAccuracy
+          accuracy: speciesAccuracy,
         },
         diagnosis: {
           diagnosis: diagnosisText,
           accuracy: diagnosisAccuracy,
-          treatmentNotes
-        }
-      });
-    } else {
-      const plant = await getPlantById(plantId);
-      if (!plant || Number(plant.user_id) !== Number(req.user.userId)) {
-        return res.status(404).json({ error: "Planta no encontrada" });
-      }
-
-      const [diagnosis, roomContext] = await Promise.all([
-        identifyDisease(imageInput),
-        getRoomContextByPlantId(plantId)
-      ]);
-
-      const diagnosisText = diagnosis?.diagnosis || "Sin enfermedad";
-      const diagnosisAccuracy = diagnosis?.accuracy ?? 0;
-
-      const treatmentNotes = await generateTreatmentNotes({
-        species: plant?.species || "Especie desconocida",
-        diagnosis: diagnosisText,
-        accuracy: diagnosisAccuracy,
-        temperature: roomContext?.temperature_level,
-        isIndoors: roomContext?.is_indoors
-      });
-
-      return res.json({
-        identification: null,
-        diagnosis: {
-          diagnosis: diagnosisText,
-          accuracy: diagnosisAccuracy,
-          treatmentNotes
-        }
+          treatmentNotes,
+        },
       });
     }
+
+    const plant = await getPlantById(plantId);
+    if (!plant || Number(plant.user_id) !== Number(userId)) {
+      return res.status(404).json({ error: "Planta no encontrada" });
+    }
+
+    const [diagnosis, roomContext] = await Promise.all([
+      identifyDisease(plantNetInput),
+      getRoomContextByPlantId(plantId),
+    ]);
+
+    const diagnosisText = diagnosis?.diagnosis || "Sin enfermedad";
+    const diagnosisAccuracy = diagnosis?.accuracy ?? 0;
+
+    const treatmentNotes = await generateTreatmentNotes({
+      species: plant?.species || "Especie desconocida",
+      diagnosis: diagnosisText,
+      accuracy: diagnosisAccuracy,
+      temperature: roomContext?.temperature_level,
+      isIndoors: roomContext?.is_indoors,
+    });
+
+    return res.json({
+      identification: null,
+      diagnosis: {
+        diagnosis: diagnosisText,
+        accuracy: diagnosisAccuracy,
+        treatmentNotes,
+      },
+    });
   } catch (error) {
     console.error("Error en analyze-scan:", error);
     res.sendStatus(500);
   }
 });
 
-// add-plant(image): crea la planta y su registro diagnostico inicial en la base de datos.
-endpointsPlantas.post("/add-plant", async (req, res) => {
-  const { imageUrl, roomId, name, species, commonName, diagnosis: reqDiagnosis, diagnosisAccuracy: reqAccuracy, treatmentNotes: reqNotes, confidenceScore } = req.body;
+endpointsPlantas.post("/add-plant", upload.single("image"), async (req, res) => {
+  const {
+    imageUrl,
+    imageBase64,
+    roomId,
+    name,
+    species,
+    commonName,
+    diagnosis: reqDiagnosis,
+    diagnosisAccuracy: reqAccuracy,
+    treatmentNotes: reqNotes,
+    confidenceScore,
+  } = req.body;
   const userId = req.user.userId;
+  const username = req.user.username || "user";
+  const imageSource = imageBase64 || imageUrl;
 
-  if (!imageUrl || !roomId) {
-    return res.status(400).json({ error: "Faltan datos obligatorios (imageUrl, roomId)" });
+  if ((!imageSource && !req.file) || !roomId) {
+    return res.status(400).json({
+      error: "Faltan datos obligatorios (imagen/imageUrl, roomId)",
+    });
   }
 
   try {
@@ -139,11 +286,19 @@ endpointsPlantas.post("/add-plant", async (req, res) => {
     let diagnosisAccuracy = reqAccuracy;
     let treatmentNotes = reqNotes;
 
-    // Si los datos no vienen precargados del análisis previa, los calculamos
     if (!plantSpecies || diagnosisText === undefined) {
+      const plantNetInput =
+        req.file ||
+        (imageSource && /^https?:\/\//i.test(imageSource) ? imageSource : null);
+      if (!plantNetInput) {
+        return res.status(400).json({
+          error: "No se pudo analizar: se necesita imagen binaria o URL pública",
+        });
+      }
+
       const [identification, diagnosis] = await Promise.all([
-        identifySpecies(imageUrl),
-        identifyDisease(imageUrl)
+        identifySpecies(plantNetInput),
+        identifyDisease(plantNetInput),
       ]);
 
       speciesAccuracy = identification?.accuracy ?? 0;
@@ -151,7 +306,8 @@ endpointsPlantas.post("/add-plant", async (req, res) => {
       if (identification?.notFound || speciesAccuracy < 5) {
         return res.status(422).json({
           error: "SPECIES_NOT_FOUND",
-          message: "No se pudo identificar la especie de la planta (coincidencia menor al 5%). Intente tomar otra foto más nítida o centrada en la planta."
+          message:
+            "No se pudo identificar la especie de la planta (coincidencia menor al 5%). Intente tomar otra foto más nítida o centrada en la planta.",
         });
       }
 
@@ -165,14 +321,56 @@ endpointsPlantas.post("/add-plant", async (req, res) => {
         diagnosis: diagnosisText,
         accuracy: diagnosisAccuracy,
         temperature: room?.temperature_level,
-        isIndoors: room?.is_indoors
+        isIndoors: room?.is_indoors,
       });
     }
 
-    const plantName = name || (plantCommonName && plantCommonName !== "Nombre comun desconocido" ? plantCommonName : "Nueva planta");
+    const plantName =
+      name ||
+      (plantCommonName && plantCommonName !== "Nombre comun desconocido"
+        ? plantCommonName
+        : "Nueva planta");
 
-    const newPlant = await insertPlant(Number(userId), Number(roomId), plantName, plantCommonName, plantSpecies, imageUrl);
-    const newRecord = await insertHealthRecord(newPlant.id, diagnosisText || "Sin enfermedad", diagnosisAccuracy ?? 0, treatmentNotes || "");
+    let newPlant = await insertPlant(
+      Number(userId),
+      Number(roomId),
+      plantName,
+      plantCommonName,
+      plantSpecies,
+      null
+    );
+
+    // One Storage object for the new plant; reuse URL for the initial health record.
+    const coverUrl = await persistPlantCover({
+      imageSource,
+      file: req.file,
+      username,
+      userId,
+      plantId: newPlant.id,
+      roomId: Number(roomId),
+    });
+
+    if (coverUrl) {
+      newPlant =
+        (await updatePlantImageUrl(newPlant.id, coverUrl)) || {
+          ...newPlant,
+          image_url: coverUrl,
+        };
+    } else if (imageUrl && /^https?:\/\//i.test(imageUrl)) {
+      newPlant =
+        (await updatePlantImageUrl(newPlant.id, imageUrl)) || {
+          ...newPlant,
+          image_url: imageUrl,
+        };
+    }
+
+    const newRecord = await insertHealthRecord(
+      newPlant.id,
+      diagnosisText || "Sin enfermedad",
+      diagnosisAccuracy ?? 0,
+      treatmentNotes || "",
+      newPlant.image_url || null
+    );
 
     const plantResponse = mapPlantRow(newPlant);
     plantResponse.common_name = plantCommonName || newPlant.species;
@@ -183,28 +381,43 @@ endpointsPlantas.post("/add-plant", async (req, res) => {
       plant: plantResponse,
       initialDiagnosis: {
         diagnosis: newRecord.diagnosis,
-        accuracy: newRecord.accuracy !== undefined && newRecord.accuracy !== null ? Number(newRecord.accuracy) : 0,
-        treatmentNotes: newRecord.treatment_notes
-      }
+        accuracy:
+          newRecord.accuracy !== undefined && newRecord.accuracy !== null
+            ? Number(newRecord.accuracy)
+            : 0,
+        treatmentNotes: newRecord.treatment_notes,
+        imageUrl: newRecord.image_url || null,
+      },
     });
-
   } catch (error) {
     console.error("Error en add-plant:", error);
     res.sendStatus(500);
   }
 });
 
-// identify-disease(image): Realiza y devuelve diagnostico guardandolo en la base de datos.
-endpointsPlantas.post("/identify-disease", async (req, res) => {
-  const { imageUrl, plantId, diagnosis: reqDiagnosis, diagnosisAccuracy: reqAccuracy, treatmentNotes: reqNotes } = req.body;
+endpointsPlantas.post("/identify-disease", upload.single("image"), async (req, res) => {
+  const {
+    imageUrl,
+    imageBase64,
+    plantId,
+    diagnosis: reqDiagnosis,
+    diagnosisAccuracy: reqAccuracy,
+    treatmentNotes: reqNotes,
+  } = req.body;
+  const userId = req.user.userId;
+  const username = req.user.username || "user";
+  const imageSource = imageBase64 || imageUrl;
 
-  if ((!imageUrl && !reqDiagnosis) || !plantId) {
-    return res.status(400).json({ error: "Faltan datos requeridos (plantId y imageUrl o datos del diagnóstico)" });
+  if ((!imageSource && !req.file && !reqDiagnosis) || !plantId) {
+    return res.status(400).json({
+      error:
+        "Faltan datos requeridos (plantId y imagen/imageUrl o datos del diagnóstico)",
+    });
   }
 
   try {
     const plant = await getPlantById(plantId);
-    if (!plant || Number(plant.user_id) !== Number(req.user.userId)) {
+    if (!plant || Number(plant.user_id) !== Number(userId)) {
       return res.status(404).json({ error: "Planta no encontrada" });
     }
 
@@ -213,9 +426,18 @@ endpointsPlantas.post("/identify-disease", async (req, res) => {
     let treatmentNotes = reqNotes;
 
     if (!diagnosisText) {
+      const plantNetInput =
+        req.file ||
+        (imageSource && /^https?:\/\//i.test(imageSource) ? imageSource : null);
+      if (!plantNetInput) {
+        return res.status(400).json({
+          error: "No se pudo diagnosticar: se necesita imagen binaria o URL pública",
+        });
+      }
+
       const [diagnosis, roomContext] = await Promise.all([
-        identifyDisease(imageUrl),
-        getRoomContextByPlantId(plantId)
+        identifyDisease(plantNetInput),
+        getRoomContextByPlantId(plantId),
       ]);
 
       diagnosisText = diagnosis?.diagnosis || "Sin enfermedad";
@@ -226,31 +448,45 @@ endpointsPlantas.post("/identify-disease", async (req, res) => {
         diagnosis: diagnosisText,
         accuracy: diagnosisAccuracy,
         temperature: roomContext?.temperature_level,
-        isIndoors: roomContext?.is_indoors
+        isIndoors: roomContext?.is_indoors,
       });
     }
 
-    const newRecord = await insertHealthRecord(Number(plantId), diagnosisText, diagnosisAccuracy ?? 0, treatmentNotes || "");
+    const existingCount = await countHealthRecordsByPlantId(Number(plantId));
+    const series = existingCount + 1;
+    const roomId = plant.room_id;
+
+    const healthUrl =
+      imageSource || req.file
+        ? await persistHealthImage({
+            imageSource,
+            file: req.file,
+            username,
+            userId,
+            plantId: Number(plantId),
+            roomId,
+            series,
+          })
+        : null;
+
+    const newRecord = await insertHealthRecord(
+      Number(plantId),
+      diagnosisText,
+      diagnosisAccuracy ?? 0,
+      treatmentNotes || "",
+      healthUrl
+    );
 
     res.status(201).json({
       message: "Diagnostico de la enfermedad completado",
-      healthRecord: {
-        id: newRecord.id,
-        plantId: newRecord.plant_id,
-        diagnosis: newRecord.diagnosis,
-        accuracy: newRecord.accuracy !== undefined && newRecord.accuracy !== null ? Number(newRecord.accuracy) : 0,
-        treatmentNotes: newRecord.treatment_notes,
-        date: newRecord.date
-      }
+      healthRecord: mapHealthRecord(newRecord),
     });
-
   } catch (error) {
     console.error("Error en identify-disease:", error);
     res.sendStatus(500);
   }
 });
 
-// get-plant-by-id(plantId): Devuelve detalles de la planta incluyendo su historial clínico
 endpointsPlantas.get("/:plantId", async (req, res) => {
   const { plantId } = req.params;
 
@@ -263,27 +499,16 @@ endpointsPlantas.get("/:plantId", async (req, res) => {
 
     const recordsRows = await getHealthRecordsByPlantId(plantId);
 
-    const healthRecords = recordsRows.map(row => ({
-      id: row.id,
-      plantId: row.plant_id,
-      diagnosis: row.diagnosis,
-      accuracy: row.accuracy ? Number(row.accuracy) : 0,
-      treatmentNotes: row.treatment_notes,
-      date: row.date
-    }));
-
     res.json({
       ...mapPlantRow(plantRow),
-      healthRecords
+      healthRecords: recordsRows.map(mapHealthRecord),
     });
-
   } catch (error) {
     console.error("Error en get-plant-by-id:", error);
     res.sendStatus(500);
   }
 });
 
-// edit-plant(plantId, {campos modificados}): Modifica los datos de la planta (nombre, ambiente, etc.)
 endpointsPlantas.put("/:plantId", async (req, res) => {
   const { plantId } = req.params;
   const { name, roomId } = req.body;
@@ -309,16 +534,14 @@ endpointsPlantas.put("/:plantId", async (req, res) => {
 
     res.json({
       message: "Planta actualizada correctamente",
-      plant: mapPlantRow(updatedPlant)
+      plant: mapPlantRow(updatedPlant),
     });
-
   } catch (error) {
     console.error("Error en edit-plant:", error);
     res.sendStatus(500);
   }
 });
 
-// delete-plant(plantId)
 endpointsPlantas.delete("/:plantId", async (req, res) => {
   const { plantId } = req.params;
 
@@ -334,7 +557,7 @@ endpointsPlantas.delete("/:plantId", async (req, res) => {
     }
     res.json({
       message: "Planta eliminada correctamente",
-      plantId: deletedPlant.id
+      plantId: deletedPlant.id,
     });
   } catch (error) {
     console.error("Error en delete-plant:", error);
@@ -342,7 +565,6 @@ endpointsPlantas.delete("/:plantId", async (req, res) => {
   }
 });
 
-// edit-health-record(recordId)
 endpointsPlantas.put("/records/:recordId", async (req, res) => {
   const { recordId } = req.params;
   const { treatmentNotes } = req.body;
@@ -359,7 +581,7 @@ endpointsPlantas.put("/records/:recordId", async (req, res) => {
     }
     res.json({
       message: "Registro de salud actualizado correctamente",
-      healthRecord: updatedRecord
+      healthRecord: mapHealthRecord(updatedRecord),
     });
   } catch (error) {
     console.error("Error en edit-health-record:", error);
@@ -367,7 +589,6 @@ endpointsPlantas.put("/records/:recordId", async (req, res) => {
   }
 });
 
-// delete-health-record(recordId)
 endpointsPlantas.delete("/records/:recordId", async (req, res) => {
   const { recordId } = req.params;
 
@@ -383,7 +604,7 @@ endpointsPlantas.delete("/records/:recordId", async (req, res) => {
     }
     res.json({
       message: "Registro de salud eliminado correctamente",
-      recordId: deletedRecord.id
+      recordId: deletedRecord.id,
     });
   } catch (error) {
     console.error("Error en delete-health-record:", error);

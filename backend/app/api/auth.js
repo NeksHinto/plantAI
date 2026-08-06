@@ -19,11 +19,12 @@ endpointsAuth.post("/login", async (req, res) => {
       return res.status(401).json({ error: "Credenciales inválidas" });
     }
 
-    const token = generateToken({ userId: user.id, username: user.name });
+    const token = generateToken({ userId: user.id, username: user.username });
 
     return res.json({
       token,
       userId: user.id,
+      username: user.username,
       nombre: user.name
     });
 
