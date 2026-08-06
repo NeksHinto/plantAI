@@ -124,7 +124,7 @@ export function createPlantCard(plant) {
     <img class="plant-card__image" src="${plant.image}" alt="${plant.name}">
     <div class="plant-card__body">
       <h3 class="plant-card__name">${plant.name}</h3>
-      <p class="plant-card__room">${plant.commonName || plant.species || ""} · ${plant.roomName}</p>
+      <p class="plant-card__room">${plant.commonName || plant.species || ""} · ${plant.roomName || ""}</p>
     </div>
   `;
 

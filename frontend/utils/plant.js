@@ -309,9 +309,15 @@ function refreshHistoryViews() {
   if (album) renderScanAlbum(album, currentHistory);
 }
 
-// Configura el modal para editar o eliminar la planta
+// Configura el modal y botones del encabezado para editar o eliminar la planta
 function setupPlantEdition(plant, rooms) {
-  const editButton = document.querySelector("#plant-header-action");
+  const headerActions = document.querySelector("#plant-header-actions");
+  if (headerActions) {
+    headerActions.style.display = "flex";
+  }
+
+  const editButton = document.querySelector("#plant-header-edit-btn") || document.querySelector("#plant-header-action");
+  const headerDeleteBtn = document.querySelector("#plant-header-delete-btn");
   const modal = document.querySelector("#edit-plant-modal");
   const form = document.querySelector("#edit-plant-form");
   const nameInput = document.querySelector("#edit-plant-name");
@@ -320,7 +326,7 @@ function setupPlantEdition(plant, rooms) {
   const deleteButton = document.querySelector("#delete-plant-button");
   const errorMessage = document.querySelector("#edit-plant-error");
 
-  if (!editButton || !modal || !form || !nameInput || !roomSelect || !errorMessage) {
+  if (!modal || !form || !nameInput || !roomSelect || !errorMessage) {
     return;
   }
 
@@ -339,7 +345,7 @@ function setupPlantEdition(plant, rooms) {
   }
 
   function openModal(event) {
-    event.preventDefault();
+    event?.preventDefault();
 
     nameInput.value = plant.name;
     loadRoomOptions();
@@ -353,7 +359,7 @@ function setupPlantEdition(plant, rooms) {
     modal.hidden = true;
   }
 
-  editButton.addEventListener("click", openModal);
+  editButton?.addEventListener("click", openModal);
   cancelButton?.addEventListener("click", closeModal);
 
   modal.addEventListener("click", (event) => {
@@ -402,11 +408,11 @@ function setupPlantEdition(plant, rooms) {
     }
   });
 
-  deleteButton?.addEventListener("click", async () => {
+  async function performDelete() {
     const confirmed = await showConfirmModal({
       title: "¿Eliminar planta?",
-      message: `Se eliminara ${plant.name} y su historial clinico. Esta accion no se puede deshacer.`,
-      confirmText: "Si, eliminar",
+      message: `Se eliminará ${plant.name} y su historial clínico. Esta acción no se puede deshacer.`,
+      confirmText: "Sí, eliminar",
       cancelText: "Cancelar",
       isDanger: true,
     });
@@ -419,12 +425,17 @@ function setupPlantEdition(plant, rooms) {
       await deletePlant(plant.id);
       window.location.href = "dashboard.html";
     } catch (error) {
-      errorMessage.textContent =
-        error.message ?? "No se pudo eliminar la planta";
-
-      errorMessage.hidden = false;
+      if (errorMessage) {
+        errorMessage.textContent = error.message ?? "No se pudo eliminar la planta";
+        errorMessage.hidden = false;
+      } else {
+        alert("No se pudo eliminar la planta: " + (error.message ?? "Error desconocido"));
+      }
     }
-  });
+  }
+
+  deleteButton?.addEventListener("click", performDelete);
+  headerDeleteBtn?.addEventListener("click", performDelete);
 }
 
 // Inicializa el detalle completo de la planta
@@ -462,7 +473,6 @@ async function initPlantDetail() {
 
     fillPlantHeader(plant);
     setPlantHeaderBack("dashboard.html");
-    setPlantHeaderAction("Editar planta", "#");
     setupPlantEdition(plant, rooms);
 
     refreshHistoryViews();
