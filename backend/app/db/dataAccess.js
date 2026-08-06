@@ -22,3 +22,5 @@ export const getRoomContextByPlantId = plants.getRoomContextByPlantId;
 export const deletePlant = plants.deletePlant;
 export const deleteHealthRecord = plants.deleteHealthRecord;
 export const updateHealthRecord = plants.updateHealthRecord;
+export const getHealthRecordById = plants.getHealthRecordById;
+

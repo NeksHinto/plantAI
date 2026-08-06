@@ -2,6 +2,7 @@ import { fetchPlantById, updatePlant, deletePlant, updateHealthRecord, deleteHea
 import { fetchRooms } from "./rooms-api.js";
 import { mapPlantDetailFromApi } from "./mappers.js";
 import { formatDate } from "./format.js";
+import { requireAuth, setupAuthGuard } from "./session.js";
 import {
   createBadge,
   getStatusLabel,
@@ -377,7 +378,7 @@ function setupPlantEdition(plant, rooms) {
       plant.roomName = selectedRoom?.name || "Sin ambiente";
 
       fillPlantHeader(plant);
-      setPlantHeaderBack(`room.html?id=${plant.roomId}`);
+      setPlantHeaderBack("dashboard.html");
       closeModal();
     } 
     catch (error) {
@@ -402,7 +403,7 @@ function setupPlantEdition(plant, rooms) {
 
     try {
       await deletePlant(plant.id);
-      window.location.href = `room.html?id=${plant.roomId}`;
+      window.location.href = "dashboard.html";
     } catch (error) {
       errorMessage.textContent =
         error.message ?? "No se pudo eliminar la planta";
@@ -445,7 +446,7 @@ async function initPlantDetail() {
     currentHistory = plant.history;
 
     fillPlantHeader(plant);
-    setPlantHeaderBack(`room.html?id=${plant.roomId}`);
+    setPlantHeaderBack("dashboard.html");
     setPlantHeaderAction("Editar planta", "#");
     setupPlantEdition(plant, rooms);
 
@@ -473,6 +474,10 @@ async function initPlantHeaderOnly() {
 }
 
 function initPlant() {
+  setupAuthGuard();
+  const session = requireAuth();
+  if (!session) return;
+
   const timeline = document.querySelector("#timeline");
 
   if (timeline) {

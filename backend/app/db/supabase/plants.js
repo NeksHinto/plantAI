@@ -140,3 +140,15 @@ export async function updateHealthRecord(recordId, treatmentNotes) {
   if (error) throw error;
   return data ? withDateAlias(data) : null;
 }
+
+export async function getHealthRecordById(recordId) {
+  const { data, error } = await getSupabase()
+    .from("plant_health_records")
+    .select("id, plant_id, plants(user_id)")
+    .eq("id", recordId)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return { id: data.id, plant_id: data.plant_id, user_id: data.plants?.user_id };
+}
+

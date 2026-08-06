@@ -1,6 +1,6 @@
 import { createBadge, getStatusLabel, refreshIcons } from "./ui.js";
 
-export function createRoomCard(room, expanded, onClick) {
+export function createRoomCard(room, expanded, onClick, onEdit, onDelete) {
   const card = document.createElement("article");
 
   if (expanded) {
@@ -14,12 +14,24 @@ export function createRoomCard(room, expanded, onClick) {
   button.className = "room-card__header";
   button.setAttribute("aria-expanded", String(expanded));
 
-  let statusClass = "atencion";
+  let statusHtml = "";
 
-  if (room.badStatePercent === 0) {
-    statusClass = "saludable";
-  } else if (room.badStatePercent >= 40) {
-    statusClass = "critico";
+  if (room.plantCount > 0) {
+    let statusClass = "atencion";
+    let statusText = `${room.badStatePercent}% en mal estado`;
+
+    if (room.badStatePercent === 0) {
+      statusClass = "saludable";
+      statusText = "100% en buen estado";
+    } else if (room.badStatePercent >= 40) {
+      statusClass = "critico";
+    }
+
+    statusHtml = `
+      <p class="room-card__status-text room-card__status-text--${statusClass}">
+        ${statusText}
+      </p>
+    `;
   }
 
   button.innerHTML = `
@@ -34,18 +46,12 @@ export function createRoomCard(room, expanded, onClick) {
       <p class="room-card__meta">${room.plantCount} plantas · ${room.isIndoors ? "Interior" : "Exterior"}${room.temperatureLevel ? ` · ${room.temperatureLevel}` : ""}</p>
     </div>
 
-    <p
-      class="room-card__status-text
-      room-card__status-text--${statusClass}"
-    >
-      ${room.badStatePercent}% en mal estado
-    </p>
+    ${statusHtml}
 
     <span class="room-card__chevron">
       ${expanded ? '<i data-lucide="chevron-up" aria-hidden="true"></i>' : '<i data-lucide="chevron-down" aria-hidden="true"></i>'}
     </span>
   `;
-
 
   button.addEventListener("click", onClick);
   card.append(button);
@@ -74,17 +80,30 @@ export function createRoomCard(room, expanded, onClick) {
     const actions = document.createElement("div");
     actions.className = "room-card__actions";
 
-    const roomLink = document.createElement("a");
-    roomLink.className = "btn btn--secondary";
-    roomLink.href = `room.html?id=${room.id}`;
-    roomLink.textContent = "Ver ambiente";
-
     const addPlantLink = document.createElement("a");
     addPlantLink.className = "btn btn--secondary";
     addPlantLink.href = `scanner.html?roomId=${room.id}`;
     addPlantLink.textContent = "Agregar nueva planta";
 
-    actions.append(roomLink, addPlantLink);
+    const editBtn = document.createElement("button");
+    editBtn.type = "button";
+    editBtn.className = "btn btn--secondary";
+    editBtn.textContent = "Editar ambiente";
+    editBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (onEdit) onEdit(room);
+    });
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.className = "btn btn--danger-outline";
+    deleteBtn.textContent = "Eliminar ambiente";
+    deleteBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (onDelete) onDelete(room);
+    });
+
+    actions.append(addPlantLink, editBtn, deleteBtn);
 
     content.append(title, plants, actions);
     card.append(content);
@@ -130,80 +149,5 @@ export function createCompactPlantCard(plant) {
     createBadge(plant.status, getStatusLabel(plant.status))
   );
 
-  return link;
-}
-
-export function createExpandedRoom(room, plants) {
-  const section = document.createElement("section");
-  section.className = "room-expanded";
-  section.innerHTML = `
-    <header class="room-expanded__header">
-      <img class="room-expanded__image" src="${room.image}" alt="${room.name}">
-      <div>
-        <h2 class="room-expanded__title">${room.name}</h2>
-        <p class="room-card__meta">${room.isIndoors ? "Interior" : "Exterior"}${room.temperatureLevel ? ` · ${room.temperatureLevel}` : ""}</p>
-      </div>
-    </header>
-    <div class="room-expanded__plants" aria-label="Plantas en ${room.name}"></div>
-  `;
-
-  section.querySelector(".room-expanded__header").append(
-    createBadge(room.status, `${room.badStatePercent}% en mal estado`)
-  );
-
-  const plantsContainer = section.querySelector(".room-expanded__plants");
-  if (plants.length === 0) {
-    const empty = document.createElement("p");
-    empty.textContent = "No hay plantas en este ambiente.";
-    plantsContainer.append(empty);
-  } else {
-    plants.forEach((plant) => plantsContainer.append(createCompactPlantCard(plant)));
-  }
-
-  const actions = document.createElement("div");
-  actions.className = "room-expanded__actions";
-
-  const addLink = document.createElement("a");
-  addLink.className = "btn btn--secondary";
-  addLink.href = `scanner.html?roomId=${room.id}`;
-  addLink.textContent = "Agregar nueva planta";
-
-  const editButton = document.createElement("button");
-  editButton.className = "btn btn--secondary";
-  editButton.id = "edit-room-button";
-  editButton.type = "button";
-  editButton.textContent = "Editar ambiente";
-
-  const deleteButton = document.createElement("button");
-  deleteButton.className = "btn btn--danger-outline";
-  deleteButton.id = "delete-room-button";
-  deleteButton.type = "button";
-  deleteButton.textContent = "Eliminar ambiente";
-
-  actions.append(addLink, editButton, deleteButton);
-  section.append(actions);
-
-  return section;
-}
-
-export function createCollapsedRoom(room) {
-  const link = document.createElement("a");
-  link.className = "room-collapsed";
-  link.href = `room.html?id=${room.id}`;
-
-  link.innerHTML = `
-    <img class="room-collapsed__image" src="${room.image}" alt="${room.name}">
-    <div class="room-collapsed__body">
-      <h3 class="room-collapsed__title">${room.name}</h3>
-      <p class="room-card__meta">${room.isIndoors ? "Interior" : "Exterior"}${room.temperatureLevel ? ` · ${room.temperatureLevel}` : ""}</p>
-    </div>
-    <i data-lucide="chevron-right" aria-hidden="true"></i>
-  `;
-
-  link.querySelector(".room-collapsed__body").append(
-    createBadge(room.status, `${room.badStatePercent}% en mal estado`)
-  );
-
-  setTimeout(refreshIcons, 0);
   return link;
 }

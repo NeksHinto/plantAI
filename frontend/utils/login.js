@@ -2,11 +2,18 @@ import { login } from "./auth-api.js";
 import { setSession, getSession } from "./session.js";
 import { showError } from "./ui.js";
 
-function initLogin() {
-  if (getSession()?.userId) {
-    window.location.href = "pages/dashboard.html";
-    return;
+function checkExistingSession() {
+  const session = getSession();
+  if (session?.userId && session?.token) {
+    window.location.replace("pages/dashboard.html");
+    return true;
   }
+  return false;
+}
+
+function initLogin() {
+  if (checkExistingSession()) return;
+
   const form = document.querySelector("#login-form");
   const errorSlot = document.querySelector("#login-error");
 
@@ -25,7 +32,7 @@ function initLogin() {
     try {
       const session = await login(username, password);
       setSession(session);
-      window.location.href = "pages/dashboard.html";
+      window.location.replace("pages/dashboard.html");
     } catch (error) {
       showError(errorSlot, error.message ?? "No se pudo iniciar sesión");
     } finally {
@@ -38,4 +45,5 @@ function clearError(container) {
   if (container) container.replaceChildren();
 }
 
+window.addEventListener("pageshow", checkExistingSession);
 document.addEventListener("components:loaded", initLogin);

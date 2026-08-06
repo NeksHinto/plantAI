@@ -13,14 +13,19 @@ import {
   deleteHealthRecord,
   updateHealthRecord,
   getRoomById,
+  getHealthRecordById,
 } from "../db/dataAccess.js";
 import { generateTreatmentNotes } from "../services/treatmentRecommendation.js";
 import { mapPlantRow } from "../services/mappers.js";
+import { authenticateToken } from "../middleware/auth.js";
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 export const endpointsPlantas = Router();
+
+// Requerir autenticación para todos los endpoints de plantas
+endpointsPlantas.use(authenticateToken);
 
 endpointsPlantas.post("/analyze-scan", upload.single("image"), async (req, res) => {
   const imageInput = req.file || req.body.imageUrl;
@@ -32,10 +37,14 @@ endpointsPlantas.post("/analyze-scan", upload.single("image"), async (req, res) 
 
   try {
     if (roomId) {
-      const [identification, diagnosis, room] = await Promise.all([
+      const room = await getRoomById(roomId);
+      if (!room || Number(room.user_id) !== Number(req.user.userId)) {
+        return res.status(404).json({ error: "Habitación no encontrada" });
+      }
+
+      const [identification, diagnosis] = await Promise.all([
         identifySpecies(imageInput),
-        identifyDisease(imageInput),
-        getRoomById(roomId)
+        identifyDisease(imageInput)
       ]);
 
       const speciesAccuracy = identification?.accuracy ?? 0;
@@ -72,10 +81,14 @@ endpointsPlantas.post("/analyze-scan", upload.single("image"), async (req, res) 
         }
       });
     } else {
-      const [diagnosis, roomContext, plant] = await Promise.all([
+      const plant = await getPlantById(plantId);
+      if (!plant || Number(plant.user_id) !== Number(req.user.userId)) {
+        return res.status(404).json({ error: "Planta no encontrada" });
+      }
+
+      const [diagnosis, roomContext] = await Promise.all([
         identifyDisease(imageInput),
-        getRoomContextByPlantId(plantId),
-        getPlantById(plantId)
+        getRoomContextByPlantId(plantId)
       ]);
 
       const diagnosisText = diagnosis?.diagnosis || "Sin enfermedad";
@@ -106,13 +119,19 @@ endpointsPlantas.post("/analyze-scan", upload.single("image"), async (req, res) 
 
 // add-plant(image): crea la planta y su registro diagnostico inicial en la base de datos.
 endpointsPlantas.post("/add-plant", async (req, res) => {
-  const { imageUrl, userId, roomId, name, species, commonName, diagnosis: reqDiagnosis, diagnosisAccuracy: reqAccuracy, treatmentNotes: reqNotes, confidenceScore } = req.body;
+  const { imageUrl, roomId, name, species, commonName, diagnosis: reqDiagnosis, diagnosisAccuracy: reqAccuracy, treatmentNotes: reqNotes, confidenceScore } = req.body;
+  const userId = req.user.userId;
 
-  if (!imageUrl || !userId || !roomId) {
-    return res.status(400).json({ error: "Faltan datos obligatorios (imageUrl, userId, roomId)" });
+  if (!imageUrl || !roomId) {
+    return res.status(400).json({ error: "Faltan datos obligatorios (imageUrl, roomId)" });
   }
 
   try {
+    const room = await getRoomById(roomId);
+    if (!room || Number(room.user_id) !== Number(userId)) {
+      return res.status(404).json({ error: "Habitación no encontrada" });
+    }
+
     let plantSpecies = species;
     let plantCommonName = commonName;
     let speciesAccuracy = confidenceScore;
@@ -122,10 +141,9 @@ endpointsPlantas.post("/add-plant", async (req, res) => {
 
     // Si los datos no vienen precargados del análisis previa, los calculamos
     if (!plantSpecies || diagnosisText === undefined) {
-      const [identification, diagnosis, room] = await Promise.all([
+      const [identification, diagnosis] = await Promise.all([
         identifySpecies(imageUrl),
-        identifyDisease(imageUrl),
-        getRoomById(roomId)
+        identifyDisease(imageUrl)
       ]);
 
       speciesAccuracy = identification?.accuracy ?? 0;
@@ -185,15 +203,19 @@ endpointsPlantas.post("/identify-disease", async (req, res) => {
   }
 
   try {
+    const plant = await getPlantById(plantId);
+    if (!plant || Number(plant.user_id) !== Number(req.user.userId)) {
+      return res.status(404).json({ error: "Planta no encontrada" });
+    }
+
     let diagnosisText = reqDiagnosis;
     let diagnosisAccuracy = reqAccuracy;
     let treatmentNotes = reqNotes;
 
     if (!diagnosisText) {
-      const [diagnosis, roomContext, plant] = await Promise.all([
+      const [diagnosis, roomContext] = await Promise.all([
         identifyDisease(imageUrl),
-        getRoomContextByPlantId(plantId),
-        getPlantById(plantId)
+        getRoomContextByPlantId(plantId)
       ]);
 
       diagnosisText = diagnosis?.diagnosis || "Sin enfermedad";
@@ -235,7 +257,7 @@ endpointsPlantas.get("/:plantId", async (req, res) => {
   try {
     const plantRow = await getPlantById(plantId);
 
-    if (!plantRow) {
+    if (!plantRow || Number(plantRow.user_id) !== Number(req.user.userId)) {
       return res.status(404).json({ error: "Planta no encontrada" });
     }
 
@@ -267,6 +289,18 @@ endpointsPlantas.put("/:plantId", async (req, res) => {
   const { name, roomId } = req.body;
 
   try {
+    const existingPlant = await getPlantById(plantId);
+    if (!existingPlant || Number(existingPlant.user_id) !== Number(req.user.userId)) {
+      return res.status(404).json({ error: "Planta no encontrada" });
+    }
+
+    if (roomId !== undefined) {
+      const room = await getRoomById(roomId);
+      if (!room || Number(room.user_id) !== Number(req.user.userId)) {
+        return res.status(404).json({ error: "Habitación no encontrada" });
+      }
+    }
+
     const updatedPlant = await updatePlant(plantId, name, roomId);
 
     if (!updatedPlant) {
@@ -289,6 +323,11 @@ endpointsPlantas.delete("/:plantId", async (req, res) => {
   const { plantId } = req.params;
 
   try {
+    const existingPlant = await getPlantById(plantId);
+    if (!existingPlant || Number(existingPlant.user_id) !== Number(req.user.userId)) {
+      return res.status(404).json({ error: "Planta no encontrada" });
+    }
+
     const deletedPlant = await deletePlant(plantId);
     if (!deletedPlant) {
       return res.status(404).json({ error: "Planta no encontrada" });
@@ -309,6 +348,11 @@ endpointsPlantas.put("/records/:recordId", async (req, res) => {
   const { treatmentNotes } = req.body;
 
   try {
+    const record = await getHealthRecordById(recordId);
+    if (!record || Number(record.user_id) !== Number(req.user.userId)) {
+      return res.status(404).json({ error: "Registro de salud no encontrado" });
+    }
+
     const updatedRecord = await updateHealthRecord(recordId, treatmentNotes);
     if (!updatedRecord) {
       return res.status(404).json({ error: "Registro de salud no encontrado" });
@@ -328,6 +372,11 @@ endpointsPlantas.delete("/records/:recordId", async (req, res) => {
   const { recordId } = req.params;
 
   try {
+    const record = await getHealthRecordById(recordId);
+    if (!record || Number(record.user_id) !== Number(req.user.userId)) {
+      return res.status(404).json({ error: "Registro de salud no encontrado" });
+    }
+
     const deletedRecord = await deleteHealthRecord(recordId);
     if (!deletedRecord) {
       return res.status(404).json({ error: "Registro de salud no encontrado" });

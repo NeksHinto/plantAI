@@ -1,4 +1,4 @@
-import { createRoom } from "./rooms-api.js";
+import { createRoom, updateRoom, deleteRoom } from "./rooms-api.js";
 import { formatTemperatureForDb, parseTemperature } from "./format.js";
 
 export function setupRoomCreation(userId, onRoomCreated) {
@@ -15,7 +15,7 @@ export function setupRoomCreation(userId, onRoomCreated) {
   function openModal() {
     modal.hidden = false;
     form.reset();
-    errorMessage.hidden = true;
+    if (errorMessage) errorMessage.hidden = true;
 
     document.querySelector("#room-name")?.focus();
   }
@@ -44,8 +44,10 @@ export function setupRoomCreation(userId, onRoomCreated) {
     const parsedTemp = parseTemperature(rawTemperature);
 
     if (!name) {
-      errorMessage.textContent = "Ingresa un nombre para el ambiente";
-      errorMessage.hidden = false;
+      if (errorMessage) {
+        errorMessage.textContent = "Ingresa un nombre para el ambiente";
+        errorMessage.hidden = false;
+      }
       return;
     }
 
@@ -54,8 +56,10 @@ export function setupRoomCreation(userId, onRoomCreated) {
       rawTemperature === "" ||
       parsedTemp === null
     ) {
-      errorMessage.textContent = "Ingresa una temperatura valida";
-      errorMessage.hidden = false;
+      if (errorMessage) {
+        errorMessage.textContent = "Ingresa una temperatura valida";
+        errorMessage.hidden = false;
+      }
       return;
     }
 
@@ -72,10 +76,150 @@ export function setupRoomCreation(userId, onRoomCreated) {
       closeModal();
       await onRoomCreated();
     } catch (error) {
-      errorMessage.textContent =
-        error.message ?? "No se pudo crear el ambiente";
-
-      errorMessage.hidden = false;
+      if (errorMessage) {
+        errorMessage.textContent =
+          error.message ?? "No se pudo crear el ambiente";
+        errorMessage.hidden = false;
+      }
     }
   });
+}
+
+export function setupRoomEdition(onRoomUpdated) {
+  const modal = document.querySelector("#edit-room-modal");
+  const form = document.querySelector("#edit-room-form");
+  const nameInput = document.querySelector("#edit-room-name");
+  const locationInput = document.querySelector("#edit-room-location");
+  const temperatureInput = document.querySelector("#edit-room-temperature");
+  const cancelButton = document.querySelector("#cancel-edit-room");
+  const errorMessage = document.querySelector("#edit-room-error");
+
+  let currentRoom = null;
+
+  if (!modal || !form || !nameInput || !locationInput || !temperatureInput) {
+    return () => {};
+  }
+
+  function openEditModal(room) {
+    currentRoom = room;
+    nameInput.value = room.name;
+    locationInput.value = String(room.isIndoors);
+
+    const parsedTemp = parseTemperature(room.temperatureLevel);
+    temperatureInput.value = parsedTemp !== null ? parsedTemp : "";
+
+    if (errorMessage) errorMessage.hidden = true;
+    modal.hidden = false;
+    nameInput.focus();
+  }
+
+  function closeModal() {
+    modal.hidden = true;
+    currentRoom = null;
+  }
+
+  cancelButton?.addEventListener("click", closeModal);
+
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) {
+      closeModal();
+    }
+  });
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!currentRoom) return;
+
+    const name = nameInput.value.trim();
+    const isIndoors = locationInput.value === "true";
+    const rawTemperature = temperatureInput.value;
+    const parsedTemp = parseTemperature(rawTemperature);
+
+    if (!name) {
+      if (errorMessage) {
+        errorMessage.textContent = "Ingresa un nombre para el ambiente";
+        errorMessage.hidden = false;
+      }
+      return;
+    }
+    if (rawTemperature === "" || parsedTemp === null) {
+      if (errorMessage) {
+        errorMessage.textContent = "Ingresa una temperatura valida";
+        errorMessage.hidden = false;
+      }
+      return;
+    }
+
+    const temperatureLevel = formatTemperatureForDb(parsedTemp);
+
+    try {
+      await updateRoom(currentRoom.id, { name, isIndoors, temperatureLevel });
+      closeModal();
+      await onRoomUpdated();
+    } catch (error) {
+      if (errorMessage) {
+        errorMessage.textContent =
+          error.message ?? "No se pudo editar el ambiente";
+        errorMessage.hidden = false;
+      }
+    }
+  });
+
+  return openEditModal;
+}
+
+export function setupRoomDeletion(onRoomDeleted) {
+  const modal = document.querySelector("#delete-room-modal");
+  const cancelButton = document.querySelector("#cancel-delete-room");
+  const confirmButton = document.querySelector("#confirm-delete-room");
+  const errorMessage = document.querySelector("#delete-room-error");
+
+  let currentRoom = null;
+
+  if (!modal || !confirmButton) {
+    return () => {};
+  }
+
+  function openDeleteModal(room) {
+    currentRoom = room;
+    modal.hidden = false;
+    if (errorMessage) errorMessage.hidden = true;
+  }
+
+  function closeModal() {
+    modal.hidden = true;
+    currentRoom = null;
+  }
+
+  cancelButton?.addEventListener("click", closeModal);
+
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) {
+      closeModal();
+    }
+  });
+
+  confirmButton.addEventListener("click", async () => {
+    if (!currentRoom) return;
+
+    confirmButton.disabled = true;
+    confirmButton.textContent = "Eliminando...";
+
+    try {
+      await deleteRoom(currentRoom.id);
+      closeModal();
+      await onRoomDeleted();
+    } catch (error) {
+      if (errorMessage) {
+        errorMessage.textContent =
+          error.message ?? "No se pudo eliminar el ambiente";
+        errorMessage.hidden = false;
+      }
+    } finally {
+      confirmButton.disabled = false;
+      confirmButton.textContent = "Eliminar ambiente";
+    }
+  });
+
+  return openDeleteModal;
 }

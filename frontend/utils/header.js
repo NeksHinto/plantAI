@@ -8,7 +8,9 @@ function setupHeader() {
       event.preventDefault();
 
       clearSession();
-      window.location.href = "../index.html";
+      const isPagesSubdir = window.location.pathname.includes("/pages/");
+      const targetUrl = isPagesSubdir ? "../index.html" : "index.html";
+      window.location.replace(targetUrl);
     });
   }
 }

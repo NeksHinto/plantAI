@@ -43,3 +43,21 @@
   border-radius: var(--radius-sm);
   background: var(--color-surface);
 }
+
+#rooms-pagination,
+#plants-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 14rem;
+  flex-shrink: 0;
+}
+
+#rooms-search,
+#plants-search {
+  flex: 1;
+  max-width: 22rem;
+  min-width: 12rem;
+}
+
+
