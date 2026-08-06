@@ -15,22 +15,22 @@ Aplicación web para organizar tus plantas por ambientes del hogar, escanear e i
 ## Funcionalidades Principales
 
 ### 1. Inicio de Sesión
-![Pagina para inicio de sesion ](inicio-sesion.png)
+![Pagina para inicio de sesion ](frontend/src/inicio-sesion.jpeg)
 
 ### 2. Pagina principal
-![Pagina principal de la app](pagina-principal.png)
+![Pagina principal de la app](frontend/src/pagina-principal.jpeg)
 
 ### 3. Agregar Ambiente
-![Formulario para agregar un nuevo ambiente](agregar-ambiente.png)
+![Formulario para agregar un nuevo ambiente](frontend/src/agregar-ambiente.jpeg)
 
 ### 4. Escanear Planta (Identificación de especie)
-![Interfaz para subir una imagen de la planta](escanear-planta.png)
+![Interfaz para subir una imagen de la planta](frontend/src/escanear-planta.jpeg)
 
 ### 5. Información de la planta identificada (Resultados del Escaneo)
-![Informacion de la planta identificada](informacion-escaneo.png)
+![Informacion de la planta identificada](frontend/src/informacion-escaneo.jpeg)
 
 ### 6. Resultado de escaneo con probabilidad de enfermedad
-![Resultados del escaneo con probabilidad de enfermedad](resultado-escaneo.png)
+![Resultados del escaneo con probabilidad de enfermedad](frontend/src/resultado-escaneo.jpeg)
 
 
 
