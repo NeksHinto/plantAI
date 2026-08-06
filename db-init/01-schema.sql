@@ -19,7 +19,7 @@ CREATE TABLE rooms (
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     name VARCHAR(25) NOT NULL,
     image_url VARCHAR(255),
-    temperature_level NUMERIC(2), CHECK (temperature_level BETWEEN 0 AND 50),
+    temperature_level NUMERIC(2), CHECK (temperature_level BETWEEN -20 AND 50),
     is_indoors BOOLEAN NOT NULL DEFAULT TRUE
 );
 
