@@ -99,6 +99,11 @@
   flex-shrink: 0;
 }
 
+.plant-header__avatar:not([src]),
+.plant-header__avatar[src=""] {
+  display: none;
+}
+
 .plant-header__name {
   font-weight: 700;
   white-space: nowrap;

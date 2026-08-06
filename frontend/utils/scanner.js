@@ -37,11 +37,16 @@ function fillPlantHeaderFromDetail(plant) {
   const species = document.querySelector("[data-plant-species]");
 
   if (avatar) {
-    avatar.src = plant.image;
-    avatar.alt = plant.name;
+    if (plant.image) {
+      avatar.src = plant.image;
+      avatar.alt = plant.name || "";
+      avatar.style.display = "";
+    } else {
+      avatar.style.display = "none";
+    }
   }
-  if (name) name.textContent = plant.name;
-  if (species) species.textContent = plant.species;
+  if (name) name.textContent = plant.name || "";
+  if (species) species.textContent = plant.species || "";
 }
 
 // Muestra los resultados del diagnóstico en pantalla

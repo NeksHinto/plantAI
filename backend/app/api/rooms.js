@@ -14,6 +14,7 @@ export const endpointsAmbientes = Router();
 
 endpointsAmbientes.use(authenticateToken);
 
+// Mapea un registro de la base de datos al formato de objeto de ambiente.
 function mapRoom(row) {
   return {
     id: row.id,
@@ -26,6 +27,7 @@ function mapRoom(row) {
   };
 }
 
+// Obtiene la lista de ambientes pertenecientes al usuario autenticado.
 endpointsAmbientes.get("/", async (req, res) => {
   const userId = req.user.userId;
 
@@ -37,7 +39,7 @@ endpointsAmbientes.get("/", async (req, res) => {
     res.sendStatus(500);
   }
 });
-
+// Actualiza las propiedades y datos de un ambiente existente.
 endpointsAmbientes.put("/:roomId", async (req, res) => {
   const { roomId } = req.params;
   const { name, isIndoors, temperatureLevel, humidityLevel, lightLevel } = req.body;
@@ -71,6 +73,7 @@ endpointsAmbientes.put("/:roomId", async (req, res) => {
   }
 });
 
+// Obtiene todas las plantas asociadas a un ambiente.
 endpointsAmbientes.get("/:roomId/plants", async (req, res) => {
   const { roomId } = req.params;
 
@@ -88,6 +91,7 @@ endpointsAmbientes.get("/:roomId/plants", async (req, res) => {
   }
 });
 
+// Crea un nuevo ambiente asociado al usuario autenticado.
 endpointsAmbientes.post("/", async (req, res) => {
   const { name, isIndoors, temperatureLevel, humidityLevel, lightLevel } = req.body;
   const userId = req.user.userId;
@@ -117,6 +121,7 @@ endpointsAmbientes.post("/", async (req, res) => {
   }
 });
 
+// Elimina un ambiente específico según su ID.
 endpointsAmbientes.delete("/:roomId", async (req, res) => {
   const { roomId } = req.params;
 

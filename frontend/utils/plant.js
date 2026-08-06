@@ -25,10 +25,15 @@ function fillPlantHeader(plant) {
   const info = document.querySelector("#plant-info");
 
   if (avatar) {
-    avatar.src = plant.image;
-    avatar.alt = plant.name;
+    if (plant.image) {
+      avatar.src = plant.image;
+      avatar.alt = plant.name || "";
+      avatar.style.display = "";
+    } else {
+      avatar.style.display = "none";
+    }
   }
-  if (name) name.textContent = plant.name;
+  if (name) name.textContent = plant.name || "";
   if (species) {
     species.textContent = plant.commonName && plant.commonName !== plant.species
       ? `${plant.commonName} (${plant.species})`
