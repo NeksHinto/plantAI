@@ -18,9 +18,10 @@ CREATE TABLE rooms (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     name VARCHAR(25) NOT NULL,
-    image_url VARCHAR(255),
-    temperature_level NUMERIC(2), CHECK (temperature_level BETWEEN -20 AND 50),
-    is_indoors BOOLEAN NOT NULL DEFAULT TRUE
+    is_indoors BOOLEAN NOT NULL DEFAULT TRUE,
+    temperature_level NUMERIC(4,1) CHECK (temperature_level BETWEEN -20 AND 50),
+    humidity_level VARCHAR(20),
+    light_level VARCHAR(20)
 );
 
 -- tabla plantas --
@@ -31,7 +32,7 @@ CREATE TABLE plants (
     name VARCHAR(20) NOT NULL,
     common_name VARCHAR(50),
     species VARCHAR(50),
-    image_url VARCHAR(255)
+    image_url VARCHAR(512)
 );
 
 -- tabla registros de salud de plantas --
@@ -41,6 +42,7 @@ CREATE TABLE plant_health_records (
     diagnosis VARCHAR(255) NOT NULL,
     accuracy DECIMAL(5,2),
     treatment_notes TEXT,
+    image_url VARCHAR(512),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
