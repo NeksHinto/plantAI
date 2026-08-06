@@ -1,5 +1,6 @@
 import { db } from "./pool.js";
-
+const ROOM_COLS =
+  "id, user_id, name, is_indoors, temperature_level, humidity_level, light_level";
 // Obtiene todos los ambientes registrados por un usuario
 export async function getRoomsByUserId(userId) {
   const res = await db.query(
