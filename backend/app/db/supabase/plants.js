@@ -4,6 +4,9 @@ function withDateAlias(record) {
   return { ...record, date: record.created_at };
 }
 
+const HEALTH_COLS =
+  "id, plant_id, diagnosis, accuracy, treatment_notes, image_url, created_at";
+
 export async function getPlantsByRoomId(roomId) {
   const { data, error } = await getSupabase()
     .from("plants")
@@ -36,12 +39,22 @@ export async function getPlantById(plantId) {
 export async function getHealthRecordsByPlantId(plantId) {
   const { data, error } = await getSupabase()
     .from("plant_health_records")
-    .select("id, plant_id, diagnosis, accuracy, treatment_notes, created_at")
+    .select(HEALTH_COLS)
     .eq("plant_id", plantId)
     .order("created_at", { ascending: false });
 
   if (error) throw error;
   return data.map(withDateAlias);
+}
+
+export async function countHealthRecordsByPlantId(plantId) {
+  const { count, error } = await getSupabase()
+    .from("plant_health_records")
+    .select("id", { count: "exact", head: true })
+    .eq("plant_id", plantId);
+
+  if (error) throw error;
+  return count ?? 0;
 }
 
 export async function updatePlant(plantId, name, roomId) {
@@ -60,6 +73,18 @@ export async function updatePlant(plantId, name, roomId) {
   return data;
 }
 
+export async function updatePlantImageUrl(plantId, imageUrl) {
+  const { data, error } = await getSupabase()
+    .from("plants")
+    .update({ image_url: imageUrl })
+    .eq("id", plantId)
+    .select("id, user_id, room_id, name, common_name, species, image_url")
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+}
+
 export async function insertPlant(userId, roomId, name, commonName, species, imageUrl) {
   const { data, error } = await getSupabase()
     .from("plants")
@@ -69,7 +94,7 @@ export async function insertPlant(userId, roomId, name, commonName, species, ima
       name,
       common_name: commonName || null,
       species,
-      image_url: imageUrl,
+      image_url: imageUrl || null,
     })
     .select("id, user_id, room_id, name, common_name, species, image_url")
     .single();
@@ -78,7 +103,13 @@ export async function insertPlant(userId, roomId, name, commonName, species, ima
   return data;
 }
 
-export async function insertHealthRecord(plantId, diagnosis, accuracy, treatmentNotes) {
+export async function insertHealthRecord(
+  plantId,
+  diagnosis,
+  accuracy,
+  treatmentNotes,
+  imageUrl = null
+) {
   const { data, error } = await getSupabase()
     .from("plant_health_records")
     .insert({
@@ -86,8 +117,9 @@ export async function insertHealthRecord(plantId, diagnosis, accuracy, treatment
       diagnosis,
       accuracy,
       treatment_notes: treatmentNotes || null,
+      image_url: imageUrl || null,
     })
-    .select("id, plant_id, diagnosis, accuracy, treatment_notes, created_at")
+    .select(HEALTH_COLS)
     .single();
 
   if (error) throw error;
@@ -97,7 +129,7 @@ export async function insertHealthRecord(plantId, diagnosis, accuracy, treatment
 export async function getRoomContextByPlantId(plantId) {
   const { data, error } = await getSupabase()
     .from("plants")
-    .select("rooms(id, temperature_level, is_indoors)")
+    .select("rooms(id, temperature_level, is_indoors, humidity_level, light_level)")
     .eq("id", plantId)
     .maybeSingle();
 
@@ -134,7 +166,7 @@ export async function updateHealthRecord(recordId, treatmentNotes) {
     .from("plant_health_records")
     .update({ treatment_notes: treatmentNotes })
     .eq("id", recordId)
-    .select("id, plant_id, diagnosis, accuracy, treatment_notes, created_at")
+    .select(HEALTH_COLS)
     .maybeSingle();
 
   if (error) throw error;

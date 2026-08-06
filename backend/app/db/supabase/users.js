@@ -3,7 +3,7 @@ import { getSupabase } from "./client.js";
 export async function getUserByUsername(username) {
   const { data, error } = await getSupabase()
     .from("users")
-    .select("id, name, password")
+    .select("id, name, username, password")
     .eq("username", username)
     .maybeSingle();
 

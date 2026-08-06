@@ -1,4 +1,3 @@
-// ambientes.js
 import { Router } from "express";
 import {
   getRoomsByUserId,
@@ -13,37 +12,35 @@ import { authenticateToken } from "../middleware/auth.js";
 
 export const endpointsAmbientes = Router();
 
-// Requerir autenticación para todos los endpoints de ambientes
 endpointsAmbientes.use(authenticateToken);
 
-// get-rooms: devuelve ambientes del usuario autenticado
+function mapRoom(row) {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    name: row.name,
+    temperatureLevel: row.temperature_level,
+    humidityLevel: row.humidity_level,
+    lightLevel: row.light_level,
+    isIndoors: row.is_indoors,
+  };
+}
+
 endpointsAmbientes.get("/", async (req, res) => {
   const userId = req.user.userId;
 
   try {
     const rows = await getRoomsByUserId(userId);
-
-    const rooms = rows.map(row => ({
-      id: row.id,
-      userId: row.user_id,
-      name: row.name,
-      imageUrl: row.image_url,
-      temperatureLevel: row.temperature_level,
-      isIndoors: row.is_indoors
-    }));
-
-    res.json(rooms);
-
+    res.json(rows.map(mapRoom));
   } catch (error) {
     console.error("Error en get-rooms:", error);
     res.sendStatus(500);
   }
 });
 
-// edit-room(roomId, {campos modificados})
 endpointsAmbientes.put("/:roomId", async (req, res) => {
   const { roomId } = req.params;
-  const { name, isIndoors, temperatureLevel } = req.body;
+  const { name, isIndoors, temperatureLevel, humidityLevel, lightLevel } = req.body;
 
   try {
     const existingRoom = await getRoomById(roomId);
@@ -51,7 +48,14 @@ endpointsAmbientes.put("/:roomId", async (req, res) => {
       return res.status(404).json({ error: "Habitación no encontrada" });
     }
 
-    const updatedRoom = await updateRoom(roomId, name, isIndoors, temperatureLevel);
+    const updatedRoom = await updateRoom(
+      roomId,
+      name,
+      isIndoors,
+      temperatureLevel,
+      humidityLevel,
+      lightLevel
+    );
 
     if (!updatedRoom) {
       return res.status(404).json({ error: "Habitación no encontrada" });
@@ -59,23 +63,14 @@ endpointsAmbientes.put("/:roomId", async (req, res) => {
 
     res.json({
       message: "Habitación actualizada correctamente",
-      room: {
-        id: updatedRoom.id,
-        userId: updatedRoom.user_id,
-        name: updatedRoom.name,
-        imageUrl: updatedRoom.image_url,
-        temperatureLevel: updatedRoom.temperature_level,
-        isIndoors: updatedRoom.is_indoors
-      }
+      room: mapRoom(updatedRoom),
     });
-
   } catch (error) {
     console.error("Error en edit-room:", error);
     res.sendStatus(500);
   }
 });
 
-// get-plants-by-room-id(roomId): devuelve listado de plantas del ambiente
 endpointsAmbientes.get("/:roomId/plants", async (req, res) => {
   const { roomId } = req.params;
 
@@ -86,36 +81,35 @@ endpointsAmbientes.get("/:roomId/plants", async (req, res) => {
     }
 
     const rows = await getPlantsByRoomId(roomId);
-    const plants = rows.map(mapPlantRow);
-    res.json(plants);
-
+    res.json(rows.map(mapPlantRow));
   } catch (error) {
     console.error("Error en get-plants-by-room-id:", error);
     res.sendStatus(500);
   }
 });
 
-// create-room(name, isIndoors, temperatureLevel)
 endpointsAmbientes.post("/", async (req, res) => {
-  const { name, isIndoors, temperatureLevel } = req.body;
+  const { name, isIndoors, temperatureLevel, humidityLevel, lightLevel } = req.body;
   const userId = req.user.userId;
 
   if (!name || isIndoors === undefined || temperatureLevel === undefined) {
-    return res.status(400).json({ error: "Faltan campos requeridos (name, isIndoors, temperatureLevel)" });
+    return res.status(400).json({
+      error: "Faltan campos requeridos (name, isIndoors, temperatureLevel)",
+    });
   }
 
   try {
-    const newRoom = await insertRoom(Number(userId), name, isIndoors, temperatureLevel);
+    const newRoom = await insertRoom(
+      Number(userId),
+      name,
+      isIndoors,
+      temperatureLevel,
+      humidityLevel ?? null,
+      lightLevel ?? null
+    );
     res.status(201).json({
       message: "Habitación creada correctamente",
-      room: {
-        id: newRoom.id,
-        userId: newRoom.user_id,
-        name: newRoom.name,
-        imageUrl: newRoom.image_url,
-        temperatureLevel: newRoom.temperature_level,
-        isIndoors: newRoom.is_indoors
-      }
+      room: mapRoom(newRoom),
     });
   } catch (error) {
     console.error("Error en create-room:", error);
@@ -123,7 +117,6 @@ endpointsAmbientes.post("/", async (req, res) => {
   }
 });
 
-// delete-room(roomId)
 endpointsAmbientes.delete("/:roomId", async (req, res) => {
   const { roomId } = req.params;
 
@@ -139,7 +132,7 @@ endpointsAmbientes.delete("/:roomId", async (req, res) => {
     }
     res.json({
       message: "Habitación eliminada correctamente",
-      roomId: deletedRoom.id
+      roomId: deletedRoom.id,
     });
   } catch (error) {
     console.error("Error en delete-room:", error);

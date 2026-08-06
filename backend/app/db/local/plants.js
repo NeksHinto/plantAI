@@ -28,10 +28,18 @@ export async function getPlantById(plantId) {
 
 export async function getHealthRecordsByPlantId(plantId) {
   const res = await db.query(
-    "SELECT id, plant_id, diagnosis, accuracy, treatment_notes, created_at AS date FROM plant_health_records WHERE plant_id = $1 ORDER BY created_at DESC",
+    "SELECT id, plant_id, diagnosis, accuracy, treatment_notes, image_url, created_at AS date FROM plant_health_records WHERE plant_id = $1 ORDER BY created_at DESC",
     [plantId]
   );
   return res.rows;
+}
+
+export async function countHealthRecordsByPlantId(plantId) {
+  const res = await db.query(
+    "SELECT COUNT(*)::int AS count FROM plant_health_records WHERE plant_id = $1",
+    [plantId]
+  );
+  return res.rows[0]?.count ?? 0;
 }
 
 export async function updatePlant(plantId, name, roomId) {
@@ -44,8 +52,17 @@ export async function updatePlant(plantId, name, roomId) {
     [
       name !== undefined ? name : null,
       roomId !== undefined ? Number(roomId) : null,
-      plantId
+      plantId,
     ]
+  );
+  return res.rows[0];
+}
+
+export async function updatePlantImageUrl(plantId, imageUrl) {
+  const res = await db.query(
+    `UPDATE plants SET image_url = $1 WHERE id = $2
+     RETURNING id, user_id, room_id, name, common_name, species, image_url`,
+    [imageUrl, plantId]
   );
   return res.rows[0];
 }
@@ -53,22 +70,28 @@ export async function updatePlant(plantId, name, roomId) {
 export async function insertPlant(userId, roomId, name, commonName, species, imageUrl) {
   const res = await db.query(
     "INSERT INTO plants (user_id, room_id, name, common_name, species, image_url) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, user_id, room_id, name, common_name, species, image_url",
-    [userId, roomId, name, commonName || null, species, imageUrl]
+    [userId, roomId, name, commonName || null, species, imageUrl || null]
   );
   return res.rows[0];
 }
 
-export async function insertHealthRecord(plantId, diagnosis, accuracy, treatmentNotes) {
+export async function insertHealthRecord(
+  plantId,
+  diagnosis,
+  accuracy,
+  treatmentNotes,
+  imageUrl = null
+) {
   const res = await db.query(
-    "INSERT INTO plant_health_records (plant_id, diagnosis, accuracy, treatment_notes) VALUES ($1, $2, $3, $4) RETURNING id, plant_id, diagnosis, accuracy, treatment_notes, created_at AS date",
-    [plantId, diagnosis, accuracy, treatmentNotes || null]
+    "INSERT INTO plant_health_records (plant_id, diagnosis, accuracy, treatment_notes, image_url) VALUES ($1, $2, $3, $4, $5) RETURNING id, plant_id, diagnosis, accuracy, treatment_notes, image_url, created_at AS date",
+    [plantId, diagnosis, accuracy, treatmentNotes || null, imageUrl || null]
   );
   return res.rows[0];
 }
 
 export async function getRoomContextByPlantId(plantId) {
   const res = await db.query(
-    `SELECT r.id, r.temperature_level, r.is_indoors 
+    `SELECT r.id, r.temperature_level, r.is_indoors, r.humidity_level, r.light_level
      FROM plants p 
      JOIN rooms r ON p.room_id = r.id 
      WHERE p.id = $1`,
@@ -78,10 +101,9 @@ export async function getRoomContextByPlantId(plantId) {
 }
 
 export async function deletePlant(plantId) {
-  const res = await db.query(
-    "DELETE FROM plants WHERE id = $1 RETURNING id",
-    [plantId]
-  );
+  const res = await db.query("DELETE FROM plants WHERE id = $1 RETURNING id", [
+    plantId,
+  ]);
   return res.rows[0];
 }
 
@@ -95,7 +117,7 @@ export async function deleteHealthRecord(recordId) {
 
 export async function updateHealthRecord(recordId, treatmentNotes) {
   const res = await db.query(
-    "UPDATE plant_health_records SET treatment_notes = $1 WHERE id = $2 RETURNING id, plant_id, diagnosis, accuracy, treatment_notes, created_at AS date",
+    "UPDATE plant_health_records SET treatment_notes = $1 WHERE id = $2 RETURNING id, plant_id, diagnosis, accuracy, treatment_notes, image_url, created_at AS date",
     [treatmentNotes, recordId]
   );
   return res.rows[0];
