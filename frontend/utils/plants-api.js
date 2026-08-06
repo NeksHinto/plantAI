@@ -1,12 +1,11 @@
 import { apiRequest } from "./api.js";
 
+// Solicita los detalles de una planta a la API
 export function fetchPlantById(plantId) {
   return apiRequest(`/plantas/${plantId}`);
 }
 
-// Realiza el analisis botánico/salud.
-// Si recibe `imageFile` (File binario), arma FormData (multipart/form-data).
-// Si recibe `imageUrl` (string), envía JSON.
+// Envía la foto para analizar especie y enfermedad
 export function analyzeScan({ imageUrl, imageFile, roomId, plantId }) {
   if (imageFile) {
     const formData = new FormData();
@@ -26,6 +25,7 @@ export function analyzeScan({ imageUrl, imageFile, roomId, plantId }) {
   });
 }
 
+// Registra una nueva planta analizada en la API
 export function addPlant(data) {
   return apiRequest("/plantas/add-plant", {
     method: "POST",
@@ -33,6 +33,7 @@ export function addPlant(data) {
   });
 }
 
+// Envía un nuevo escaneo de enfermedad para una planta existente
 export function identifyDisease(data) {
   return apiRequest("/plantas/identify-disease", {
     method: "POST",
@@ -40,7 +41,7 @@ export function identifyDisease(data) {
   });
 }
 
-// TODO: conectar UI de edición de planta cuando exista el formulario
+// Actualiza los datos de una planta
 export function updatePlant(plantId, fields) {
   return apiRequest(`/plantas/${plantId}`, {
     method: "PUT",
@@ -48,6 +49,7 @@ export function updatePlant(plantId, fields) {
   });
 }
 
+// Actualiza las notas de tratamiento de un escaneo
 export function updateHealthRecord(recordId, treatmentNotes) {
   return apiRequest(`/plantas/records/${recordId}`, {
     method: "PUT",
@@ -55,12 +57,14 @@ export function updateHealthRecord(recordId, treatmentNotes) {
   });
 }
 
+// Elimina un escaneo del historial clínico
 export function deleteHealthRecord(recordId) {
   return apiRequest(`/plantas/records/${recordId}`, {
     method: "DELETE",
   });
 }
 
+// Elimina una planta
 export function deletePlant(plantId) {
   return apiRequest(`/plantas/${plantId}`, {
     method: "DELETE",

@@ -1,5 +1,6 @@
 import { createBadge, getStatusLabel, refreshIcons } from "./ui.js";
 
+// Crea el elemento DOM de la tarjeta de un ambiente
 export function createRoomCard(room, expanded, onClick, onEdit, onDelete) {
   const card = document.createElement("article");
 
@@ -112,6 +113,7 @@ export function createRoomCard(room, expanded, onClick, onEdit, onDelete) {
   return card;
 }
 
+// Crea el elemento DOM de la tarjeta de una planta
 export function createPlantCard(plant) {
   const link = document.createElement("a");
   link.className = "plant-card";
@@ -132,6 +134,7 @@ export function createPlantCard(plant) {
   return link;
 }
 
+// Crea la tarjeta compacta de planta para ver dentro del ambiente
 export function createCompactPlantCard(plant) {
   const link = document.createElement("a");
   link.className = "plant-card plant-card--compact";

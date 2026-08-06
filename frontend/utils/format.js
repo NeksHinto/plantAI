@@ -1,4 +1,4 @@
-//Procesa el texto directamente para evitar problemas de zona horaria (UTC vs Local).
+// Formatea una fecha ISO a DD/MM/YY
 export function formatDate(isoDate) {
   if (!isoDate) return "";
 
@@ -23,7 +23,7 @@ export function formatDate(isoDate) {
   });
 }
 
-// Convierte a formato de hora de 24 hs (ej: "14:30").
+// Formatea una fecha ISO a hora de 24 hs (HH:MM)
 export function formatTime(isoDate) {
   if (!isoDate) return "";
   const date = new Date(isoDate);
@@ -31,7 +31,7 @@ export function formatTime(isoDate) {
   return date.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
 }
 
-//Convierte un timestamp/ISO Date al formato completo de fecha y hora local de Argentina.
+// Formatea fecha y hora completa en español
 export function formatDateTime(isoDate) {
   if (!isoDate) return "";
   const date = new Date(isoDate);
@@ -39,8 +39,7 @@ export function formatDateTime(isoDate) {
   return date.toLocaleString("es-AR");
 }
 
-//Recibe un valor de temperatura (numérico o texto como "23.5°C") 
-// y lo limpia para devolver un número decimal puro (ej: 23.5).
+// Limpia y convierte un texto o número a valor de temperatura
 export function parseTemperature(val) {
   if (val === null || val === undefined || val === "") return null;
   const str = String(val).replace("°C", "").replace(",", ".").trim();
@@ -48,8 +47,7 @@ export function parseTemperature(val) {
   return Number.isNaN(num) ? null : num;
 }
 
-//Convierte un valor numérico de temperatura al formato estandarizado 
-//para la base de datos con un decimal y el símbolo °C (ej: "23,5°C").
+// Formatea un número de temperatura a texto con °C para la DB
 export function formatTemperatureForDb(val) {
   const num = typeof val === "number" ? val : parseTemperature(val);
   if (num === null || Number.isNaN(num)) return "";

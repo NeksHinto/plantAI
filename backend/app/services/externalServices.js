@@ -2,6 +2,7 @@
 const PLANTNET_API_KEY = process.env.PLANTNET_API_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
+// Identifica la especie botánica de una planta usando la API de Pl@ntNet
 export async function identifySpecies(imageInput) {
   try {
     let response;
@@ -72,6 +73,7 @@ export async function identifySpecies(imageInput) {
   }
 }
 
+// Detecta enfermedades en una imagen usando la API Pl@ntNet Diseases
 export async function identifyDisease(imageInput) {
   try {
     let imageBlob;

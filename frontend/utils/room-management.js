@@ -1,6 +1,7 @@
 import { createRoom, updateRoom, deleteRoom } from "./rooms-api.js";
 import { formatTemperatureForDb, parseTemperature } from "./format.js";
 
+// Maneja el formulario para crear un ambiente
 export function setupRoomCreation(userId, onRoomCreated) {
   const openButton = document.querySelector("#add-room-button");
   const modal = document.querySelector("#room-modal");
@@ -85,6 +86,7 @@ export function setupRoomCreation(userId, onRoomCreated) {
   });
 }
 
+// Maneja el formulario para editar un ambiente
 export function setupRoomEdition(onRoomUpdated) {
   const modal = document.querySelector("#edit-room-modal");
   const form = document.querySelector("#edit-room-form");
@@ -168,6 +170,7 @@ export function setupRoomEdition(onRoomUpdated) {
   return openEditModal;
 }
 
+// Maneja la confirmación para eliminar un ambiente
 export function setupRoomDeletion(onRoomDeleted) {
   const modal = document.querySelector("#delete-room-modal");
   const cancelButton = document.querySelector("#cancel-delete-room");

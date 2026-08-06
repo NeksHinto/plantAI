@@ -1,3 +1,4 @@
+// Carga componentes HTML dinámicos marcados con data-include
 async function loadComponents() {
   const components = document.querySelectorAll("[data-include]");
 

@@ -3,19 +3,23 @@ import { formatTime, formatTemperatureForDb } from "./format.js";
 
 const NO_DISEASE = ["no disease", "sin enfermedad", "no se detect"];
 
+// Devuelve la imagen o una imagen por defecto si está vacía
 export function resolveImage(imageUrl, fallback) {
   if (!imageUrl || imageUrl === "dummy image") return fallback;
   return imageUrl;
 }
 
+// Devuelve la imagen de la planta o su placeholder
 export function resolvePlantImage(imageUrl) {
   return resolveImage(imageUrl, PLACEHOLDER_PLANT);
 }
 
+// Devuelve la imagen del ambiente o su placeholder
 export function resolveRoomImage(room) {
   return resolveImage(room?.imageUrl, PLACEHOLDER_ROOM);
 }
 
+// Determina el estado de salud (saludable/atencion/critico) según un registro
 export function healthStatusFromRecord(record) {
   const diagnosis = (record?.diagnosis ?? "").toLowerCase();
   const accuracy = Number(record?.accuracy ?? 0);
@@ -26,12 +30,14 @@ export function healthStatusFromRecord(record) {
   return HEALTH_STATUS.SALUDABLE;
 }
 
+// Calcula el estado del ambiente según el porcentaje de plantas enfermas
 export function healthStatusFromPercent(percent) {
   if (percent === 0) return HEALTH_STATUS.SALUDABLE;
   if (percent >= 40) return HEALTH_STATUS.CRITICO;
   return HEALTH_STATUS.ATENCION;
 }
 
+// Devuelve el texto descriptivo del estado de salud
 export function statusLabel(status) {
   return {
     [HEALTH_STATUS.SALUDABLE]: "Saludable",
@@ -40,6 +46,7 @@ export function statusLabel(status) {
   }[status] ?? status;
 }
 
+// Mapea los datos de una planta recibidos de la API
 export function mapPlantFromApi(plant, roomName = "") {
   return {
     id: plant.id,
@@ -54,6 +61,7 @@ export function mapPlantFromApi(plant, roomName = "") {
   };
 }
 
+// Mapea un ambiente calculando estadísticas de sus plantas
 export function mapRoomFromApi(room, plants = []) {
   const unhealthy = plants.filter((p) => p.status !== HEALTH_STATUS.SALUDABLE).length;
   const badStatePercent = plants.length
@@ -76,6 +84,7 @@ export function mapRoomFromApi(room, plants = []) {
   };
 }
 
+// Mapea los detalles de una planta y su historial clínico
 export function mapPlantDetailFromApi(plant) {
   const image = resolveImage(plant.imageUrl, PLACEHOLDER_PLANT);
   const history = (plant.healthRecords ?? [])
@@ -105,6 +114,7 @@ export function mapPlantDetailFromApi(plant) {
   };
 }
 
+// Mapea el resultado del análisis de escaneo para la vista
 export function mapScanResultFromApi({ identification, diagnosis, imageUrl, scannedAt }) {
   const healthStatus = healthStatusFromRecord({
     diagnosis: diagnosis?.diagnosis,

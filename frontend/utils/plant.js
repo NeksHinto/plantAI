@@ -16,6 +16,7 @@ import {
 
 let currentHistory = [];
 
+// Llena los datos del encabezado de la planta
 function fillPlantHeader(plant) {
   const avatar = document.querySelector("[data-plant-avatar]");
   const name = document.querySelector("[data-plant-name]");
@@ -49,6 +50,7 @@ function fillPlantHeader(plant) {
   document.title = `${plant.name} | PlantAI`;
 }
 
+// Crea un punto del historial clínico en la línea de tiempo
 function createTimelinePoint(entry, index, onDelete, onUpdateNotes) {
   const point = document.createElement("li");
   point.className = "timeline__point";
@@ -157,6 +159,7 @@ function createTimelinePoint(entry, index, onDelete, onUpdateNotes) {
   return point;
 }
 
+// Crea una tarjeta para el álbum de escaneos
 function createScanAlbumCard(entry, isSelected) {
   const card = document.createElement("article");
   card.className = "scan-album__card";
@@ -176,6 +179,7 @@ function createScanAlbumCard(entry, isSelected) {
   return card;
 }
 
+// Renderiza la línea de tiempo del historial
 function renderTimeline(container, history, onDelete, onUpdateNotes) {
   container.replaceChildren();
 
@@ -226,6 +230,7 @@ function renderTimeline(container, history, onDelete, onUpdateNotes) {
   setTimeout(refreshIcons, 0);
 }
 
+// Renderiza el álbum de imágenes escaneadas
 function renderScanAlbum(container, history) {
   container.replaceChildren();
 
@@ -256,6 +261,7 @@ function renderScanAlbum(container, history) {
   container.append(track);
 }
 
+// Pide confirmación y elimina un escaneo clínico
 async function handleDeleteRecord(recordId) {
   const confirmed = await showConfirmModal({
     title: "¿Eliminar registro clínico?",
@@ -276,6 +282,7 @@ async function handleDeleteRecord(recordId) {
   }
 }
 
+// Guarda los cambios en las observaciones de un escaneo
 async function handleUpdateRecordNotes(recordId, newNotes) {
   try {
     await updateHealthRecord(recordId, newNotes);
@@ -289,6 +296,7 @@ async function handleUpdateRecordNotes(recordId, newNotes) {
   }
 }
 
+// Vuelve a renderizar la línea de tiempo y el álbum
 function refreshHistoryViews() {
   const timeline = document.querySelector("#timeline");
   const album = document.querySelector("#scan-album");
@@ -296,6 +304,7 @@ function refreshHistoryViews() {
   if (album) renderScanAlbum(album, currentHistory);
 }
 
+// Configura el modal para editar o eliminar la planta
 function setupPlantEdition(plant, rooms) {
   const editButton = document.querySelector("#plant-header-action");
   const modal = document.querySelector("#edit-plant-modal");
@@ -413,6 +422,7 @@ function setupPlantEdition(plant, rooms) {
   });
 }
 
+// Inicializa el detalle completo de la planta
 async function initPlantDetail() {
   const timeline = document.querySelector("#timeline");
   const album = document.querySelector("#scan-album");
@@ -456,6 +466,7 @@ async function initPlantDetail() {
   }
 }
 
+// Inicializa solo el encabezado si no hay detalle
 async function initPlantHeaderOnly() {
   const params = new URLSearchParams(window.location.search);
   const plantId = params.get("id") || params.get("plantId");
@@ -473,6 +484,7 @@ async function initPlantHeaderOnly() {
   }
 }
 
+// Punto de entrada de la vista de planta
 function initPlant() {
   setupAuthGuard();
   const session = requireAuth();
