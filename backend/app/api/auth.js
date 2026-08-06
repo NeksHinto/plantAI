@@ -4,7 +4,7 @@ import { getUserByUsername } from "../db/dataAccess.js";
 import { generateToken } from "../middleware/auth.js";
 export const endpointsAuth = Router();
 
-// login(user + password)
+// Autentica al usuario con sus credenciales y retorna un token JWT.
 endpointsAuth.post("/login", async (req, res) => {
   const { username, password } = req.body;
 

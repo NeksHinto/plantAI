@@ -33,6 +33,7 @@ export const endpointsPlantas = Router();
 
 endpointsPlantas.use(authenticateToken);
 
+// Mapea un registro de la base de datos al formato del historial de salud.
 function mapHealthRecord(row) {
   return {
     id: row.id,
@@ -46,6 +47,7 @@ function mapHealthRecord(row) {
   };
 }
 
+// Determina la extensión del archivo según su tipo.
 function fileExt(file) {
   const mime = file?.mimetype || "";
   if (mime.includes("png")) return "png";
@@ -53,6 +55,7 @@ function fileExt(file) {
   return "jpg";
 }
 
+// Sube y persiste la imagen principal de la planta en el almacenamiento de Supabase.
 async function persistPlantCover({ imageSource, file, username, userId, plantId, roomId }) {
   if (process.env.DB_PROVIDER !== "supabase") {
     if (file?.buffer) return null;
@@ -80,6 +83,7 @@ async function persistPlantCover({ imageSource, file, username, userId, plantId,
   }
 }
 
+// Sube y persiste la imagen asociada a un escaneo o diagnóstico de salud.
 async function persistHealthImage({
   imageSource,
   file,
@@ -123,14 +127,15 @@ async function persistHealthImage({
 }
 
 function resolveImageInput(req) {
+  // Extrae la referencia de la imagen desde los archivos o el cuerpo de la petición.
   if (req.file) return req.file;
   if (req.body?.imageBase64) return req.body.imageBase64;
   if (req.body?.imageUrl) return req.body.imageUrl;
   return null;
 }
 
-/** PlantNet input: multer file, http(s) URL, or data-URL converted to a buffer object. */
 function toPlantNetInput(imageInput, file) {
+  // Prepara la entrada de la imagen en un formato compatible con los servicios de PlantNet.
   if (file?.buffer) return file;
   if (typeof imageInput === "string" && /^https?:\/\//i.test(imageInput)) {
     return imageInput;
@@ -149,6 +154,7 @@ function toPlantNetInput(imageInput, file) {
 }
 
 endpointsPlantas.post("/analyze-scan", upload.single("image"), async (req, res) => {
+  // Analiza la foto enviada para identificar la especie o diagnosticar enfermedades sin guardar la planta.
   const imageInput = resolveImageInput(req);
   const { roomId, plantId } = req.body;
   const userId = req.user.userId;
@@ -160,7 +166,6 @@ endpointsPlantas.post("/analyze-scan", upload.single("image"), async (req, res) 
   }
 
   try {
-    // No Storage writes here — only analyze. Images are persisted on save.
     const plantNetInput = toPlantNetInput(imageInput, req.file);
     if (!plantNetInput) {
       return res.status(400).json({
@@ -251,6 +256,7 @@ endpointsPlantas.post("/analyze-scan", upload.single("image"), async (req, res) 
 });
 
 endpointsPlantas.post("/add-plant", upload.single("image"), async (req, res) => {
+  // Registra una nueva planta en un ambiente y guarda su primer escaneo de salud.
   const {
     imageUrl,
     imageBase64,
@@ -340,7 +346,6 @@ endpointsPlantas.post("/add-plant", upload.single("image"), async (req, res) => 
       null
     );
 
-    // One Storage object for the new plant; reuse URL for the initial health record.
     const coverUrl = await persistPlantCover({
       imageSource,
       file: req.file,
@@ -396,6 +401,7 @@ endpointsPlantas.post("/add-plant", upload.single("image"), async (req, res) => 
 });
 
 endpointsPlantas.post("/identify-disease", upload.single("image"), async (req, res) => {
+  // Diagnostica la salud de una planta existente y agrega un nuevo registro a su historial.
   const {
     imageUrl,
     imageBase64,
@@ -488,6 +494,7 @@ endpointsPlantas.post("/identify-disease", upload.single("image"), async (req, r
 });
 
 endpointsPlantas.get("/:plantId", async (req, res) => {
+  // Obtiene el detalle de una planta junto con todo su historial clínico.
   const { plantId } = req.params;
 
   try {
@@ -510,6 +517,7 @@ endpointsPlantas.get("/:plantId", async (req, res) => {
 });
 
 endpointsPlantas.put("/:plantId", async (req, res) => {
+  // Actualiza el nombre o la ubicación en ambiente de una planta.
   const { plantId } = req.params;
   const { name, roomId } = req.body;
 
@@ -543,6 +551,7 @@ endpointsPlantas.put("/:plantId", async (req, res) => {
 });
 
 endpointsPlantas.delete("/:plantId", async (req, res) => {
+  // Elimina la planta seleccionada y todos sus registros clínicos asociados.
   const { plantId } = req.params;
 
   try {
@@ -566,6 +575,7 @@ endpointsPlantas.delete("/:plantId", async (req, res) => {
 });
 
 endpointsPlantas.put("/records/:recordId", async (req, res) => {
+  // Actualiza las observaciones del tratamiento en un registro de salud específico.
   const { recordId } = req.params;
   const { treatmentNotes } = req.body;
 
@@ -590,6 +600,7 @@ endpointsPlantas.put("/records/:recordId", async (req, res) => {
 });
 
 endpointsPlantas.delete("/records/:recordId", async (req, res) => {
+  // Elimina un registro de salud individual del historial de una planta.
   const { recordId } = req.params;
 
   try {
