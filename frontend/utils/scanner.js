@@ -14,7 +14,6 @@ import {
 import { formatDateTime } from "./format.js";
 import {
   setPlantHeaderBack,
-  setPlantHeaderAction,
   showError,
   showLoading,
 } from "./ui.js";
@@ -480,13 +479,13 @@ async function initScannerResults() {
       const plant = mapPlantDetailFromApi(rawPlant);
       fillPlantHeaderFromDetail(plant);
       setPlantHeaderBack(`scanner.html?plantId=${context.plantId}`);
-      setPlantHeaderAction("Ver historial", `plant.html?id=${context.plantId}`);
+
     } catch {
       setPlantHeaderBack("dashboard.html");
     }
   } else {
     setPlantHeaderBack("dashboard.html");
-    setPlantHeaderAction("Ver historial", "dashboard.html");
+
   }
 
   const scanFile = getScanPreviewFile();
@@ -570,7 +569,7 @@ function initScanner() {
     setupScannerForm();
   } else if (context.roomId) {
     setPlantHeaderBack("dashboard.html");
-    setPlantHeaderAction("Ver historial", "dashboard.html");
+
     setupScannerForm();
   } else {
     const zone = document.querySelector(".scanner-zone");
@@ -584,7 +583,7 @@ async function initPlantHeaderForScanner(plantId) {
     const plant = mapPlantDetailFromApi(rawPlant);
     fillPlantHeaderFromDetail(plant);
     setPlantHeaderBack(`plant.html?id=${plant.id}`);
-    setPlantHeaderAction("Ver historial", `plant.html?id=${plant.id}`);
+
   } catch {
     setPlantHeaderBack("dashboard.html");
   }

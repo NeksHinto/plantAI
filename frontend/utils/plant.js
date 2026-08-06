@@ -466,10 +466,10 @@ async function initPlantHeaderOnly() {
     const plant = mapPlantDetailFromApi(rawPlant);
     fillPlantHeader(plant);
     setPlantHeaderBack(`plant.html?id=${plant.id}`);
-    setPlantHeaderAction("Ver historial", `plant.html?id=${plant.id}`);
+
   } catch {
     setPlantHeaderBack("dashboard.html");
-    setPlantHeaderAction("Ver historial", "dashboard.html");
+
   }
 }
 
