@@ -42,12 +42,12 @@
       <h2 id="plantas-heading" class="sr-only">Plantas</h2>
 
       <div class="tab-panel__toolbar">
-        <div class="search-bar">
-          <i data-lucide="search" class="search-bar__icon" aria-hidden="true"></i>
-          <input class="search-bar__input" id="plants-search" type="search" placeholder="Buscar plantas...">
-        </div>
+        <div id="plants-search"></div>
         <div id="plants-page-size"></div>
         <div id="plants-pagination"></div>
+        <button class="btn btn--primary" id="add-plant-button" type="button">
+          Agregar planta
+        </button>
       </div>
 
       <div id="plants-grid" class="card-grid card-grid--plants"></div>
@@ -166,6 +166,34 @@
 
         <button class="btn btn--danger" id="confirm-delete-room" type="button">
           Eliminar ambiente
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <div class="modal-overlay" id="select-room-modal" hidden>
+    <section class="modal modal--select-room" role="dialog" aria-modal="true" aria-labelledby="select-room-title">
+      <div class="modal__header">
+        <h2 class="modal__title" id="select-room-title">
+          ¿En qué ambiente querés agregar la planta?
+        </h2>
+        <p class="modal__message">
+          Seleccioná un ambiente para asociar tu nueva planta
+        </p>
+      </div>
+
+      <div class="room-selector__search" id="select-room-search-container"></div>
+
+      <div class="room-selector__list" id="select-room-list"></div>
+
+      <p class="modal__error" id="select-room-error" hidden></p>
+
+      <div class="modal__actions">
+        <button class="btn btn--secondary" id="cancel-select-room" type="button">
+          Cancelar
+        </button>
+        <button class="btn btn--primary" id="confirm-select-room" type="button" disabled>
+          Continuar
         </button>
       </div>
     </section>

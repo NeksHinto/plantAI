@@ -206,3 +206,131 @@
   width: 1.25rem;
   height: 1.25rem;
 }
+
+/* Estilos para el modal de selección de ambiente */
+.modal--select-room {
+  max-width: 32rem;
+}
+
+.room-selector__search {
+  margin-bottom: var(--space-md);
+}
+
+.room-selector__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  max-height: 18rem;
+  overflow-y: auto;
+  padding-right: 4px;
+  margin-bottom: var(--space-md);
+}
+
+/* Scrollbar sutil para la lista */
+.room-selector__list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.room-selector__list::-webkit-scrollbar-track {
+  background: var(--color-bg);
+  border-radius: 3px;
+}
+
+.room-selector__list::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+.room-selector__card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+}
+
+.room-selector__card:hover {
+  border-color: var(--color-primary-light);
+  background-color: var(--color-bg);
+}
+
+.room-selector__card.is-selected {
+  border-color: var(--color-primary);
+  background-color: rgba(30, 77, 43, 0.05);
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+.room-selector__card-img {
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.room-selector__card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.room-selector__card-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.room-selector__card-meta {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.room-selector__card-check {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.room-selector__card.is-selected .room-selector__card-check {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.room-selector__empty {
+  text-align: center;
+  padding: var(--space-lg) var(--space-md);
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.room-selector__empty-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  color: var(--color-text-muted);
+  opacity: 0.6;
+}
+

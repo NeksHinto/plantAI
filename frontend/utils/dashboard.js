@@ -15,6 +15,7 @@ import {
   fillUserGreeting,
   showError,
   showLoading,
+  refreshIcons,
 } from "./ui.js";
 
 const DEFAULT_PAGE_SIZE = 6;
@@ -189,7 +190,145 @@ function setupTabs() {
   });
 }
 
-function applyRoomFilterFromUrl(roomsState, plantsState, renderRooms, renderPlants) {
+function setupRoomSelectionModal(roomsState) {
+  const openBtn = document.querySelector("#add-plant-button");
+  const modal = document.querySelector("#select-room-modal");
+  const searchContainer = document.querySelector("#select-room-search-container");
+  const listContainer = document.querySelector("#select-room-list");
+  const cancelBtn = document.querySelector("#cancel-select-room");
+  const confirmBtn = document.querySelector("#confirm-select-room");
+  const errorMsg = document.querySelector("#select-room-error");
+
+  if (!openBtn || !modal || !listContainer) return;
+
+  let selectedRoomId = null;
+
+  function closeModal() {
+    modal.hidden = true;
+    selectedRoomId = null;
+    if (confirmBtn) confirmBtn.disabled = true;
+    if (errorMsg) errorMsg.hidden = true;
+  }
+
+  function renderRoomList(filterText = "") {
+    listContainer.replaceChildren();
+    selectedRoomId = null;
+    if (confirmBtn) confirmBtn.disabled = true;
+
+    const availableRooms = filterText
+      ? filterByQuery(roomsState.all, filterText, ["name"])
+      : roomsState.all;
+
+    if (roomsState.all.length === 0) {
+      const emptyDiv = document.createElement("div");
+      emptyDiv.className = "room-selector__empty";
+      emptyDiv.innerHTML = `
+        <i data-lucide="home" class="room-selector__empty-icon" aria-hidden="true"></i>
+        <p>No tenés ambientes creados aún. Necesitás crear un ambiente para poder agregar plantas.</p>
+        <button class="btn btn--primary btn--sm" id="modal-create-room-btn" type="button">
+          Crear primer ambiente
+        </button>
+      `;
+      listContainer.append(emptyDiv);
+
+      emptyDiv.querySelector("#modal-create-room-btn")?.addEventListener("click", () => {
+        closeModal();
+        document.querySelector("#add-room-button")?.click();
+      });
+
+      refreshIcons();
+      return;
+    }
+
+    if (availableRooms.length === 0) {
+      const emptyDiv = document.createElement("div");
+      emptyDiv.className = "room-selector__empty";
+      emptyDiv.innerHTML = `<p>No se encontraron ambientes que coincidan con "${filterText}".</p>`;
+      listContainer.append(emptyDiv);
+      return;
+    }
+
+    availableRooms.forEach((room) => {
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "room-selector__card";
+      card.dataset.id = String(room.id);
+
+      const roomImg = room.image || "../src/PlantAI-icon.png";
+      const locationText = room.isIndoors ? "Interior" : "Exterior";
+      const plantCountText = room.plants.length === 1 ? "1 planta" : `${room.plants.length} plantas`;
+      const tempText = room.temperatureLevel ? ` · ${room.temperatureLevel}` : "";
+
+      card.innerHTML = `
+        <img class="room-selector__card-img" src="${roomImg}" alt="${room.name}">
+        <div class="room-selector__card-body">
+          <h3 class="room-selector__card-title">${room.name}</h3>
+          <p class="room-selector__card-meta">${plantCountText} · ${locationText}${tempText}</p>
+        </div>
+        <div class="room-selector__card-check">
+          <i data-lucide="check" aria-hidden="true"></i>
+        </div>
+      `;
+
+      card.addEventListener("click", () => {
+        listContainer.querySelectorAll(".room-selector__card").forEach((c) => c.classList.remove("is-selected"));
+        card.classList.add("is-selected");
+        selectedRoomId = room.id;
+        if (confirmBtn) confirmBtn.disabled = false;
+      });
+
+      card.addEventListener("dblclick", () => {
+        selectedRoomId = room.id;
+        confirmSelection();
+      });
+
+      listContainer.append(card);
+    });
+
+    refreshIcons();
+  }
+
+  function openModal() {
+    modal.hidden = false;
+    if (errorMsg) errorMsg.hidden = true;
+
+    if (searchContainer) {
+      searchContainer.replaceChildren();
+      if (roomsState.all.length > 2) {
+        const searchBar = createSearchBar("Buscar ambiente...");
+        searchContainer.append(searchBar);
+        searchBar.querySelector("input").addEventListener("input", (e) => {
+          renderRoomList(e.target.value);
+        });
+      }
+    }
+
+    renderRoomList();
+  }
+
+  function confirmSelection() {
+    if (!selectedRoomId) {
+      if (errorMsg) {
+        errorMsg.textContent = "Por favor seleccioná un ambiente.";
+        errorMsg.hidden = false;
+      }
+      return;
+    }
+    window.location.href = `scanner.html?roomId=${selectedRoomId}`;
+  }
+
+  openBtn.addEventListener("click", openModal);
+  cancelBtn?.addEventListener("click", closeModal);
+  confirmBtn?.addEventListener("click", confirmSelection);
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      closeModal();
+    }
+  });
+}
+
+function applyRoomFilterFromUrl(roomsState, plantsState, renderRooms, renderPlants, plantsSearchSlot) {
   const roomId = new URLSearchParams(window.location.search).get("room");
   if (!roomId) return;
 
@@ -197,7 +336,7 @@ function applyRoomFilterFromUrl(roomsState, plantsState, renderRooms, renderPlan
   if (plantasTab) plantasTab.click();
 
   const room = roomsState.all.find((item) => String(item.id) === String(roomId));
-  const searchInput = document.querySelector("#plants-search");
+  const searchInput = plantsSearchSlot?.querySelector("input");
 
   if (searchInput && room) {
     searchInput.value = room.name;
@@ -218,6 +357,7 @@ async function initDashboard() {
   const roomsSearchSlot = document.querySelector("#rooms-search");
   const roomsPageSizeSlot = document.querySelector("#rooms-page-size");
   const roomsPaginationSlot = document.querySelector("#rooms-pagination");
+  const plantsSearchSlot = document.querySelector("#plants-search");
   const plantsPageSizeSlot = document.querySelector("#plants-page-size");
   const plantsPaginationSlot = document.querySelector("#plants-pagination");
 
@@ -238,6 +378,20 @@ async function initDashboard() {
         roomsState.page = 1;
         roomsState.expandedRoomId = null;
         renderRooms();
+      });
+    }
+
+    if (plantsSearchSlot) {
+      const search = createSearchBar("Buscar plantas...");
+      plantsSearchSlot.append(search);
+      search.querySelector("input").addEventListener("input", (event) => {
+        plantsState.filtered = filterByQuery(
+          plantsState.all,
+          event.target.value,
+          ["name", "roomName"]
+        );
+        plantsState.page = 1;
+        renderPlants();
       });
     }
 
@@ -273,7 +427,7 @@ async function initDashboard() {
       }
 
       plantsState.all = plants;
-      const plantSearchVal = document.querySelector("#plants-search")?.value;
+      const plantSearchVal = plantsSearchSlot?.querySelector("input")?.value;
       plantsState.filtered = plantSearchVal ? filterByQuery(plants, plantSearchVal, ["name", "roomName"]) : plants;
 
       renderRooms();
@@ -305,26 +459,12 @@ async function initDashboard() {
       );
 
     setupRoomCreation(session.userId, reloadDashboard);
+    setupRoomSelectionModal(roomsState);
     renderRooms();
     renderPlants();
     setupTabs();
 
-    const plantsSearch = document.querySelector("#plants-search");
-    if (plantsSearch) {
-      // Activa el botón de borrado (cruz) en la barra de búsqueda de plantas
-      setupSearchBarClear(plantsSearch.closest(".search-bar"));
-      plantsSearch.addEventListener("input", (event) => {
-        plantsState.filtered = filterByQuery(
-          plantsState.all,
-          event.target.value,
-          ["name", "roomName"]
-        );
-        plantsState.page = 1;
-        renderPlants();
-      });
-    }
-
-    applyRoomFilterFromUrl(roomsState, plantsState, renderRooms, renderPlants);
+    applyRoomFilterFromUrl(roomsState, plantsState, renderRooms, renderPlants, plantsSearchSlot);
   } catch (error) {
     showError(roomsGrid, error.message ?? "Error al cargar el dashboard");
     showError(plantsGrid, error.message ?? "Error al cargar plantas");
