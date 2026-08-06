@@ -64,6 +64,10 @@ function renderScanResult(container, result, context, onSave) {
     `
     : "";
 
+  const diagnosisMatchClass = result.isDiagnosisLowConfidence
+    ? "scan-result__match scan-result__match--warning"
+    : "scan-result__match";
+
   const diagnosisWarningBanner = result.isDiagnosisLowConfidence
     ? `
       <div class="scan-result__warning-banner">
@@ -101,13 +105,14 @@ function renderScanResult(container, result, context, onSave) {
           <section class="scan-result__section">
             <h3 class="scan-result__section-title">Identificación botánica</h3>
             <p class="scan-result__species">${result.species}</p>
-            <p class="${speciesMatchClass}">${result.matchPercent}% coincidencia</p>
+            ${context.plantId ? "" : `<p class="${speciesMatchClass}">${result.matchPercent}% coincidencia</p>`}
             ${speciesWarningBanner}
           </section>
           <section class="scan-result__section">
             <h3 class="scan-result__section-title">Estado de salud</h3>
             <div class="scan-result__alert">
               <p class="scan-result__alert-title">${result.healthLabel}</p>
+              <p class="${diagnosisMatchClass}" style="margin-bottom: var(--space-xs);">${result.diagnosisAccuracy}% coincidencia</p>
               <p class="scan-result__recommendation">${result.recommendation}</p>
             </div>
             ${diagnosisWarningBanner}
