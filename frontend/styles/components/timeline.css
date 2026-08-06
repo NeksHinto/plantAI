@@ -281,14 +281,7 @@
   scroll-snap-align: start;
   border-radius: var(--radius-md);
   overflow: hidden;
-  border: 2px solid transparent;
   background: var(--color-surface);
-  cursor: pointer;
-  transition: transform 0.15s ease, border-color 0.15s ease;
-}
-
-.scan-album__card:hover {
-  transform: translateY(-2px);
 }
 
 .scan-album__card.is-selected {

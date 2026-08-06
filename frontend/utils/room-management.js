@@ -63,7 +63,7 @@ export function setupRoomCreation(userId, onRoomCreated) {
       return;
     }
 
-    const temperatureLevel = formatTemperatureForDb(parsedTemp);
+    const temperatureLevel = parsedTemp;
 
     try {
       await createRoom({

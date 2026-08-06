@@ -239,6 +239,16 @@
   color: var(--color-text-muted);
 }
 
+.scan-result__name-hint {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  margin-top: var(--space-xs);
+}
+
+#scan-plant-name {
+  margin-top: var(--space-xs);
+}
+
 .scan-result__actions {
   padding: var(--space-lg);
   border-top: 1px solid var(--color-border);
