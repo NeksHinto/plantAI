@@ -459,14 +459,14 @@ endpointsPlantas.post("/identify-disease", upload.single("image"), async (req, r
     const healthUrl =
       imageSource || req.file
         ? await persistHealthImage({
-            imageSource,
-            file: req.file,
-            username,
-            userId,
-            plantId: Number(plantId),
-            roomId,
-            series,
-          })
+          imageSource,
+          file: req.file,
+          username,
+          userId,
+          plantId: Number(plantId),
+          roomId,
+          series,
+        })
         : null;
 
     const newRecord = await insertHealthRecord(
