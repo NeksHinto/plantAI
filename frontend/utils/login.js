@@ -15,11 +15,11 @@ function initLogin() {
   if (checkExistingSession()) return;
 
   const form = document.querySelector("#login-form");
-  const errorSlot = document.querySelector("#login-error");
+  const errorSlot = document.querySelector("#login-error"); //queryselector toma el elemento html que se pasa por parametro, en este caso el # es por el atributo id
 
   if (!form) return;
 
-  form.addEventListener("submit", async (event) => {
+  form.addEventListener("submit", async (event) => { //escucha el evento submit
     event.preventDefault();
     clearError(errorSlot);
 

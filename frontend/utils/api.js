@@ -25,9 +25,11 @@ export async function apiRequest(path, options = {}) {
   });
 
   if (response.status === 401 || response.status === 403) {
-    clearSession();
-    requireAuth();
-    throw new ApiError("Sesión expirada o no autorizada", response.status);
+    if (path !== "/auth/login") {
+      clearSession();
+      requireAuth();
+      throw new ApiError("Sesión expirada o no autorizada", response.status);
+    }
   }
 
   const data = await response.json().catch(() => null);

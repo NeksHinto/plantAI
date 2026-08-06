@@ -85,7 +85,7 @@ export function mapPlantDetailFromApi(plant) {
       diagnosis: record.diagnosis,
       accuracy: record.accuracy,
       treatmentNotes: record.treatmentNotes ?? "",
-      date: new Date(record.date).toISOString().split("T")[0],
+      date: record.date,
       time: formatTime(record.date),
       status: healthStatusFromRecord(record),
       label: statusLabel(healthStatusFromRecord(record)),

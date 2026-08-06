@@ -15,12 +15,8 @@ endpointsAuth.post("/login", async (req, res) => {
   try {
     const user = await getUserByUsername(username);
 
-    if (!user) {
-      return res.status(401).json({ error: "Credenciales invalidas" });
-    }
-
-    if (user.password !== password) {
-      return res.status(401).json({ error: "Credenciales invalidas" });
+    if (!user || user.password !== password) {
+      return res.status(401).json({ error: "Credenciales inválidas" });
     }
 
     const token = generateToken({ userId: user.id, username: user.name });
