@@ -12,14 +12,50 @@ Aplicación web para organizar tus plantas por ambientes del hogar, escanear e i
 
 ---
 
+## Funcionalidades Principales
+
+### 1. Inicio de Sesión
+![Pagina para inicio de sesion ](inicio-sesion.png)
+
+### 2. Pagina principal
+![Pagina principal de la app](pagina-principal.png)
+
+### 3. Agregar Ambiente
+![Formulario para agregar un nuevo ambiente](agregar-ambiente.png)
+
+### 4. Escanear Planta (Identificación de especie)
+![Interfaz para subir una imagen de la planta](escanear-planta.png)
+
+### 5. Información de la planta identificada (Resultados del Escaneo)
+![Informacion de la planta identificada](informacion-escaneo.png)
+
+### 6. Resultado de escaneo con probabilidad de enfermedad
+![Resultados del escaneo con probabilidad de enfermedad](resultado-escaneo.png)
+
+
+
+## Requisitos Previos
+
+Antes de comenzar, asegurate de tener instalados los siguientes programas en tu sistema:
+
+1. **[Git](https://git-scm.com/)**: Para clonar el repositorio.
+2. **[Node.js](https://nodejs.org/)** *(v20 o superior)*: Para ejecutar el servidor backend (`node` y `npm`).
+3. **[Docker](https://www.docker.com/) y Docker Compose** *(Recomendado)*: Para levantar la base de datos PostgreSQL localmente sin instalar Postgres a mano.
+4. **Python 3** *(o cualquier servidor estático como Live Server)*: Para servir los archivos de la interfaz web (Frontend).
+
+---
+
 ## Cómo correr el proyecto
 
 ### 1. Cloná el repositorio y movete a la carpeta
+
+
+Abre una terminal y ejecuta:
+
 ```bash
 git clone https://github.com/NeksHinto/plantAI.git
 cd plantAI
 ```
-*(Nota: Ajusta la URL del repositorio si es necesario)*
 
 ---
 
