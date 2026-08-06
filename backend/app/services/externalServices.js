@@ -1,6 +1,4 @@
-// serviciosExternos.js
 const PLANTNET_API_KEY = process.env.PLANTNET_API_KEY;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 export async function identifySpecies(imageInput) {
   try {

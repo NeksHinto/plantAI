@@ -1,5 +1,5 @@
 import { createRoom, updateRoom, deleteRoom } from "./rooms-api.js";
-import { formatTemperatureForDb, parseTemperature } from "./format.js";
+import { parseTemperature } from "./format.js";
 
 export function setupRoomCreation(userId, onRoomCreated) {
   const openButton = document.querySelector("#add-room-button");
@@ -42,6 +42,8 @@ export function setupRoomCreation(userId, onRoomCreated) {
     const isIndoors = formData.get("isIndoors") === "true";
     const rawTemperature = formData.get("temperatureLevel");
     const parsedTemp = parseTemperature(rawTemperature);
+    const humidityLevel = formData.get("humidityLevel") || "media";
+    const lightLevel = formData.get("lightLevel") || "media";
 
     if (!name) {
       if (errorMessage) {
@@ -71,6 +73,8 @@ export function setupRoomCreation(userId, onRoomCreated) {
         name,
         isIndoors,
         temperatureLevel,
+        humidityLevel,
+        lightLevel,
       });
 
       closeModal();
@@ -91,6 +95,8 @@ export function setupRoomEdition(onRoomUpdated) {
   const nameInput = document.querySelector("#edit-room-name");
   const locationInput = document.querySelector("#edit-room-location");
   const temperatureInput = document.querySelector("#edit-room-temperature");
+  const humidityInput = document.querySelector("#edit-room-humidity");
+  const lightInput = document.querySelector("#edit-room-light");
   const cancelButton = document.querySelector("#cancel-edit-room");
   const errorMessage = document.querySelector("#edit-room-error");
 
@@ -107,6 +113,8 @@ export function setupRoomEdition(onRoomUpdated) {
 
     const parsedTemp = parseTemperature(room.temperatureLevel);
     temperatureInput.value = parsedTemp !== null ? parsedTemp : "";
+    if (humidityInput) humidityInput.value = room.humidityLevel || "media";
+    if (lightInput) lightInput.value = room.lightLevel || "media";
 
     if (errorMessage) errorMessage.hidden = true;
     modal.hidden = false;
@@ -134,6 +142,8 @@ export function setupRoomEdition(onRoomUpdated) {
     const isIndoors = locationInput.value === "true";
     const rawTemperature = temperatureInput.value;
     const parsedTemp = parseTemperature(rawTemperature);
+    const humidityLevel = humidityInput?.value || "media";
+    const lightLevel = lightInput?.value || "media";
 
     if (!name) {
       if (errorMessage) {
@@ -150,10 +160,16 @@ export function setupRoomEdition(onRoomUpdated) {
       return;
     }
 
-    const temperatureLevel = formatTemperatureForDb(parsedTemp);
+    const temperatureLevel = parsedTemp;
 
     try {
-      await updateRoom(currentRoom.id, { name, isIndoors, temperatureLevel });
+      await updateRoom(currentRoom.id, {
+        name,
+        isIndoors,
+        temperatureLevel,
+        humidityLevel,
+        lightLevel,
+      });
       closeModal();
       await onRoomUpdated();
     } catch (error) {

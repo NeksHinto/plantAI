@@ -31,6 +31,9 @@ db-init/           schema + seeds (Postgres Docker)
 | `GEMINI_API_KEY` | notas de tratamiento (opcional; hay fallback) |
 | `PUBLIC_SUPABASE_URL` | solo si `DB_PROVIDER=supabase` |
 | `PUBLIC_SUPABASE_ANON_KEY` | solo si `DB_PROVIDER=supabase` |
+| `PRIVATE_SUPABASE_BUCKET_API_KEY` | **service_role** JWT (Settings → API) para uploads al bucket `plants` |
+
+Storage: objetos bajo `{username}-{userId}/…` en el bucket público `plants`. No hace falta crear carpetas a mano — el path del upload las define.
 
 ## Cómo correrlo
 
@@ -78,6 +81,7 @@ En `backend/.env`:
 DB_PROVIDER=supabase
 PUBLIC_SUPABASE_URL=...
 PUBLIC_SUPABASE_ANON_KEY=...
+PRIVATE_SUPABASE_BUCKET_API_KEY=...   # service_role JWT
 ```
 
 ```bash

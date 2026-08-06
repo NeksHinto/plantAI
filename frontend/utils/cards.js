@@ -1,4 +1,5 @@
 import { createBadge, getStatusLabel, refreshIcons } from "./ui.js";
+import { roomMetaLine } from "./mappers.js";
 
 export function createRoomCard(room, expanded, onClick, onEdit, onDelete) {
   const card = document.createElement("article");
@@ -43,7 +44,7 @@ export function createRoomCard(room, expanded, onClick, onEdit, onDelete) {
 
     <div class="room-card__body">
       <h3 class="room-card__title">${room.name}</h3>
-      <p class="room-card__meta">${room.plantCount} plantas · ${room.isIndoors ? "Interior" : "Exterior"}${room.temperatureLevel ? ` · ${room.temperatureLevel}` : ""}</p>
+      <p class="room-card__meta">${room.plantCount} plantas · ${roomMetaLine(room)}</p>
     </div>
 
     ${statusHtml}

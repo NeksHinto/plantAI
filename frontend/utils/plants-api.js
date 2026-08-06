@@ -4,10 +4,8 @@ export function fetchPlantById(plantId) {
   return apiRequest(`/plantas/${plantId}`);
 }
 
-// Realiza el analisis botánico/salud.
-// Si recibe `imageFile` (File binario), arma FormData (multipart/form-data).
-// Si recibe `imageUrl` (string), envía JSON.
-export function analyzeScan({ imageUrl, imageFile, roomId, plantId }) {
+// Multipart (File) preferred for PlantNet; JSON with imageUrl/imageBase64 as fallback.
+export function analyzeScan({ imageUrl, imageFile, imageBase64, roomId, plantId }) {
   if (imageFile) {
     const formData = new FormData();
     formData.append("image", imageFile);
@@ -22,7 +20,7 @@ export function analyzeScan({ imageUrl, imageFile, roomId, plantId }) {
 
   return apiRequest("/plantas/analyze-scan", {
     method: "POST",
-    body: JSON.stringify({ imageUrl, roomId, plantId }),
+    body: JSON.stringify({ imageUrl, imageBase64, roomId, plantId }),
   });
 }
 
@@ -40,7 +38,6 @@ export function identifyDisease(data) {
   });
 }
 
-// TODO: conectar UI de edición de planta cuando exista el formulario
 export function updatePlant(plantId, fields) {
   return apiRequest(`/plantas/${plantId}`, {
     method: "PUT",

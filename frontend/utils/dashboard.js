@@ -11,7 +11,6 @@ import {
   createPageSizeControl,
   createPagination,
   createSearchBar,
-  setupSearchBarClear,
   fillUserGreeting,
   showError,
   showLoading,

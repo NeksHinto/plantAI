@@ -17,11 +17,6 @@ export function revokePreviewUrl(url) {
   }
 }
 
-export function resolveImageUrlForApi(previewUrl, fallbackPublicUrl) {
-  if (previewUrl?.startsWith("http")) return previewUrl;
-  return fallbackPublicUrl;
-}
-
 const SCAN_PREVIEW_KEY = "plantai_scan_preview";
 
 export function storeScanPreview(url) {

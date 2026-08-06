@@ -1,15 +1,14 @@
 import { addPlant, identifyDisease, fetchPlantById, analyzeScan } from "./plants-api.js";
 import { mapPlantDetailFromApi, mapScanResultFromApi } from "./mappers.js";
-import { TEMP_PUBLIC_SCAN_IMAGE_URL } from "./constants.js";
 import { requireAuth, setupAuthGuard } from "./session.js";
 import {
   createPreviewUrl,
-  resolveImageUrlForApi,
   revokePreviewUrl,
   storeScanPreview,
   getScanPreview,
   readFileAsDataUrl,
   getScanPreviewFile,
+  clearScanPreview,
 } from "./image.js";
 import { formatDateTime } from "./format.js";
 import {
@@ -44,7 +43,6 @@ function fillPlantHeaderFromDetail(plant) {
 }
 
 function renderScanResult(container, result, context, onSave) {
-  const scannedDate = new Date(result.scannedAt);
   const saveHref = context.plantId
     ? `plant.html?id=${context.plantId}`
     : context.savedPlantId
@@ -448,15 +446,9 @@ async function runScan(context) {
     storeScanPreview(selectedPreviewUrl);
   }
 
-  const imageUrl = resolveImageUrlForApi(
-    selectedPreviewUrl,
-    TEMP_PUBLIC_SCAN_IMAGE_URL
-  );
-
   const resultsUrl = new URL("scanner-results.html", window.location.href);
   if (context.plantId) resultsUrl.searchParams.set("plantId", context.plantId);
   if (context.roomId) resultsUrl.searchParams.set("roomId", context.roomId);
-  resultsUrl.searchParams.set("imageUrl", imageUrl);
 
   window.location.href = resultsUrl.toString();
 }
@@ -472,9 +464,16 @@ async function initScannerResults() {
   const context = {
     plantId: params.get("plantId"),
     roomId: params.get("roomId"),
-    imageUrl: params.get("imageUrl") ?? TEMP_PUBLIC_SCAN_IMAGE_URL,
     cancelHref: contextCancelHref(params),
   };
+
+  const scanFile = getScanPreviewFile();
+  const scanDataUrl = getScanPreview();
+
+  if (!scanFile && !scanDataUrl) {
+    showError(container, "No hay imagen para analizar. Volvé a escanear.");
+    return;
+  }
 
   showLoading(container, "Analizando imagen...");
 
@@ -493,18 +492,18 @@ async function initScannerResults() {
 
   }
 
-  const scanFile = getScanPreviewFile();
-
   try {
     const scanPayload = await analyzeScan({
       imageFile: scanFile,
-      imageUrl: context.imageUrl,
+      imageBase64: scanFile ? undefined : scanDataUrl,
       roomId: context.roomId,
       plantId: context.plantId,
     });
 
-    const result = mapScanResultFromApi(scanPayload);
-    result.image = getScanPreview() ?? context.imageUrl;
+    const result = mapScanResultFromApi({
+      ...scanPayload,
+      imageUrl: scanDataUrl,
+    });
 
     if (context.plantId && !scanPayload.identification) {
       try {
@@ -517,10 +516,12 @@ async function initScannerResults() {
     }
 
     renderScanResult(container, result, context, async () => {
+      const imageBase64 =
+        scanDataUrl?.startsWith("data:") ? scanDataUrl : undefined;
+
       if (context.roomId) {
         const response = await addPlant({
-          imageUrl: context.imageUrl,
-          userId: session.userId,
+          imageBase64,
           roomId: context.roomId,
           name: context.customPlantName || "Nueva planta",
           species: result.species,
@@ -530,15 +531,17 @@ async function initScannerResults() {
           treatmentNotes: result.recommendation,
           confidenceScore: result.matchPercent,
         });
+        clearScanPreview();
         return `plant.html?id=${response.plant?.id}`;
       } else if (context.plantId) {
         await identifyDisease({
-          imageUrl: context.imageUrl,
+          imageBase64,
           plantId: context.plantId,
           diagnosis: result.healthLabel,
           diagnosisAccuracy: result.diagnosisAccuracy,
           treatmentNotes: result.recommendation,
         });
+        clearScanPreview();
         return `plant.html?id=${context.plantId}`;
       }
       return "dashboard.html";

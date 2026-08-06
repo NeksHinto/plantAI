@@ -1,5 +1,4 @@
-// mappers.js
-export function mapPlantRow(row) { // TODO Review
+export function mapPlantRow(row) {
   let status = "saludable";
 
   if (row.diagnosis) {
