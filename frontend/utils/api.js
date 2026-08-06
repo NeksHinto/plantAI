@@ -1,6 +1,7 @@
 import { API_BASE_URL } from "./config.js";
 import { getSession, clearSession, requireAuth } from "./session.js";
 
+// Clase para manejar errores con código de estado HTTP
 export class ApiError extends Error {
   constructor(message, status) {
     super(message);
@@ -8,6 +9,7 @@ export class ApiError extends Error {
   }
 }
 
+// Realiza peticiones HTTP a la API adjuntando el token y manejando la sesión
 export async function apiRequest(path, options = {}) {
   const session = getSession();
   const isFormData = options.body instanceof FormData;
@@ -25,9 +27,11 @@ export async function apiRequest(path, options = {}) {
   });
 
   if (response.status === 401 || response.status === 403) {
-    clearSession();
-    requireAuth();
-    throw new ApiError("Sesión expirada o no autorizada", response.status);
+    if (path !== "/auth/login") {
+      clearSession();
+      requireAuth();
+      throw new ApiError("Sesión expirada o no autorizada", response.status);
+    }
   }
 
   const data = await response.json().catch(() => null);

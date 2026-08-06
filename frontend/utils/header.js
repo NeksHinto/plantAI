@@ -1,5 +1,6 @@
 import { clearSession } from "./session.js";
 
+// Asigna el evento de cerrar sesión al botón del encabezado
 function setupHeader() {
   const logoutButton = document.querySelector(".app-header__logout");
 

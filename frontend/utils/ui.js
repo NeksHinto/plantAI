@@ -1,15 +1,18 @@
 import { statusLabel } from "./mappers.js";
 
+// Renderiza los íconos de Lucide en la página
 export function refreshIcons() {
   if (window.lucide?.createIcons) {
     window.lucide.createIcons();
   }
 }
 
+// Obtiene la etiqueta en texto del estado de salud
 export function getStatusLabel(status) {
   return statusLabel(status);
 }
 
+// Crea una insignia HTML con el estado de salud
 export function createBadge(status, label) {
   const badge = document.createElement("span");
   badge.className = `badge badge--${status}`;
@@ -17,6 +20,7 @@ export function createBadge(status, label) {
   return badge;
 }
 
+// Crea el selector de cantidad de elementos por página
 export function createPageSizeControl() {
   const wrapper = document.createElement("div");
   wrapper.className = "page-size";
@@ -32,6 +36,7 @@ export function createPageSizeControl() {
   return wrapper;
 }
 
+// Genera los botones de paginación
 export function createPagination(totalPages, currentPage = 1) {
   const nav = document.createElement("nav");
   nav.className = "pagination";
@@ -61,7 +66,7 @@ export function createPagination(totalPages, currentPage = 1) {
   return nav;
 }
 
-// Agrega un botón de borrado (cruz) con ícono a la barra de búsqueda
+// Agrega el botón para limpiar texto en el buscador
 export function setupSearchBarClear(wrapper) {
   if (!wrapper) return;
   const input = wrapper.querySelector("input");
@@ -96,7 +101,7 @@ export function setupSearchBarClear(wrapper) {
   setTimeout(refreshIcons, 0);
 }
 
-// Crea un buscador dinámico con icono de lupa y botón de borrado
+// Crea un componente de barra de búsqueda
 export function createSearchBar(placeholder) {
   const wrapper = document.createElement("div");
   wrapper.className = "search-bar";
@@ -108,16 +113,19 @@ export function createSearchBar(placeholder) {
   return wrapper;
 }
 
+// Coloca el saludo personalizado al usuario
 export function fillUserGreeting(selector, userName) {
   const element = document.querySelector(selector);
   if (element) element.textContent = `Hola, ${userName}`;
 }
 
+// Configura el enlace del botón volver del encabezado
 export function setPlantHeaderBack(href) {
   const backLink = document.querySelector(".plant-header__back");
   if (backLink) backLink.href = href;
 }
 
+// Configura el botón de acción del encabezado
 export function setPlantHeaderAction(label, href) {
   const action = document.querySelector("#plant-header-action");
   if (action) {
@@ -126,16 +134,19 @@ export function setPlantHeaderAction(label, href) {
   }
 }
 
+// Muestra un mensaje de error dentro de un contenedor
 export function showError(container, message) {
   if (!container) return;
   container.innerHTML = `<p class="form-error" role="alert">${message}</p>`;
 }
 
+// Muestra un mensaje de carga dentro de un contenedor
 export function showLoading(container, message = "Cargando...") {
   if (!container) return;
   container.innerHTML = `<p class="loading-message">${message}</p>`;
 }
 
+// Muestra una ventana modal de confirmación
 export function showConfirmModal({ title, message, confirmText = "Eliminar", cancelText = "Cancelar", isDanger = true }) {
   return new Promise((resolve) => {
     const overlay = document.createElement("div");

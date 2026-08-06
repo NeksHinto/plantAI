@@ -1,5 +1,6 @@
 import { db } from "./pool.js";
 
+// Obtiene las plantas de un ambiente con su último diagnóstico
 export async function getPlantsByRoomId(roomId) {
   const res = await db.query(
     `SELECT p.id, p.user_id, p.room_id, p.name, p.common_name, p.species, p.image_url,
@@ -18,6 +19,7 @@ export async function getPlantsByRoomId(roomId) {
   return res.rows;
 }
 
+// Obtiene los datos básicos de una planta por su ID
 export async function getPlantById(plantId) {
   const res = await db.query(
     "SELECT id, user_id, room_id, name, common_name, species, image_url FROM plants WHERE id = $1",
@@ -26,6 +28,7 @@ export async function getPlantById(plantId) {
   return res.rows[0];
 }
 
+// Obtiene el historial clínico de escaneos de una planta
 export async function getHealthRecordsByPlantId(plantId) {
   const res = await db.query(
     "SELECT id, plant_id, diagnosis, accuracy, treatment_notes, image_url, created_at AS date FROM plant_health_records WHERE plant_id = $1 ORDER BY created_at DESC",
@@ -34,14 +37,7 @@ export async function getHealthRecordsByPlantId(plantId) {
   return res.rows;
 }
 
-export async function countHealthRecordsByPlantId(plantId) {
-  const res = await db.query(
-    "SELECT COUNT(*)::int AS count FROM plant_health_records WHERE plant_id = $1",
-    [plantId]
-  );
-  return res.rows[0]?.count ?? 0;
-}
-
+// Actualiza el nombre o el ambiente asignado a una planta
 export async function updatePlant(plantId, name, roomId) {
   const res = await db.query(
     `UPDATE plants 
@@ -58,15 +54,7 @@ export async function updatePlant(plantId, name, roomId) {
   return res.rows[0];
 }
 
-export async function updatePlantImageUrl(plantId, imageUrl) {
-  const res = await db.query(
-    `UPDATE plants SET image_url = $1 WHERE id = $2
-     RETURNING id, user_id, room_id, name, common_name, species, image_url`,
-    [imageUrl, plantId]
-  );
-  return res.rows[0];
-}
-
+// Registra una nueva planta en la base de datos
 export async function insertPlant(userId, roomId, name, commonName, species, imageUrl) {
   const res = await db.query(
     "INSERT INTO plants (user_id, room_id, name, common_name, species, image_url) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, user_id, room_id, name, common_name, species, image_url",
@@ -75,13 +63,8 @@ export async function insertPlant(userId, roomId, name, commonName, species, ima
   return res.rows[0];
 }
 
-export async function insertHealthRecord(
-  plantId,
-  diagnosis,
-  accuracy,
-  treatmentNotes,
-  imageUrl = null
-) {
+// Guarda un nuevo diagnóstico clínico para una planta
+export async function insertHealthRecord(plantId, diagnosis, accuracy, treatmentNotes) {
   const res = await db.query(
     "INSERT INTO plant_health_records (plant_id, diagnosis, accuracy, treatment_notes, image_url) VALUES ($1, $2, $3, $4, $5) RETURNING id, plant_id, diagnosis, accuracy, treatment_notes, image_url, created_at AS date",
     [plantId, diagnosis, accuracy, treatmentNotes || null, imageUrl || null]
@@ -89,6 +72,7 @@ export async function insertHealthRecord(
   return res.rows[0];
 }
 
+// Obtiene el contexto ambiental (temperatura e interior/exterior) de una planta
 export async function getRoomContextByPlantId(plantId) {
   const res = await db.query(
     `SELECT r.id, r.temperature_level, r.is_indoors, r.humidity_level, r.light_level
@@ -100,6 +84,7 @@ export async function getRoomContextByPlantId(plantId) {
   return res.rows[0];
 }
 
+// Elimina una planta y sus registros de diagnóstico asociados
 export async function deletePlant(plantId) {
   const res = await db.query("DELETE FROM plants WHERE id = $1 RETURNING id", [
     plantId,
@@ -107,6 +92,7 @@ export async function deletePlant(plantId) {
   return res.rows[0];
 }
 
+// Elimina un registro de salud por su ID
 export async function deleteHealthRecord(recordId) {
   const res = await db.query(
     "DELETE FROM plant_health_records WHERE id = $1 RETURNING id",
@@ -115,6 +101,7 @@ export async function deleteHealthRecord(recordId) {
   return res.rows[0];
 }
 
+// Actualiza las notas de tratamiento de un registro clínico
 export async function updateHealthRecord(recordId, treatmentNotes) {
   const res = await db.query(
     "UPDATE plant_health_records SET treatment_notes = $1 WHERE id = $2 RETURNING id, plant_id, diagnosis, accuracy, treatment_notes, image_url, created_at AS date",
@@ -123,6 +110,7 @@ export async function updateHealthRecord(recordId, treatmentNotes) {
   return res.rows[0];
 }
 
+// Obtiene un registro de salud y verifica su usuario propietario
 export async function getHealthRecordById(recordId) {
   const res = await db.query(
     `SELECT r.id, r.plant_id, p.user_id 

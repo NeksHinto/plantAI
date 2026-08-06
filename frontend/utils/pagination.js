@@ -1,3 +1,4 @@
+// Slicing de elementos para paginación y cálculo de total de páginas
 export function paginateItems(items, page, pageSize) {
   const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
   const safePage = Math.min(Math.max(page, 1), totalPages);
@@ -11,6 +12,7 @@ export function paginateItems(items, page, pageSize) {
   };
 }
 
+// Filtra elementos por texto de búsqueda en campos especificados
 export function filterByQuery(items, query, fields) {
   const normalized = query.trim().toLowerCase();
   if (!normalized) return items;

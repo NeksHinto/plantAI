@@ -20,6 +20,7 @@ import {
 let selectedFile = null;
 let selectedPreviewUrl = null;
 
+// Lee el plantId o roomId de los parámetros URL
 function getScanContext() {
   const params = new URLSearchParams(window.location.search);
   return {
@@ -29,6 +30,7 @@ function getScanContext() {
 }
 
 
+// Llena el encabezado en la pantalla de escaneo
 function fillPlantHeaderFromDetail(plant) {
   const avatar = document.querySelector("[data-plant-avatar]");
   const name = document.querySelector("[data-plant-name]");
@@ -42,6 +44,7 @@ function fillPlantHeaderFromDetail(plant) {
   if (species) species.textContent = plant.species;
 }
 
+// Muestra los resultados del diagnóstico en pantalla
 function renderScanResult(container, result, context, onSave) {
   const saveHref = context.plantId
     ? `plant.html?id=${context.plantId}`
@@ -171,6 +174,7 @@ function renderScanResult(container, result, context, onSave) {
   });
 }
 
+// Muestra pantalla de error si no se reconoce la especie
 function renderUnidentifiedResult(container, context, customMessage) {
   const retryHref = context.roomId
     ? `scanner.html?roomId=${context.roomId}`
@@ -207,6 +211,7 @@ function renderUnidentifiedResult(container, context, customMessage) {
   }
 }
 
+// Valida la foto subida y muestra la vista previa
 function handleSelectedFile(file) {
   if (!file) return;
 
@@ -247,6 +252,7 @@ function handleSelectedFile(file) {
   }
 }
 
+// Abre la cámara del dispositivo para tomar una foto
 function openCameraModal(onCapture) {
   let currentStream = null;
   let currentFacingMode = "environment"; // Priorizar cámara trasera
@@ -396,6 +402,7 @@ function openCameraModal(onCapture) {
   startCamera(currentFacingMode);
 }
 
+// Asigna los eventos de subir foto y abrir cámara
 function setupScannerForm() {
   const fileInput = document.querySelector("#scan-file-input");
   const cameraBtn = document.querySelector("#scan-camera-btn");
@@ -426,6 +433,7 @@ function setupScannerForm() {
   }
 }
 
+// Guarda la vista previa y redirige a los resultados
 async function runScan(context) {
   const session = requireAuth();
   if (!session) return;
@@ -453,6 +461,7 @@ async function runScan(context) {
   window.location.href = resultsUrl.toString();
 }
 
+// Llama a la API para analizar el escaneo y muestra resultados
 async function initScannerResults() {
   const session = requireAuth();
   if (!session) return;
@@ -555,6 +564,7 @@ async function initScannerResults() {
   }
 }
 
+// Resuelve a dónde vuelve el botón cancelar
 function contextCancelHref(params) {
   const plantId = params.get("plantId");
   const roomId = params.get("roomId");
@@ -569,6 +579,7 @@ function contextCancelHref(params) {
 }
 
 
+// Inicializa la pantalla de captura de escaneo
 function initScanner() {
   const context = getScanContext();
 
@@ -585,6 +596,7 @@ function initScanner() {
   }
 }
 
+// Carga datos de la planta para el encabezado del escáner
 async function initPlantHeaderForScanner(plantId) {
   try {
     const rawPlant = await fetchPlantById(plantId);
@@ -597,6 +609,7 @@ async function initPlantHeaderForScanner(plantId) {
   }
 }
 
+// Punto de entrada del módulo del escáner
 function init() {
   setupAuthGuard();
   const session = requireAuth();

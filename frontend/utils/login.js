@@ -2,6 +2,7 @@ import { login } from "./auth-api.js";
 import { setSession, getSession } from "./session.js";
 import { showError } from "./ui.js";
 
+// Redirige al dashboard si ya hay una sesión activa
 function checkExistingSession() {
   const session = getSession();
   if (session?.userId && session?.token) {
@@ -11,15 +12,16 @@ function checkExistingSession() {
   return false;
 }
 
+// Inicializa el evento submit del formulario de login
 function initLogin() {
   if (checkExistingSession()) return;
 
   const form = document.querySelector("#login-form");
-  const errorSlot = document.querySelector("#login-error");
+  const errorSlot = document.querySelector("#login-error"); //queryselector toma el elemento html que se pasa por parametro, en este caso el # es por el atributo id
 
   if (!form) return;
 
-  form.addEventListener("submit", async (event) => {
+  form.addEventListener("submit", async (event) => { //escucha el evento submit
     event.preventDefault();
     clearError(errorSlot);
 
@@ -41,6 +43,7 @@ function initLogin() {
   });
 }
 
+// Limpia el mensaje de error del login
 function clearError(container) {
   if (container) container.replaceChildren();
 }

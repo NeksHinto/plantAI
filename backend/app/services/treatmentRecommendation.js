@@ -1,5 +1,6 @@
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
+// Devuelve un tratamiento local por defecto según el diagnóstico
 export function getLocalFallbackRecommendation(diagnosisText) {
   const diag = (diagnosisText || "").toLowerCase();
   
@@ -23,6 +24,7 @@ export function getLocalFallbackRecommendation(diagnosisText) {
   return "Enfermedad detectada. Recomendación: Aislar la planta para prevenir contagios en el mismo ambiente, moderar el riego y aplicar un fertilizante foliar para fortalecer sus defensas.";
 }
 
+// Genera una recomendación de tratamiento personalizada usando Gemini IA
 export async function generateTreatmentNotes({ species, diagnosis, accuracy, temperature, isIndoors }) {
   if (!GEMINI_API_KEY) {
     return getLocalFallbackRecommendation(diagnosis);

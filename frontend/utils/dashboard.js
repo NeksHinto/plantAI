@@ -19,6 +19,7 @@ import {
 
 const DEFAULT_PAGE_SIZE = 6;
 
+// Obtiene ambientes y plantas del usuario desde la API
 async function loadDashboardData(userId) {
   const rooms = await fetchRooms(userId);
 
@@ -39,6 +40,7 @@ async function loadDashboardData(userId) {
   return { rooms: roomsWithPlants, plants: allPlants };
 }
 
+// Renderiza una grilla paginada de elementos
 function renderPagedGrid(container, items, renderCard, paginationSlot, pageSizeSlot, state) {
   const pageSize = Number(pageSizeSlot?.querySelector("select")?.value ?? DEFAULT_PAGE_SIZE);
   const { items: pageItems, totalPages } = paginateItems(items, state.page, pageSize);
@@ -72,6 +74,7 @@ function renderPagedGrid(container, items, renderCard, paginationSlot, pageSizeS
   }
 }
 
+// Renderiza la grilla paginada de ambientes con acordeón
 function renderRoomsGrid(
   container,
   rooms,
@@ -169,6 +172,7 @@ function renderRoomsGrid(
 }
 
 
+// Configura la navegación entre pestañas del dashboard
 function setupTabs() {
   const tabButtons = document.querySelectorAll(".tab-nav__btn");
   const panels = document.querySelectorAll(".tab-panel");
@@ -189,6 +193,7 @@ function setupTabs() {
   });
 }
 
+// Configura el modal para elegir ambiente al escanear
 function setupRoomSelectionModal(roomsState) {
   const openBtn = document.querySelector("#add-plant-button");
   const modal = document.querySelector("#select-room-modal");
@@ -327,6 +332,7 @@ function setupRoomSelectionModal(roomsState) {
   });
 }
 
+// Aplica filtro de ambiente si viene en la URL
 function applyRoomFilterFromUrl(roomsState, plantsState, renderRooms, renderPlants, plantsSearchSlot) {
   const roomId = new URLSearchParams(window.location.search).get("room");
   if (!roomId) return;
@@ -345,6 +351,7 @@ function applyRoomFilterFromUrl(roomsState, plantsState, renderRooms, renderPlan
   }
 }
 
+// Inicializa la vista del dashboard
 async function initDashboard() {
   setupAuthGuard();
   const session = requireAuth();

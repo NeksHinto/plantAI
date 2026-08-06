@@ -1,8 +1,6 @@
 import { db } from "./pool.js";
 
-const ROOM_COLS =
-  "id, user_id, name, is_indoors, temperature_level, humidity_level, light_level";
-
+// Obtiene todos los ambientes registrados por un usuario
 export async function getRoomsByUserId(userId) {
   const res = await db.query(
     `SELECT ${ROOM_COLS} FROM rooms WHERE user_id = $1`,
@@ -11,14 +9,8 @@ export async function getRoomsByUserId(userId) {
   return res.rows;
 }
 
-export async function updateRoom(
-  roomId,
-  name,
-  isIndoors,
-  temperatureLevel,
-  humidityLevel,
-  lightLevel
-) {
+// Actualiza los datos de un ambiente (nombre, ubicación, temperatura)
+export async function updateRoom(roomId, name, isIndoors, temperatureLevel) {
   const res = await db.query(
     `UPDATE rooms 
      SET name = COALESCE($1, name),
@@ -40,6 +32,7 @@ export async function updateRoom(
   return res.rows[0];
 }
 
+// Obtiene los datos de un ambiente por su ID
 export async function getRoomById(roomId) {
   const res = await db.query(`SELECT ${ROOM_COLS} FROM rooms WHERE id = $1`, [
     roomId,
@@ -47,14 +40,8 @@ export async function getRoomById(roomId) {
   return res.rows[0];
 }
 
-export async function insertRoom(
-  userId,
-  name,
-  isIndoors,
-  temperatureLevel,
-  humidityLevel = null,
-  lightLevel = null
-) {
+// Crea un nuevo ambiente para un usuario
+export async function insertRoom(userId, name, isIndoors, temperatureLevel) {
   const res = await db.query(
     `INSERT INTO rooms (user_id, name, is_indoors, temperature_level, humidity_level, light_level)
      VALUES ($1, $2, $3, $4, $5, $6)
@@ -64,6 +51,7 @@ export async function insertRoom(
   return res.rows[0];
 }
 
+// Elimina un ambiente por su ID
 export async function deleteRoom(roomId) {
   const res = await db.query("DELETE FROM rooms WHERE id = $1 RETURNING id", [
     roomId,

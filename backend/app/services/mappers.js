@@ -1,4 +1,6 @@
-export function mapPlantRow(row) {
+// mappers.js
+// Formatea la planta devuelta por la DB y calcula su estado de salud (saludable/atencion/critico)
+export function mapPlantRow(row) { // TODO Review
   let status = "saludable";
 
   if (row.diagnosis) {
