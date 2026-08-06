@@ -21,7 +21,15 @@ export function resolvePlantImage(imageUrl) {
 
 // Devuelve la imagen del ambiente o su placeholder
 export function resolveRoomImage(room) {
-  return resolveImage(room?.imageUrl, PLACEHOLDER_ROOM);
+  const fallback = room?.isIndoors ? ROOM_IMAGE_INDOOR : ROOM_IMAGE_OUTDOOR;
+  return resolveImage(room?.imageUrl, fallback);
+}
+
+// Devuelve la línea de metadatos del ambiente (ubicación y temperatura)
+export function roomMetaLine(room) {
+  const locationText = room?.isIndoors ? "Interior" : "Exterior";
+  const tempText = room?.temperatureLevel ? ` · ${room.temperatureLevel}` : "";
+  return `${locationText}${tempText}`;
 }
 
 // Determina el estado de salud (saludable/atencion/critico) según un registro
