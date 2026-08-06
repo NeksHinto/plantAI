@@ -1,10 +1,10 @@
-# PlantAI 🌱
+## PlantAI
 
 Aplicación web para organizar tus plantas por ambientes del hogar, escanear e identificar especies y enfermedades mediante Inteligencia Artificial, y mantener un historial médico detallado de cada una.
 
 ---
 
-## 👥 Integrantes
+## Integrantes
 - **Jesus Meza Caya** — 113014
 - **Agustin Ezequiel Mazurkiewich** — 112809
 - **Nicole Renée Hinojo Toré** — 114011
@@ -12,11 +12,11 @@ Aplicación web para organizar tus plantas por ambientes del hogar, escanear e i
 
 ---
 
-## 🚀 Cómo correr el proyecto
+## Cómo correr el proyecto
 
 ### 1. Cloná el repositorio y movete a la carpeta
 ```bash
-git clone https://github.com/dylanrivas/plantAI.git
+git clone https://github.com/NeksHinto/plantAI.git
 cd plantAI
 ```
 *(Nota: Ajusta la URL del repositorio si es necesario)*
@@ -44,8 +44,6 @@ Abrí `.env` y revisá los valores de configuración:
 | `PUBLIC_SUPABASE_ANON_KEY` | Key pública anon de Supabase | *Solo si `DB_PROVIDER=supabase`* |
 | `PRIVATE_SUPABASE_BUCKET_API_KEY` | Service role key para subida de imágenes a Supabase Storage | *Solo si `DB_PROVIDER=supabase`* |
 
-> 💡 **Nota:** Para levantar el proyecto de forma básica local no necesitás cambiar nada en `.env`. Si querés probar la identificación real de plantas con cámara/fotos o las recomendaciones con IA, completá las claves de **PlantNet** y **Gemini**.
-
 ---
 
 ### 3. Levantá los contenedores
@@ -63,16 +61,16 @@ Docker Compose iniciará automáticamente:
 ### 4. Abrí la aplicación
 Una vez que los contenedores estén corriendo, abrí en tu navegador:
 
-👉 **[http://localhost:3000](http://localhost:3000)**
+**[http://localhost:3000](http://localhost:3000)**
 
-#### 🔑 Credenciales de prueba
+#### Credenciales de prueba
 Podés registrar un usuario nuevo o iniciar sesión con el usuario de prueba predeterminado:
 - **Usuario:** `dylan`
 - **Contraseña:** `1234`
 
 ---
 
-## 🛠️ Desarrollo Local (Sin Docker para backend/frontend)
+## Desarrollo Local (Sin Docker para backend/frontend)
 
 Si preferís correr el backend o frontend en modo desarrollo directamente en tu máquina:
 
@@ -98,7 +96,7 @@ Si preferís correr el backend o frontend en modo desarrollo directamente en tu 
 
 ---
 
-## 🏗️ Arquitectura del Proyecto
+## Arquitectura del Proyecto
 
 ```text
 plantAI/
@@ -118,7 +116,7 @@ plantAI/
 
 ---
 
-## 🔌 Endpoints Principales de la API
+## Endpoints Principales de la API
 
 - `POST /api/v1/auth/login` — Autenticación de usuario
 - `POST /api/v1/auth/register` — Registro de nuevo usuario
