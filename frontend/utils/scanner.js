@@ -1,7 +1,7 @@
 import { addPlant, identifyDisease, fetchPlantById, analyzeScan } from "./plants-api.js";
 import { mapPlantDetailFromApi, mapScanResultFromApi } from "./mappers.js";
 import { TEMP_PUBLIC_SCAN_IMAGE_URL } from "./constants.js";
-import { requireAuth } from "./session.js";
+import { requireAuth, setupAuthGuard } from "./session.js";
 import {
   createPreviewUrl,
   resolveImageUrlForApi,
@@ -485,7 +485,7 @@ async function initScannerResults() {
       setPlantHeaderBack("dashboard.html");
     }
   } else {
-    setPlantHeaderBack(context.roomId ? `room.html?id=${context.roomId}` : "dashboard.html");
+    setPlantHeaderBack("dashboard.html");
     setPlantHeaderAction("Ver historial", "dashboard.html");
   }
 
@@ -569,12 +569,12 @@ function initScanner() {
     initPlantHeaderForScanner(context.plantId);
     setupScannerForm();
   } else if (context.roomId) {
-    setPlantHeaderBack(`room.html?id=${context.roomId}`);
+    setPlantHeaderBack("dashboard.html");
     setPlantHeaderAction("Ver historial", "dashboard.html");
     setupScannerForm();
   } else {
     const zone = document.querySelector(".scanner-zone");
-    showError(zone, "Falta plantId o roomId. Volvé al dashboard o a un ambiente.");
+    showError(zone, "Falta plantId o roomId. Volvé al dashboard.");
   }
 }
 
@@ -591,6 +591,10 @@ async function initPlantHeaderForScanner(plantId) {
 }
 
 function init() {
+  setupAuthGuard();
+  const session = requireAuth();
+  if (!session) return;
+
   if (document.querySelector("#scan-result-container")) {
     initScannerResults();
   } else {

@@ -21,9 +21,18 @@ export function clearSession() {
 
 export function requireAuth() {
   const session = getSession();
-  if (!session?.userId) {
-    window.location.href = "../index.html";
+  if (!session?.userId || !session?.token) {
+    clearSession();
+    const isPagesSubdir = window.location.pathname.includes("/pages/");
+    const targetUrl = isPagesSubdir ? "../index.html" : "index.html";
+    window.location.replace(targetUrl);
     return null;
   }
   return session;
+}
+
+export function setupAuthGuard() {
+  window.addEventListener("pageshow", () => {
+    requireAuth();
+  });
 }

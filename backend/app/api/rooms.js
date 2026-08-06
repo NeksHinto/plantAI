@@ -2,22 +2,23 @@
 import { Router } from "express";
 import {
   getRoomsByUserId,
+  getRoomById,
   updateRoom,
   insertRoom,
   deleteRoom,
   getPlantsByRoomId,
 } from "../db/dataAccess.js";
 import { mapPlantRow } from "../services/mappers.js";
+import { authenticateToken } from "../middleware/auth.js";
 
 export const endpointsAmbientes = Router();
 
-// get-rooms(userId): devuelve ambientes del usuario
-endpointsAmbientes.get("/", async (req, res) => {
-  const { userId } = req.query;
+// Requerir autenticación para todos los endpoints de ambientes
+endpointsAmbientes.use(authenticateToken);
 
-  if (!userId) {
-    return res.status(400).json({ error: "Falta el parametro requerido: userId" });
-  }
+// get-rooms: devuelve ambientes del usuario autenticado
+endpointsAmbientes.get("/", async (req, res) => {
+  const userId = req.user.userId;
 
   try {
     const rows = await getRoomsByUserId(userId);
@@ -42,9 +43,14 @@ endpointsAmbientes.get("/", async (req, res) => {
 // edit-room(roomId, {campos modificados})
 endpointsAmbientes.put("/:roomId", async (req, res) => {
   const { roomId } = req.params;
-  const { name, isIndoors, temperatureLevel} = req.body;
+  const { name, isIndoors, temperatureLevel } = req.body;
 
   try {
+    const existingRoom = await getRoomById(roomId);
+    if (!existingRoom || Number(existingRoom.user_id) !== Number(req.user.userId)) {
+      return res.status(404).json({ error: "Habitación no encontrada" });
+    }
+
     const updatedRoom = await updateRoom(roomId, name, isIndoors, temperatureLevel);
 
     if (!updatedRoom) {
@@ -74,6 +80,11 @@ endpointsAmbientes.get("/:roomId/plants", async (req, res) => {
   const { roomId } = req.params;
 
   try {
+    const existingRoom = await getRoomById(roomId);
+    if (!existingRoom || Number(existingRoom.user_id) !== Number(req.user.userId)) {
+      return res.status(404).json({ error: "Habitación no encontrada" });
+    }
+
     const rows = await getPlantsByRoomId(roomId);
     const plants = rows.map(mapPlantRow);
     res.json(plants);
@@ -84,12 +95,13 @@ endpointsAmbientes.get("/:roomId/plants", async (req, res) => {
   }
 });
 
-// create-room(userId, name, isIndoors)
+// create-room(name, isIndoors, temperatureLevel)
 endpointsAmbientes.post("/", async (req, res) => {
-  const { userId, name, isIndoors, temperatureLevel } = req.body;
+  const { name, isIndoors, temperatureLevel } = req.body;
+  const userId = req.user.userId;
 
-  if (!userId || !name || isIndoors === undefined || temperatureLevel === undefined) {
-    return res.status(400).json({ error: "Faltan campos requeridos (userId, name, isIndoors, temperatureLevel)" });
+  if (!name || isIndoors === undefined || temperatureLevel === undefined) {
+    return res.status(400).json({ error: "Faltan campos requeridos (name, isIndoors, temperatureLevel)" });
   }
 
   try {
@@ -116,6 +128,11 @@ endpointsAmbientes.delete("/:roomId", async (req, res) => {
   const { roomId } = req.params;
 
   try {
+    const existingRoom = await getRoomById(roomId);
+    if (!existingRoom || Number(existingRoom.user_id) !== Number(req.user.userId)) {
+      return res.status(404).json({ error: "Habitación no encontrada" });
+    }
+
     const deletedRoom = await deleteRoom(roomId);
     if (!deletedRoom) {
       return res.status(404).json({ error: "Habitación no encontrada" });
