@@ -2,6 +2,7 @@ import { fetchPlantById, updatePlant, deletePlant, updateHealthRecord, deleteHea
 import { fetchRooms } from "./rooms-api.js";
 import { mapPlantDetailFromApi } from "./mappers.js";
 import { formatDate } from "./format.js";
+import { requireAuth, setupAuthGuard } from "./session.js";
 import {
   createBadge,
   getStatusLabel,
@@ -473,6 +474,10 @@ async function initPlantHeaderOnly() {
 }
 
 function initPlant() {
+  setupAuthGuard();
+  const session = requireAuth();
+  if (!session) return;
+
   const timeline = document.querySelector("#timeline");
 
   if (timeline) {

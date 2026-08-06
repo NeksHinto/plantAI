@@ -1,6 +1,7 @@
 // auth.js
 import { Router } from "express";
 import { getUserByUsername } from "../db/dataAccess.js";
+import { generateToken } from "../middleware/auth.js";
 export const endpointsAuth = Router();
 
 // login(user + password)
@@ -22,7 +23,10 @@ endpointsAuth.post("/login", async (req, res) => {
       return res.status(401).json({ error: "Credenciales invalidas" });
     }
 
+    const token = generateToken({ userId: user.id, username: user.name });
+
     return res.json({
+      token,
       userId: user.id,
       nombre: user.name
     });

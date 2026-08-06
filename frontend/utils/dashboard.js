@@ -1,7 +1,7 @@
 import { fetchRooms, fetchPlantsByRoom } from "./rooms-api.js";
 import { mapPlantFromApi, mapRoomFromApi } from "./mappers.js";
 import { setupRoomCreation, setupRoomEdition, setupRoomDeletion } from "./room-management.js";
-import { requireAuth } from "./session.js";
+import { requireAuth, setupAuthGuard } from "./session.js";
 import { paginateItems, filterByQuery } from "./pagination.js";
 import {
   createRoomCard,
@@ -347,6 +347,7 @@ function applyRoomFilterFromUrl(roomsState, plantsState, renderRooms, renderPlan
 }
 
 async function initDashboard() {
+  setupAuthGuard();
   const session = requireAuth();
   if (!session) return;
 

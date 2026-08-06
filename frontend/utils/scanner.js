@@ -1,7 +1,7 @@
 import { addPlant, identifyDisease, fetchPlantById, analyzeScan } from "./plants-api.js";
 import { mapPlantDetailFromApi, mapScanResultFromApi } from "./mappers.js";
 import { TEMP_PUBLIC_SCAN_IMAGE_URL } from "./constants.js";
-import { requireAuth } from "./session.js";
+import { requireAuth, setupAuthGuard } from "./session.js";
 import {
   createPreviewUrl,
   resolveImageUrlForApi,
@@ -559,6 +559,10 @@ async function initPlantHeaderForScanner(plantId) {
 }
 
 function init() {
+  setupAuthGuard();
+  const session = requireAuth();
+  if (!session) return;
+
   if (document.querySelector("#scan-result-container")) {
     initScannerResults();
   } else {

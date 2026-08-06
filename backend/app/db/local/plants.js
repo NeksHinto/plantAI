@@ -100,3 +100,15 @@ export async function updateHealthRecord(recordId, treatmentNotes) {
   );
   return res.rows[0];
 }
+
+export async function getHealthRecordById(recordId) {
+  const res = await db.query(
+    `SELECT r.id, r.plant_id, p.user_id 
+     FROM plant_health_records r 
+     JOIN plants p ON r.plant_id = p.id 
+     WHERE r.id = $1`,
+    [recordId]
+  );
+  return res.rows[0];
+}
+
