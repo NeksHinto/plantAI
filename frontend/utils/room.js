@@ -6,7 +6,7 @@ import {
   createCollapsedRoom,
 } from "./cards.js";
 import { fillUserGreeting, showError, showLoading } from "./ui.js";
-import { formatTemperatureForDb, parseTemperature } from "./format.js";
+import { parseTemperature } from "./format.js";
 
 async function loadRoomPageData(userId, activeRoomId) {
   const rooms = await fetchRooms(userId);
@@ -91,7 +91,7 @@ function setupRoomEdition(room) {
       return;
     }
 
-    const temperatureLevel = formatTemperatureForDb(parsedTemp);
+    const temperatureLevel = parsedTemp;
 
     try {
       await updateRoom(room.id, { name, isIndoors, temperatureLevel, });

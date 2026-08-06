@@ -7,9 +7,9 @@ DROP TABLE IF EXISTS users CASCADE;
 -- tabla usuarios --
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(150) NOT NULL,
-    username VARCHAR(255) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
+    name VARCHAR(20) NOT NULL,
+    username VARCHAR(25) UNIQUE NOT NULL,
+    password VARCHAR(25) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
@@ -17,9 +17,9 @@ CREATE TABLE users (
 CREATE TABLE rooms (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    name VARCHAR(100) NOT NULL,
+    name VARCHAR(25) NOT NULL,
     image_url VARCHAR(255),
-    temperature_level VARCHAR(50),
+    temperature_level NUMERIC(2), CHECK (temperature_level BETWEEN 0 AND 50),
     is_indoors BOOLEAN NOT NULL DEFAULT TRUE
 );
 
@@ -28,9 +28,9 @@ CREATE TABLE plants (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     room_id INT REFERENCES rooms(id) ON DELETE SET NULL,
-    name VARCHAR(100) NOT NULL,
-    common_name VARCHAR(150),
-    species VARCHAR(100),
+    name VARCHAR(20) NOT NULL,
+    common_name VARCHAR(50),
+    species VARCHAR(50),
     image_url VARCHAR(255)
 );
 

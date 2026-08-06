@@ -74,6 +74,26 @@ function renderScanResult(container, result, context, onSave) {
     `
     : "";
 
+  const isNewPlant = !context.plantId && context.roomId;
+  const suggestedName = result.commonName || result.species || "";
+
+  const nameFieldHtml = isNewPlant
+    ? `
+      <section class="scan-result__section">
+        <h3 class="scan-result__section-title">Nombre de tu planta</h3>
+        <input
+          class="modal__input"
+          id="scan-plant-name"
+          type="text"
+          maxlength="20"
+          placeholder="Ej: Mi helecho, Pepita..."
+          value="${suggestedName}"
+        >
+        <p class="scan-result__name-hint">Podés ponerle un nombre personalizado o dejar el sugerido.</p>
+      </section>
+    `
+    : "";
+
   container.innerHTML = `
     <article class="scan-result">
       <div class="scan-result__body">
@@ -93,6 +113,7 @@ function renderScanResult(container, result, context, onSave) {
             </div>
             ${diagnosisWarningBanner}
           </section>
+          ${nameFieldHtml}
         </div>
       </div>
       <p class="scan-result__disclaimer">
@@ -122,6 +143,17 @@ function renderScanResult(container, result, context, onSave) {
     if (!onSave) {
       window.location.href = saveHref;
       return;
+    }
+
+    if (isNewPlant) {
+      const nameInput = container.querySelector("#scan-plant-name");
+      const plantName = nameInput?.value?.trim();
+      if (!plantName) {
+        nameInput?.focus();
+        alert("Ingresá un nombre para tu planta antes de guardar.");
+        return;
+      }
+      context.customPlantName = plantName;
     }
 
     saveBtn.disabled = true;
@@ -486,7 +518,7 @@ async function initScannerResults() {
           imageUrl: context.imageUrl,
           userId: session.userId,
           roomId: context.roomId,
-          name: "Nueva planta",
+          name: context.customPlantName || "Nueva planta",
           species: result.species,
           commonName: result.commonName,
           diagnosis: result.healthLabel,
